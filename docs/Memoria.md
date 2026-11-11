@@ -212,3 +212,20 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   marca; o favicon (`#site-favicon`) só precisou do mesmo valor + um `type` MIME correto (SVG dos
   perfis semeados por arquivo estático vs. PNG das logos enviadas por upload/embutidas como data
   URL) — nenhuma lógica de resolução nova foi necessária.
+- **Preto puro (#000000) e azul-marinho escuro (#0B2D48) têm luminância quase idêntica** (ambos
+  muito próximos de 0 pela fórmula de luminância relativa já usada em `themeLum`), então não dá
+  para diferenciar "logo pensada para fundo preto" de "perfil só escuro" usando o mesmo limiar de
+  contraste (`.48`) já usado para ícones sociais/texto. Foi preciso um teste literal e mais
+  restrito (RGB ≤16 nos 3 canais) para isolar só os perfis realmente pretos (Governo Tarcísio,
+  Período Eleitoral) da Paleta Padrão (azul-marinho, mesma lógica de logo direta de sempre).
+- **"Ativo só no carrossel" não precisou de uma flag nova.** `setupCarousel()` em `main.js` já
+  filtra o array COMPLETO de avisos (`notices`, não `homeNotices`) por `active_carousel`; só a
+  renderização dos cards da home (`homeNotices = notices.slice(0,5)`) é limitada aos 5 primeiros.
+  Posicionar um aviso na 6ª posição (ou além) já basta para ele ficar de fora dos cards da home e
+  continuar no carrossel — reaproveitando uma regra de negócio já existente e documentada, em vez
+  de inventar um campo/flag novo para esse caso.
+- **Harness Node (`C:\tmp\intranet-ssp-test\test-v2.mjs`, fora do repositório) tem um
+  `seedVersion` hardcoded em `profileMinimumCountGuardIsolatedTest()`** que precisa bater
+  exatamente com o `SEED_VERSION` atual de `mock-backend.js` (senão a reconciliação dispara sobre
+  aquele banco mínimo e quebra o teste com erro confuso). Lembrar de atualizar esse valor sempre
+  que `SEED_VERSION` for incrementado — já esquecido 2 vezes nesta sessão.

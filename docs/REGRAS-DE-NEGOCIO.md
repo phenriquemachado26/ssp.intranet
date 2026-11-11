@@ -53,6 +53,11 @@ Atualizado em: 11/11/2026.
   semeados (como a Paleta Padrão) continuam usando o arquivo estático `logo-ssp.svg`.
 - O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé, aos detalhes do site e ao favicon
   (ícone da aba do navegador) — a troca de perfil também troca o favicon para a mesma logomarca.
+- Quando a cor primária do perfil é preto puro (ou quase: `#000000`–`#101010`, caso de "Governo
+  Tarcísio" e "Período Eleitoral"), o favicon exibe a logo sobre um fundo preto composto via
+  canvas — essas logos têm traço claro pensado para fundo escuro e ficariam ilegíveis direto sobre
+  o fundo claro da aba do navegador. Perfis com cor primária clara ou escura-mas-não-preta (ex.: a
+  Paleta Padrão, azul-marinho) exibem a logo normalmente, sem composição.
 - A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
 - Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
 - Perfis podem ser criados, editados, ativados e excluídos pelo Master, com aplicação imediata.
@@ -170,12 +175,16 @@ Atualizado em: 11/11/2026.
 - Ao desativar o bloqueio, as flags não são alteradas: permanecem ativos somente os avisos que já estavam ativos.
 - A página inicial exibe somente os cinco primeiros avisos ativos na ordem; os demais ficam disponíveis na página `avisos.html`.
 - Ao expandir um aviso, qualquer outro aviso aberto é recolhido automaticamente.
-- São semeados 5 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
+- São semeados 6 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
   também é o que aparece no pop-up de destaque), São Paulo por Todas, Programa Casa Paulista, O
-  que é uma Hospitalidade no Serviço Público e Campanha de Arrecadação de Prendas (por último).
-  Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já ativos e no
-  carrossel. O Conselho de Usuários tem botão "Participe"; São Paulo por Todas, Casa Paulista e
-  Hospitalidade têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
+  que é uma Hospitalidade no Serviço Público, Campanha de Arrecadação de Prendas e Agência SP (por
+  último). Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já ativos e
+  no carrossel. O Conselho de Usuários tem botão "Participe"; São Paulo por Todas, Casa Paulista,
+  Hospitalidade e Agência SP têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
+- Com 6 avisos ativos, o Agência SP (último na ordem) fica de fora dos "cinco primeiros avisos"
+  exibidos como cards na página inicial (regra já existente acima), mas continua aparecendo no
+  carrossel (que considera todos os avisos ativos com banner, não só os cinco primeiros) e na
+  listagem completa de `avisos.html` — na prática, "ativo só no carrossel" a pedido do usuário.
 
 ## Carrossel de imagens
 
@@ -214,6 +223,9 @@ Atualizado em: 11/11/2026.
 - Com o bloqueio ativo, ações do Administrador do Site são registradas como pendentes e não alteram o site imediatamente.
 - Um Master pode aprovar, aplicando a alteração, ou recusar a solicitação.
 - Alterações feitas diretamente por um Master continuam sendo aplicadas imediatamente.
+- O item "Validações pendentes" do menu do Master exibe um indicador numérico (badge vermelho,
+  com destaque visual) com a quantidade de solicitações pendentes; fica oculto quando não há
+  nenhuma pendente.
 - O bloqueio não pode ser desativado enquanto existir qualquer alteração pendente; o sistema informa isso em pop-up.
 - Com o bloqueio desativado, alterações autorizadas do Administrador do Site são aplicadas imediatamente.
 
@@ -324,3 +336,14 @@ Atualizado em: 11/11/2026.
   contraste do fundo do rodapé (cor primária do perfil visual ativo).
 - 11/11/2026: a pedido do usuário, o favicon do site passou a acompanhar a logomarca do perfil
   visual ativo — troca automaticamente junto com a troca de perfil.
+- 11/11/2026: a pedido do usuário, adicionado indicador numérico destacado (badge vermelho,
+  animação sutil de pulso) no item "Validações pendentes" do menu do Master, com a quantidade de
+  solicitações pendentes; oculto quando a fila está vazia.
+- 11/11/2026: a pedido do usuário, favicon de perfis com cor primária preta (ou quase) passou a
+  compor a logo sobre um fundo preto (via canvas), em vez de exibi-la direto — logos pensadas para
+  fundo escuro (traço claro/branco) ficavam ilegíveis sobre o fundo claro da aba do navegador.
+- 11/11/2026: novo aviso de demonstração "Agência SP — Sua Fonte de Informações do Governo de São
+  Paulo" cadastrado como o último da ordem (`images_banner/ssp-agenciaSP.png`), para ficar
+  "ativo só no carrossel" a pedido do usuário: por ficar fora dos "5 primeiros avisos" da home
+  (regra já existente), não aparece como card na página inicial, mas continua no carrossel e na
+  listagem completa de avisos.html. Botão "Acesse Aqui" → agenciasp.sp.gov.br. SEED_VERSION 15->16.

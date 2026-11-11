@@ -15,7 +15,7 @@
   const BANNER_FILES = [
     'SPTodas.gif', 'Arrecadacao.png',
     'Hospitalidades.png', 'AcessoRapido.png',
-    'CasaPaulista.png', 'banner_ConselhoUsuarios.png',
+    'CasaPaulista.png', 'banner_ConselhoUsuarios.png', 'ssp-agenciaSP.png',
   ];
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
@@ -102,6 +102,12 @@
       button_name: '',
       button_url: '',
     },
+    {
+      title: 'Agência SP — Sua Fonte de Informações do Governo de São Paulo',
+      description: 'A Agência SP é o canal oficial de notícias do Governo do Estado de São Paulo, reunindo em um só lugar informações sobre ações, projetos e serviços prestados à população. Acompanhe de perto o que o Governo de São Paulo faz: na rua você vê, na Agência SP você lê. Acesse agenciasp.sp.gov.br e fique por dentro das novidades.',
+      banner_file: 'ssp-agenciaSP',
+      button_url: 'https://agenciasp.sp.gov.br',
+    },
   ].map((item) => ({ button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br', ...item }));
 
   // Dados de contato de demonstração do rodapé (endereço real da sede da SSP-SP, usado só como mock).
@@ -129,7 +135,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 15;
+  const SEED_VERSION = 16;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');

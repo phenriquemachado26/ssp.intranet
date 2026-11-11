@@ -177,3 +177,18 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   junto com a logomarca do cabeçalho, reaproveitando `window.sspResolveImageSrc` (já usado para a
   logo) e um novo helper `faviconType(src)` (deduz o MIME a partir do prefixo `data:...` ou da
   extensão do arquivo estático).
+- 11/11/2026: `#approvals-badge` (classe `.side-badge`) adicionado ao item de menu "Validações
+  pendentes" em `painel.html`; populado em `render()` (`assets/js/painel.js`) reaproveitando
+  `pendingChanges.length`, já calculado ali como `changePending`. `hidden` quando zero.
+- 11/11/2026: `theme.js` ganhou `isNearBlack(hex)` (todas as 3 componentes RGB ≤16) e
+  `faviconOnBlackBacking(src)` (desenha a logo resolvida sobre um canvas 64x64 com fundo preto,
+  "contain" com ~12% de margem, exporta via `canvas.toDataURL('image/png')`). `applySspTheme()`
+  usa essa composição quando `color_primary` do perfil ativo é preto/quase-preto; caso contrário
+  mantém o comportamento anterior (favicon = logo resolvida direto, com `faviconType` deduzindo o
+  MIME). Fallback silencioso para a logo original se o canvas falhar (ex.: tainted canvas).
+- 11/11/2026: novo aviso de demonstração "Agência SP" semeado como último da ordem
+  (`images_banner/ssp-agenciaSP.png`). Nenhum campo/flag novo foi criado para "ativo só no
+  carrossel": a arquitetura já reaproveita a regra existente de `homeNotices = notices.slice(0,5)`
+  em `assets/js/main.js` — por ficar na 6ª posição, o item sai da home mas continua elegível para
+  `setupCarousel(notices, ...)`, que opera sobre a lista completa de avisos ativos, não só os
+  cinco primeiros. SEED_VERSION 15->16.
