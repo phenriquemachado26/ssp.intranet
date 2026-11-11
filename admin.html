@@ -19,14 +19,16 @@
       <div class="auth-intro"><p class="eyebrow">Bem-vindo</p><h2 id="login-title">Acesso administrativo</h2><p></p></div>
       <form id="login-form" novalidate>
         <label for="cpf">CPF</label>
-        <input id="cpf" name="cpf" inputmode="numeric" autocomplete="username" placeholder="000.000.000-00" maxlength="14" required>
+        <div class="cpf-field">
+          <input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required aria-haspopup="listbox" aria-expanded="false" aria-controls="cpf-options">
+          <div id="cpf-options" class="cpf-options" role="listbox" aria-label="Contas de demonstração cadastradas" hidden></div>
+        </div>
         <label for="password">Senha</label>
         <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required><button type="button" class="password-toggle" aria-label="Visualizar senha" aria-pressed="false">◉</button></div>
         <p id="login-message" class="form-message" role="alert"></p>
         <button class="button button-primary button-full" type="submit">Entrar</button>
       </form>
       <button id="request-open" class="text-button" type="button">Ainda não possui acesso? <strong>Solicitar acesso</strong></button>
-      <p class="demo-note"><b>Protótipo de demonstração, sem servidor nem banco de dados real.</b><b>CPF 000.000.000-00 · Senha Master@123</b></p>
       <button id="reset-demo-data" class="text-button" type="button">Restaurar dados de demonstração</button>
     </section>
   </main>

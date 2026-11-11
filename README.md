@@ -12,10 +12,10 @@ entre visitantes, e a autenticação não tem nenhum valor de segurança real. V
 
 Link público (GitHub Pages): `https://phenriquemachado26.github.io/ssp.intranet/`
 
-Credenciais de demonstração do Administrador Master:
-
-- CPF: `000.000.000-00`
-- Senha: `Master@123`
+A tela de login (`admin.html`) já vem com 4 contas de demonstração semeadas (2 Administradores
+Master, 2 Administradores do Site). Clique no campo CPF para abrir a lista de contas cadastradas
+— cada linha mostra um ícone (★ Master, ● Administrador do Site) e, ao selecionar uma, o CPF e a
+senha são preenchidos automaticamente.
 
 Se os dados de demonstração ficarem inconsistentes neste navegador, use o botão
 **"Restaurar dados de demonstração"** na página `admin.html` (apaga o `localStorage` e recarrega).

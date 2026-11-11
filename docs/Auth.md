@@ -14,6 +14,11 @@ no navegador do próprio visitante:
   salvo em `localStorage["sspIntranetSession"]`, com expiração de 8 horas (`Date.now()`).
 - Não há cookie `HttpOnly` real, porque não há servidor para emitir um. O "token" é o próprio
   objeto de sessão salvo no navegador.
+- `window.sspDemoAccounts()` expõe as 4 contas de demonstração semeadas (nome, CPF, perfil e a
+  senha em texto puro) — usado pelo seletor de CPF em `admin.html`/`admin.js` para preencher a
+  senha automaticamente ao escolher uma conta. Exposição intencional: como a "senha" não protege
+  nada real neste protótipo, listá-la explicitamente para quem for testar é mais útil do que
+  escondê-la atrás de uma falsa sensação de sigilo.
 
 ## Por que isto NÃO é segurança real
 

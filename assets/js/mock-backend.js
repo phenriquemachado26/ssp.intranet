@@ -20,6 +20,18 @@
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
 
+  // Contas de demonstração semeadas no primeiro acesso. A senha em texto puro só existe aqui
+  // (exposta via window.sspDemoAccounts) para alimentar o seletor de CPF da tela de login —
+  // não tem valor de segurança real neste protótipo (ver docs/Auth.md).
+  const DEMO_ACCOUNTS = [
+    { name: 'Administrador Master', cpf: '00000000000', email: 'master@ssp.gov.br', role: 'master', password: 'Master@123' },
+    { name: 'Camila Rodrigues Alves', cpf: '11111111111', email: 'camila.alves@ssp.gov.br', role: 'master', password: 'Master2@123' },
+    { name: 'Rafael Souza Lima', cpf: '22222222222', email: 'rafael.lima@ssp.gov.br', role: 'site', password: 'Site1@123' },
+    { name: 'Juliana Pereira Santos', cpf: '33333333333', email: 'juliana.santos@ssp.gov.br', role: 'site', password: 'Site2@123' },
+  ];
+
+  window.sspDemoAccounts = () => DEMO_ACCOUNTS.map(({ name, cpf, role, password }) => ({ name, cpf, role, password }));
+
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
   const hexToBytes = (hex) => new Uint8Array((hex.match(/.{1,2}/g) || []).map((h) => parseInt(h, 16)));
@@ -101,11 +113,11 @@
 
   async function seedDb() {
     const db = {
-      seq: { users: 1, access_requests: 0, header_profiles: 1, menu_items: 4, notices: 0, pending_changes: 0 },
-      users: [{
-        id: 1, name: 'Administrador Master', cpf: '00000000000', email: 'master@ssp.gov.br',
-        role: 'master', password_hash: null, active: true, created_at: nowStamp(),
-      }],
+      seq: { users: DEMO_ACCOUNTS.length, access_requests: 0, header_profiles: 1, menu_items: 4, notices: 0, pending_changes: 0 },
+      users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
+        id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
+        password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
+      }))),
       access_requests: [],
       header_profiles: [{
         id: 1, name: 'Paleta Padrão', logo: 'logo-ssp.svg', page_title: 'Intranet SSP',
@@ -122,7 +134,6 @@
       ],
       notices: [],
     };
-    db.users[0].password_hash = await passwordHash('Master@123');
     saveDb(db);
     return db;
   }
