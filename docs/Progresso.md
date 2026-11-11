@@ -222,3 +222,17 @@ automaticamente, mas cada aviso individual precisa ser reativado manualmente pel
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado de
   mudanças de dados mock e regras de negócio desta sessão) ainda não executados — segue como item
   de housekeeping em aberto.
+
+## 11/11/2026 — Rodapé: telefone na mesma linha do e-mail, ícones e novo texto "desenvolvido por"
+
+Atendido pedido do usuário: telefone e e-mail do rodapé público agora ficam lado a lado na mesma
+linha; endereço, e-mail, telefone e horário de atendimento ganharam ícones; texto de "Desenvolvido
+por" alterado de "Desenvolvido pelo GTI" para "CGI - Coordenadoria de Gestão da Informação".
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 187 cenários
+  de lógica validados via harness Node.js, incluindo preservação de texto já customizado pelo
+  Master. Verificação visual adicional com Playwright (Chromium headless): layout correto,
+  telefone e e-mail confirmados na mesma linha, 4 ícones presentes, texto exato conferido, sem
+  erros de console.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
