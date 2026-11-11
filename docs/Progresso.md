@@ -321,3 +321,16 @@ normalmente, sem composição.
   estática direta, sem composição. Sem erros de console.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Reversão do favicon com fundo preto
+
+A pedido do usuário, revertida a composição de favicon com fundo preto para perfis de cor primária
+preta (Governo Tarcísio, Período Eleitoral) — não gostou do resultado visual. Revertido via
+`git revert` (código) e regra correspondente marcada como `revogada` (não apagada) em
+`docs/REGRAS-DE-NEGOCIO.md`. Favicon volta a exibir a logo diretamente em todos os perfis.
+
+- **Tester** (eu mesmo, Coder): 209 cenários de lógica revalidados via harness Node.js após o
+  revert (mudança restrita a `theme.js`, fora do escopo do harness de regras de negócio, mas
+  revalidado por segurança). Sem regressões.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
