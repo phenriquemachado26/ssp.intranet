@@ -126,3 +126,14 @@ genérico). Nenhum overflow horizontal em nenhuma tela. Também preenchidos os l
 acessos rápidos (sites oficiais de Polícia Civil/Militar/Científica e Conseg), abrindo em nova
 aba. 82 cenários de lógica validados via harness Node (78 anteriores + 4 novos). Revisão completa
 de Validator/Security Specialist segue acumulada.
+
+## 11/11/2026 — 15 sistemas internos reais em Instituições e serviços
+
+Usuário forneceu título e link de 15 sistemas internos reais da SSP-SP (Lista Ramais, Infocrim,
+Expedição de Documentos, RH, FISP, Placas Reservadas, SICON, Consulta Jurídica, CLC, Protocolo,
+Infoseg, RDO, WIKI, Informativos, Sala de Reuniões); descrições breves escritas com base no
+título/contexto fornecido. Adicionados aos 4 itens institucionais originais em "Instituições e
+serviços" (total 19), todos já abrindo em nova aba (comportamento que já existia no código). Link
+de "Polícia Civil" nos acessos rápidos simplificado para a URL curta oficial. 88 cenários de
+lógica validados via harness Node (82 anteriores + 6 novos). Revisão completa de
+Validator/Security Specialist segue acumulada.
