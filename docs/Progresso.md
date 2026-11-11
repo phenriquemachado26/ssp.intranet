@@ -252,3 +252,18 @@ que exigia reativação manual item a item.
   de lógica revalidados via harness Node.js após as duas mudanças. Todos passando.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Simplifica mensagem de confirmação do bloqueio de alterações (Governança)
+
+Atendido pedido do usuário: o pop-up "Regras do bloqueio de alterações" (ao ativar "Bloqueio de
+alterações" em Visão Geral) passou a exibir apenas a regra principal — validação obrigatória do
+Master para alterações de Administradores do Site — seguida de "Deseja continuar?", em vez da
+lista completa de consequências exibida anteriormente. O comportamento de fato (avisos/carrossel
+desativados ao bloquear) não mudou, só o texto do pop-up.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): mudança
+  restrita a texto de UI (painel.js), fora do escopo do harness Node de regras de negócio.
+  Verificado visualmente com Playwright (Chromium headless, login como Master): título e corpo do
+  diálogo conferem exatamente com o texto pedido, sem erros de console.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
