@@ -74,6 +74,9 @@ Atualizado em: 11/11/2026.
   de validação do Master, como nas demais funcionalidades administrativas.
 - Esta é uma entidade própria (`quick_access`), independente do Cadastro Menu/"Instituições e
   serviços": editar um não afeta o outro, mesmo que os 4 itens semeados tenham os mesmos títulos.
+- Os 4 acessos rápidos semeados apontam para os sites oficiais reais (Polícia Civil, Polícia
+  Militar, Polícia Científica, Conseg) e abrem em nova aba (`target="_blank"`) — URLs internas
+  (`#`, usadas para rolar até "Instituições e serviços") continuam abrindo na mesma aba.
 
 ### Rodapé
 
@@ -215,3 +218,5 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: dados de demonstração do rodapé preenchidos com endereço/telefone/horário de
   atendimento (mock fornecido pelo usuário, sede da SSP-SP); adicionado o campo "Horário de
   atendimento".
+- 11/11/2026: os 4 acessos rápidos passaram de âncoras internas (`#civil` etc.) para os links
+  oficiais reais dos respectivos órgãos, abrindo em nova aba.

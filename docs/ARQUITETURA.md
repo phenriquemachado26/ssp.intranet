@@ -93,3 +93,8 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: dados de demonstração do rodapé atualizados (endereço/telefone/horário de
   atendimento da sede da SSP-SP, fornecidos como mock); reconciliação ganhou lógica de "upgrade"
   para quem já tinha o placeholder antigo sem perder customizações reais do Master.
+- 11/11/2026: acessos rápidos passaram a usar os links externos reais dos órgãos (abrindo em
+  nova aba); mesma lógica de "upgrade" aplicada a quem ainda tinha as âncoras internas antigas.
+  Corrigidos dois bugs de responsividade mobile (sidebar do painel presa aberta por sobreposição
+  de z-index; nav de `avisos.html` sobrepondo o título por herdar `position:absolute` do
+  breakpoint), encontrados com Playwright + Chromium headless.

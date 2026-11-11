@@ -40,6 +40,23 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **Playwright já está disponível neste ambiente via `npx` (cache em
+  `AppData/Local/npm-cache/_npx/<hash>/node_modules/playwright`), com Chromium funcional —
+  mesmo sem `chromium-cli`.** Para rodar um script `.mjs`, importar com caminho absoluto
+  `file:///C:/...` (ESM no Windows exige URL de arquivo, não caminho puro). Foi assim que se
+  encontrou e corrigiu, nesta tarefa, dois bugs reais de responsividade mobile (ver itens abaixo)
+  — sem isso, o CSS teria sido revisado só "de olho", sem confirmação visual real.
+- **Bug de responsividade: sidebar do painel travava aberta no celular.** `.dashboard-header`
+  não tinha `position`/`z-index` definidos, então o `<aside class="sidebar open">` (z-index:10,
+  fixed) ficava por cima do botão `#sidebar-toggle` quando aberto — o toque no botão não
+  alcançava mais o botão, só o próprio sidebar. Corrigido dando `position:relative;z-index:11`
+  ao `.dashboard-header` dentro do breakpoint de 950px.
+- **Bug de responsividade: nav de `avisos.html` sobrepunha o título da página no celular.**
+  `.main-nav.open-static{display:flex}` é uma regra fora de qualquer media query (para a navzinha
+  simples de `avisos.html` ficar sempre visível), mas ela só define `display`, não `position` —
+  então, abaixo de 950px, essa nav herdava `position:absolute;top:80px` da regra genérica
+  `.main-nav` do breakpoint mobile e flutuava por cima do conteúdo em vez de empurrá-lo para
+  baixo. Corrigido com `.main-nav.open-static{position:static;...}` dentro do mesmo breakpoint.
 - **Autofill do navegador pode sobrescrever o formulário de rodapé antes de salvar.** Campos
   rotulados "Logradouro", "Número", "Bairro", "Cidade", "Estado", "CEP" são reconhecidos pelo
   Chrome/Edge como endereço e podem ser preenchidos automaticamente com dados salvos do perfil do

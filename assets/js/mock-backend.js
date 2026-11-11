@@ -40,10 +40,10 @@
   // Acessos rápidos padrão do cabeçalho público (os 4 links que hoje existem fixos no HTML).
   // Usado tanto no seed inicial quanto na reconciliação de bancos já existentes no navegador.
   const DEFAULT_QUICK_ACCESS = [
-    { title: 'Polícia Civil', url: '#civil' },
-    { title: 'Polícia Militar', url: '#militar' },
-    { title: 'Polícia Científica', url: '#cientifica' },
-    { title: 'Conseg', url: '#conseg' },
+    { title: 'Polícia Civil', url: 'https://www.policiacivil.sp.gov.br/portal/faces/pages_home?_afrLoop=1883351569234470&_afrWindowMode=0&_afrWindowId=null#!%40%40%3F_afrWindowId%3Dnull%26_afrLoop%3D1883351569234470%26_afrWindowMode%3D0%26_adf.ctrl-state%3D16bqq1ymrp_4' },
+    { title: 'Polícia Militar', url: 'https://www.policiamilitar.sp.gov.br/' },
+    { title: 'Polícia Científica', url: 'https://www.policiacientifica.sp.gov.br/' },
+    { title: 'Conseg', url: 'https://www.ssp.sp.gov.br/conseg/' },
   ];
 
   // Dados de contato de demonstração do rodapé (endereço real da sede da SSP-SP, usado só como mock).
@@ -68,7 +68,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 6;
+  const SEED_VERSION = 7;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -225,6 +225,12 @@
         active: true, display_order: db.quick_access.length + 1, created_at: nowStamp(),
       });
       existingQuickAccessTitles.add(item.title);
+    }
+    // Upgrade: itens semeados que ainda apontam para a antiga âncora interna (ex.: "#civil")
+    // passam a usar o link externo real, sem tocar em acessos que o Master já customizou.
+    for (const item of db.quick_access) {
+      const def = DEFAULT_QUICK_ACCESS.find((d) => d.title === item.title);
+      if (def && item.url.startsWith('#') && item.url !== def.url) item.url = def.url;
     }
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
