@@ -243,3 +243,18 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   seguidas a cada bump de versão; agora é extraído dinamicamente do próprio `mock-backend.js` via
   regex (`CURRENT_SEED_VERSION`) logo após carregá-lo, eliminando a necessidade de lembrar disso
   manualmente no futuro.
+- **`.notice-description{white-space:pre-line}` já existia antes de qualquer aviso usar `\n` na
+  descrição** — provavelmente herdado do design original "por precaução". Ao precisar de
+  parágrafos/itens de lista reais na descrição do Conselho de Usuários, bastou escrever `\n`/`\n\n`
+  no texto da fonte (`DEMO_NOTICES`); não foi preciso tocar em CSS nem na renderização.
+- **Usuário gerencia arquivos de `images_banner/` diretamente no disco, fora do meu controle.**
+  Nesta sessão, duas vezes um arquivo referenciado por um aviso sumiu sem eu ter feito nada (uma
+  vez foi acidente, restaurado via git; outra foi substituição deliberada por uma versão nova em
+  formato largo). Sempre que `git status` mostrar deleção inesperada em `images_banner/`, checar
+  se há um arquivo novo "parecido" (mesmo tema, nome diferente) antes de assumir acidente — pode
+  ser troca intencional que precisa só de atualização do `banner_file` correspondente.
+- **Reconciliação pode remover um aviso, não só adicionar/atualizar.** Para desfazer uma decisão de
+  design anterior (aviso separado carrossel-only, depois consolidado de volta no original), foi
+  preciso um upgrade que faz `db.notices = db.notices.filter(...)` para remover o duplicado — guarda
+  pela condição "banner ainda é o default", mesmo padrão de "só mexe se ainda não foi customizado"
+  usado em todos os outros upgrades, mas aplicado a uma remoção em vez de uma atualização de campo.

@@ -202,3 +202,15 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   desligado (o aviso original de Hospitalidade). Reconciliação ganhou upgrade dedicado: desliga
   `active_carousel` do aviso original de Hospitalidade se ainda estiver no valor padrão (`true`),
   sem tocar em customização real do Master. SEED_VERSION 16->17.
+- 11/11/2026: descrição do aviso "Consulta ao Conselho de Usuários" passou a usar `\n`/`\n\n` para
+  parágrafos e itens de lista; `.notice-description{white-space:pre-line}` (já existente em
+  `styles.css`, usado pelo mesmo mecanismo em qualquer aviso) já renderiza essas quebras como
+  linhas reais — nenhuma mudança de CSS ou de renderização (`main.js`/`avisos.js`) foi necessária.
+  SEED_VERSION 17->18.
+- 11/11/2026: consolidação de banners após o usuário substituir arquivos diretamente no disco.
+  Reconciliação ganhou upgrade para atualizar `banner_file` de quem ainda aponta para os arquivos
+  antigos removidos (`banner_ConselhoUsuarios`, `Hospitalidades`) para os novos arquivos largos, e
+  um upgrade específico que remove o aviso duplicado "Hospitalidade no Serviço Público — Registre
+  no SP-Agendas" (da versão anterior) só se ainda estiver com o banner intocado, restaurando
+  `active_carousel=true` no aviso original. BANNER_FILES atualizado para refletir só os arquivos
+  que de fato existem em `images_banner/` hoje. SEED_VERSION 18->19.

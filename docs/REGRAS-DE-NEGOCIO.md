@@ -167,6 +167,9 @@ Atualizado em: 11/11/2026.
 - Na página pública, até cinco avisos ativos para carrossel são exibidos primeiro, respeitando a ordem cadastrada.
 - Demais avisos ativos são exibidos em lista abaixo.
 - Textos longos oferecem “Ver mais” e “Ver menos”; botão de link fica à esquerda e expansão à direita.
+- Quebras de linha na descrição são preservadas visualmente no site (`.notice-description` usa
+  `white-space: pre-line`): parágrafos e itens de lista digitados com `\n` no texto aparecem como
+  linhas separadas de verdade, não como um bloco único.
 - A cada carregamento da página pública, o primeiro aviso ativo da ordenação que possua um arquivo de banner localizado é exibido em um pop-up de destaque com botão para fechar; avisos sem banner são ignorados nessa escolha.
 - Com bloqueio ativo, ações do Administrador do Site aguardam validação do Master.
 - Ao ativar o bloqueio, o servidor desativa `Aviso Ativo` e `Aviso Ativo no Carrossel` de todos os avisos, ocultando-os imediatamente.
@@ -174,21 +177,19 @@ Atualizado em: 11/11/2026.
 - Ao desativar o bloqueio, as flags não são alteradas: permanecem ativos somente os avisos que já estavam ativos.
 - A página inicial exibe somente os cinco primeiros avisos ativos na ordem; os demais ficam disponíveis na página `avisos.html`.
 - Ao expandir um aviso, qualquer outro aviso aberto é recolhido automaticamente.
-- São semeados 7 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
+- São semeados 6 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
   também é o que aparece no pop-up de destaque), São Paulo por Todas, Programa Casa Paulista, O
-  que é uma Hospitalidade no Serviço Público, Campanha de Arrecadação de Prendas, Agência SP e
-  Hospitalidade no Serviço Público — Registre no SP-Agendas (por último). Todos com banner e
-  descrição longa o bastante para exibir "Ver mais"; todos já ativos. O Conselho de Usuários tem
-  botão "Participe"; São Paulo por Todas, Casa Paulista, Hospitalidade e Agência SP têm botão
-  "Acesse Aqui"; Arrecadação e o novo banner de Hospitalidade não têm botão.
-- Com 7 avisos ativos, Agência SP e o novo banner de Hospitalidade (os dois últimos na ordem)
-  ficam de fora dos "cinco primeiros avisos" exibidos como cards na página inicial (regra já
-  existente acima), mas continuam aparecendo no carrossel (que considera todos os avisos ativos
-  com banner, não só os cinco primeiros) e na listagem completa de `avisos.html` — na prática,
-  "ativos só no carrossel" a pedido do usuário.
-- O novo banner de Hospitalidade substitui o aviso original "O que é uma Hospitalidade no Serviço
-  Público?" no carrossel: esse aviso original teve `active_carousel` desligado (continua ativo e
-  visível normalmente como card na home/`avisos.html`, só não aparece mais no carrossel).
+  que é uma Hospitalidade no Serviço Público, Campanha de Arrecadação de Prendas e Agência SP (por
+  último). Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já ativos e
+  no carrossel. O Conselho de Usuários tem botão "Participe"; São Paulo por Todas, Casa Paulista,
+  Hospitalidade e Agência SP têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
+- Com 6 avisos ativos, o Agência SP (último na ordem) fica de fora dos "cinco primeiros avisos"
+  exibidos como cards na página inicial (regra já existente acima), mas continua aparecendo no
+  carrossel (que considera todos os avisos ativos com banner, não só os cinco primeiros) e na
+  listagem completa de `avisos.html` — na prática, "ativo só no carrossel" a pedido do usuário.
+- Os banners do Conselho de Usuários e de Hospitalidade usam imagens largas (2560x397,
+  `avaliacao-seguranca-publica-banner-2560x397.png` e `hospitalidade-banner-2560x397.png`),
+  formato pensado para o carrossel.
 
 ## Carrossel de imagens
 
@@ -359,3 +360,15 @@ Atualizado em: 11/11/2026.
   também "ativo só no carrossel" (mesmo mecanismo do Agência SP). O aviso original de Hospitalidade
   teve `active_carousel` desligado (substituído por este no carrossel), permanecendo ativo
   normalmente como card/listagem. SEED_VERSION 16->17.
+- 11/11/2026: descrição do aviso "Consulta ao Conselho de Usuários" substituída por versão com
+  parágrafos e itens de lista separados por quebra de linha, a pedido do usuário — já suportado
+  pelo CSS existente (`white-space: pre-line`), sem necessidade de mudança de renderização.
+  SEED_VERSION 17->18.
+- 11/11/2026: usuário substituiu diretamente no disco os arquivos `banner_ConselhoUsuarios.png` e
+  `Hospitalidades.png` por versões largas (2560x397): `avaliacao-seguranca-publica-banner-2560x397.png`
+  (Conselho de Usuários) e `hospitalidade-banner-2560x397.png` (Hospitalidade). O aviso separado
+  "Hospitalidade no Serviço Público — Registre no SP-Agendas" (criado na entrada anterior do
+  histórico como item carrossel-only) foi consolidado de volta no aviso original de Hospitalidade,
+  que passou a usar o novo banner largo e voltou a ficar ativo no carrossel — evitando duplicidade
+  de avisos sobre o mesmo tema. `AcessoRapido.png` também foi removido do disco (não estava em uso
+  por nenhum aviso) e retirado do manifesto. SEED_VERSION 18->19.

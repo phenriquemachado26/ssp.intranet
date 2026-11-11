@@ -13,10 +13,9 @@
   // Não há mais listagem dinâmica de diretório (sem servidor): ao adicionar um novo banner,
   // é necessário incluir o nome do arquivo aqui também.
   const BANNER_FILES = [
-    'SPTodas.gif', 'Arrecadacao.png',
-    'Hospitalidades.png', 'AcessoRapido.png',
-    'CasaPaulista.png', 'banner_ConselhoUsuarios.png', 'ssp-agenciaSP.png',
-    'hospitalidade-banner-2560x397.png',
+    'SPTodas.gif', 'Arrecadacao.png', 'CasaPaulista.png',
+    'ssp-agenciaSP.png', 'hospitalidade-banner-2560x397.png',
+    'avaliacao-seguranca-publica-banner-2560x397.png',
   ];
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
@@ -74,8 +73,8 @@
   const DEMO_NOTICES = [
     {
       title: 'Consulta ao Conselho de Usuários – Avalie os Serviços de Segurança Pública',
-      description: 'A Secretaria da Segurança Pública do Estado de São Paulo (SSP) convida os cidadãos a participarem da consulta ao Conselho de Usuários de Serviços Públicos, iniciativa que acompanha e avalia a qualidade, a efetividade e a satisfação dos usuários em relação aos serviços públicos prestados, em cumprimento ao Decreto Estadual nº 68.156, de 9 de dezembro de 2023 (artigos 29 a 33). Nesta etapa serão avaliados a emissão da Carteira de Identidade Nacional (CIN/RG), prestada pela Polícia Civil; o Programa Vizinhança Solidária, da Polícia Militar; e o Disque Denúncia/Web Denúncia, da Secretaria da Segurança Pública. Para participar, acesse o Portal Fala.SP em fala.sp.gov.br/dashboardconselho, faça login com sua conta Gov.br, selecione a opção "Conselho de Usuários" e realize o cadastro exclusivamente no órgão "Secretaria da Segurança Pública", que reúne as avaliações referentes aos serviços prestados pelos órgãos policiais vinculados à Pasta. Os questionários ficam disponíveis até 11 de dezembro de 2026. Sua participação ajuda a identificar oportunidades de melhoria no atendimento à população.',
-      banner_file: 'banner_ConselhoUsuarios',
+      description: 'A Secretaria da Segurança Pública do Estado de São Paulo (SSP) convida os cidadãos a participarem da consulta ao Conselho de Usuários de Serviços Públicos, iniciativa que tem como objetivo acompanhar e avaliar a qualidade, a efetividade e a satisfação dos usuários em relação aos serviços públicos prestados.\n\nA consulta é realizada em cumprimento ao Decreto Estadual nº 68.156, de 9 de dezembro de 2023, especialmente aos artigos 29 a 33, que tratam dos Conselhos de Usuários de Serviços Públicos.\n\nNesta etapa, serão avaliados os seguintes serviços:\nEmissão da Carteira de Identidade Nacional (CIN/RG), prestado pela Polícia Civil;\nPrograma Vizinhança Solidária, desenvolvido pela Polícia Militar;\nDisque Denúncia/Web Denúncia, disponibilizado pela Secretaria da Segurança Pública;\nComo participar\nOs interessados deverão:\nAcessar o Portal pelo endereço https://fala.sp.gov.br/dashboardconselho\nRealizar o login usando a conta Gov.br\nSelecionar a opção "Conselho de Usuários"\nEfetuar o cadastro exclusivamente no órgão "Secretaria da Segurança Pública"\nAcessar as consultas disponíveis e participar das avaliações\nAtenção: o cadastro deverá ser realizado no órgão "Secretaria da Segurança Pública", que reúne as consultas e avaliações referentes aos serviços prestados pelos órgãos policiais vinculados à Pasta.\n\nPrazo para participação\nOs questionários estarão disponíveis até 11 de dezembro de 2026.\n\nA participação dos usuários contribui para a avaliação dos serviços públicos de segurança e para a identificação de oportunidades de melhoria no atendimento à população.',
+      banner_file: 'avaliacao-seguranca-publica-banner-2560x397',
       button_name: 'Participe',
       button_url: 'https://fala.sp.gov.br/dashboardconselho',
     },
@@ -93,9 +92,8 @@
     {
       title: 'O que é uma Hospitalidade no Serviço Público?',
       description: 'Hospitalidade é a oferta de serviço ou cobertura de despesas concedida por um agente privado a um agente público, como transporte, alimentação, hospedagem ou participação em cursos e eventos. Toda hospitalidade deve ser registrada no SP-Agendas para garantir transparência e prevenir conflitos de interesse. A integridade começa na atitude de cada um de nós.',
-      banner_file: 'Hospitalidades',
+      banner_file: 'hospitalidade-banner-2560x397',
       button_url: 'https://www.controladoriageral.sp.gov.br/dx/api/dam/v1/collections/a21d4faa-3d71-46b3-9a42-05e77bd81286/items/251d6028-6493-4873-b4b7-dd060ec1598f/renditions/ee4835ff-aea3-45a3-a646-da94b443db09?binary=true',
-      active_carousel: false,
     },
     {
       title: 'Campanha de Arrecadação de Prendas — Festa Junina do CCI',
@@ -109,13 +107,6 @@
       description: 'A Agência SP é o canal oficial de notícias do Governo do Estado de São Paulo, reunindo em um só lugar informações sobre ações, projetos e serviços prestados à população. Acompanhe de perto o que o Governo de São Paulo faz: na rua você vê, na Agência SP você lê. Acesse agenciasp.sp.gov.br e fique por dentro das novidades.',
       banner_file: 'ssp-agenciaSP',
       button_url: 'https://agenciasp.sp.gov.br',
-    },
-    {
-      title: 'Hospitalidade no Serviço Público — Registre no SP-Agendas',
-      description: 'Hospitalidade é a oferta de serviço ou cobertura de despesas concedida por um agente privado a um agente público — como transporte, alimentação, hospedagem, cursos e eventos. Toda hospitalidade deve ser registrada no SP-Agendas para garantir transparência e prevenir situações de conflito de interesses. A integridade começa na atitude de cada um de nós.',
-      banner_file: 'hospitalidade-banner-2560x397',
-      button_name: '',
-      button_url: '',
     },
   ].map((item) => ({ button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br', ...item }));
 
@@ -144,7 +135,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 17;
+  const SEED_VERSION = 19;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -367,6 +358,7 @@
     const OLD_NOTICE_DESCRIPTIONS = {
       'Campanha de Arrecadação de Prendas — Festa Junina do CCI': 'O Centro de Comunicação Integrada (CCI) promove uma campanha de arrecadação de brinquedos e materiais recreativos para crianças de 6 meses a 5 anos: bonecas, carrinhos, bolas, jogos, livros infantis, quebra-cabeças, materiais de desenho, blocos de montar, massinhas, pelúcias e brinquedos educativos. Consulte o cartaz para o local de entrega e o ponto focal responsável.',
       'São Paulo por Todas — Dando Voz às Mulheres': 'O programa São Paulo por Todas reúne ações do Governo do Estado para dar voz e proteção às mulheres paulistas. Conheça o aplicativo Mulher Segura, canal de apoio e orientação em situações de violência, disponível para todas as mulheres do estado de São Paulo. São Paulo são todos, São Paulo por todas.',
+      'Consulta ao Conselho de Usuários – Avalie os Serviços de Segurança Pública': 'A Secretaria da Segurança Pública do Estado de São Paulo (SSP) convida os cidadãos a participarem da consulta ao Conselho de Usuários de Serviços Públicos, iniciativa que acompanha e avalia a qualidade, a efetividade e a satisfação dos usuários em relação aos serviços públicos prestados, em cumprimento ao Decreto Estadual nº 68.156, de 9 de dezembro de 2023 (artigos 29 a 33). Nesta etapa serão avaliados a emissão da Carteira de Identidade Nacional (CIN/RG), prestada pela Polícia Civil; o Programa Vizinhança Solidária, da Polícia Militar; e o Disque Denúncia/Web Denúncia, da Secretaria da Segurança Pública. Para participar, acesse o Portal Fala.SP em fala.sp.gov.br/dashboardconselho, faça login com sua conta Gov.br, selecione a opção "Conselho de Usuários" e realize o cadastro exclusivamente no órgão "Secretaria da Segurança Pública", que reúne as avaliações referentes aos serviços prestados pelos órgãos policiais vinculados à Pasta. Os questionários ficam disponíveis até 11 de dezembro de 2026. Sua participação ajuda a identificar oportunidades de melhoria no atendimento à população.',
     };
     for (const notice of db.notices) {
       const oldDescription = OLD_NOTICE_DESCRIPTIONS[notice.title];
@@ -388,12 +380,26 @@
         if (notice) notice.display_order = index + 1;
       });
     }
-    // Upgrade: o novo banner "hospitalidade-banner-2560x397" (carrossel-only) substitui o aviso
-    // original de Hospitalidade no carrossel; tira esse aviso do carrossel se ainda estiver com o
-    // valor padrão (true), sem tocar em quem o Master já desativou/reativou manualmente.
+    // Upgrade: consolidação dos banners largos (2560x397) que substituíram arquivos antigos
+    // removidos do disco (banner_ConselhoUsuarios.png, Hospitalidades.png). Atualiza o banner de
+    // quem ainda aponta para o arquivo antigo, sem tocar em quem o Master já customizou de verdade.
+    const conselhoNotice = db.notices.find((n) => n.title === 'Consulta ao Conselho de Usuários – Avalie os Serviços de Segurança Pública');
+    if (conselhoNotice && conselhoNotice.banner_file === 'banner_ConselhoUsuarios') {
+      conselhoNotice.banner_file = 'avaliacao-seguranca-publica-banner-2560x397';
+    }
     const hospitalidadeNotice = db.notices.find((n) => n.title === 'O que é uma Hospitalidade no Serviço Público?');
-    if (hospitalidadeNotice && hospitalidadeNotice.active_carousel === true) {
-      hospitalidadeNotice.active_carousel = false;
+    if (hospitalidadeNotice && hospitalidadeNotice.banner_file === 'Hospitalidades') {
+      hospitalidadeNotice.banner_file = 'hospitalidade-banner-2560x397';
+    }
+    if (hospitalidadeNotice && hospitalidadeNotice.active_carousel === false) {
+      hospitalidadeNotice.active_carousel = true;
+    }
+    // Remove o aviso duplicado criado numa versão anterior (tentativa de manter o novo banner de
+    // Hospitalidade como item separado, carrossel-only); consolidado de volta no aviso original
+    // acima, que agora usa o mesmo banner largo. Só remove se ainda estiver intocado pelo Master.
+    const duplicateHospitalidade = db.notices.find((n) => n.title === 'Hospitalidade no Serviço Público — Registre no SP-Agendas');
+    if (duplicateHospitalidade && duplicateHospitalidade.banner_file === 'hospitalidade-banner-2560x397') {
+      db.notices = db.notices.filter((n) => n.title !== 'Hospitalidade no Serviço Público — Registre no SP-Agendas');
     }
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
