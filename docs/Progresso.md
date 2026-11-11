@@ -334,3 +334,18 @@ preta (Governo Tarcísio, Período Eleitoral) — não gostou do resultado visua
   revalidado por segurança). Sem regressões.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Novo banner de Hospitalidade ativo só no carrossel; antigo desativado no carrossel
+
+Atendido pedido do usuário: cadastrado o aviso "Hospitalidade no Serviço Público — Registre no
+SP-Agendas" (banner largo, formato carrossel), posicionado como o último da ordem para ficar
+"ativo só no carrossel" — mesma técnica já usada para o Agência SP. O aviso original de
+Hospitalidade teve o carrossel desligado (substituído por este), permanecendo ativo normalmente
+como card/listagem.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 218 cenários
+  de lógica validados via harness Node.js, incluindo o upgrade de reconciliação (desliga o
+  carrossel do aviso antigo só se ainda estiver no valor padrão) e a preservação de customização
+  real do Master. Todos passando.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
