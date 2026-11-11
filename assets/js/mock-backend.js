@@ -467,10 +467,10 @@
   // Regra de negócio: enquanto o perfil "Período Eleitoral" está ativo, a página de avisos fica
   // bloqueada, o pop-up de destaque não aparece, o carrossel é desativado e todos os avisos são
   // inativados (nenhum conteúdo administrativo "escapa" da vedação eleitoral). Ao sair do perfil
-  // eleitoral (ativar qualquer outro), a página de avisos e o carrossel voltam a ficar
-  // disponíveis automaticamente, mas os avisos individuais permanecem inativos — cada um volta a
-  // poder ser (re)ativado manualmente pelo Master, assim como já acontece ao desativar o bloqueio
-  // geral de alterações (`change_control.locked`; ver regra correspondente).
+  // eleitoral (ativar qualquer outro), a página de avisos, o carrossel e os avisos da página
+  // inicial voltam a ser exibidos automaticamente (todos os avisos são reativados em massa, com
+  // carrossel reabilitado); depois disso, cada um pode voltar a ser desativado individualmente
+  // pelo Master normalmente, como em qualquer outro momento.
   function applyElectoralCascade(db, profile, wasElectoralActive) {
     const isElectoralNow = profile?.name === 'Período Eleitoral';
     if (isElectoralNow) {
@@ -480,6 +480,7 @@
     } else if (wasElectoralActive) {
       db.change_control.notices_page_blocked = false;
       db.change_control.carousel_enabled = true;
+      db.notices.forEach((n) => { n.active = true; n.active_carousel = true; });
     }
   }
 

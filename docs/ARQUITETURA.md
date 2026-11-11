@@ -154,3 +154,7 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   de `images_banner/` e do manifesto `BANNER_FILES`: `Teste.png`, `MuralhaPaulista.png` e
   `banner_periodoeleitoral.png` — herdados do protótipo Python original, sem vínculo com nenhum
   aviso ou perfil semeado nesta versão estática.
+- 11/11/2026: corrigido `applyElectoralCascade` — ao sair do perfil `Período Eleitoral`, além de
+  restaurar `change_control.notices_page_blocked=false`/`carousel_enabled=true`, agora também
+  reativa todos os avisos em massa (`active=true`, `active_carousel=true`), a pedido do usuário.
+  Substitui o comportamento anterior (flags individuais preservadas, exigindo reativação manual).

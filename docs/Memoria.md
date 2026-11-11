@@ -182,3 +182,10 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   `BANNER_FILES`. `banner_periodoeleitoral.png` tinha nome ambíguo (parecia ligado à regra do
   Período Eleitoral), então essa remoção específica foi confirmada com o usuário antes de agir, em
   vez de decidir sozinho.
+- **Cascata do Período Eleitoral: restauração é reativação em massa, não preservação de flags.**
+  Diferente do precedente de `change_control.locked` (onde desbloquear NÃO reativa avisos
+  individualmente), o usuário esclareceu explicitamente que sair do Período Eleitoral deve
+  reexibir avisos, carrossel e página de avisos automaticamente — `applyElectoralCascade` força
+  `active=true`/`active_carousel=true` em todos os avisos ao desativar. Não assumir que todo
+  "sair de um estado bloqueado" segue o mesmo padrão de outro já existente no código; cada regra
+  pode ter semântica própria mesmo quando a implementação se parece.

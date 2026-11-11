@@ -73,10 +73,11 @@ Atualizado em: 11/11/2026.
   são inativados (removidos também do carrossel individualmente). Nenhum aviso, destaque ou
   carrossel fica visível ao público enquanto esse perfil estiver ativo, mesmo que um Administrador
   tenha ativado algum item individualmente antes. Ao sair do perfil `Período Eleitoral` (ativar
-  qualquer outro perfil), a página de avisos e a capacidade do carrossel voltam a ficar disponíveis
-  automaticamente, mas os avisos individuais **não** são reativados sozinhos — cada um volta a
-  poder ser (re)ativado manualmente pelo Master, no mesmo espírito da regra já existente para o
-  bloqueio geral de alterações ("Ao desativar o bloqueio, as flags não são alteradas").
+  qualquer outro perfil), a página de avisos, o carrossel e os avisos da página inicial **voltam a
+  ser exibidos automaticamente**: todos os avisos são reativados em massa (`active` e
+  `active_carousel` voltam a `true`) e as duas flags globais são restauradas. A partir daí, cada
+  aviso volta a poder ser ativado/desativado individualmente pelo Master normalmente, como em
+  qualquer outro momento.
 
 ### Acessos Rápidos
 
@@ -289,3 +290,7 @@ Atualizado em: 11/11/2026.
   de "Desenvolvido pelo GTI" para "CGI - Coordenadoria de Gestão da Informação" (reconciliação
   atualiza quem ainda tinha o texto antigo, sem tocar em customização real do Master). SEED_VERSION
   14->15.
+- 11/11/2026: corrigido o comportamento de saída do Período Eleitoral — o usuário esclareceu que
+  página de avisos, carrossel e avisos da página inicial devem voltar a ser exibidos
+  automaticamente ao ativar outro perfil (reativação em massa de todos os avisos), substituindo o
+  comportamento anterior (flags preservadas, exigindo reativação manual item a item).
