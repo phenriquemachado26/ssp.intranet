@@ -1,6 +1,6 @@
 const menuButton=document.querySelector('.menu-toggle');const nav=document.querySelector('.main-nav');menuButton?.addEventListener('click',()=>{const open=nav.classList.toggle('open');menuButton.setAttribute('aria-expanded',String(open))});
 const servicesToggle=document.querySelector('#services-toggle'),servicesContent=document.querySelector('#services-content'),menuGrid=document.querySelector('#menu-grid');
-const escapeMenu=v=>{const el=document.createElement('div');el.textContent=v??'';return el.innerHTML};
+const escapeMenu=v=>{const el=document.createElement('div');el.textContent=v??'';return el.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;')};
 function setServices(open){servicesContent.hidden=!open;servicesToggle.setAttribute('aria-expanded',String(open));servicesToggle.classList.toggle('open',open);if(open)document.querySelector('#instituicoes').scrollIntoView({behavior:'smooth',block:'start'})}
 servicesToggle?.addEventListener('click',()=>setServices(servicesContent.hidden));
 document.querySelectorAll('.main-nav a[href^="#"]').forEach(link=>link.addEventListener('click',()=>{setServices(true);nav.classList.remove('open');menuButton?.setAttribute('aria-expanded','false')}));

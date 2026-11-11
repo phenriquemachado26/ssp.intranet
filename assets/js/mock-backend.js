@@ -67,6 +67,8 @@
     return matches[0] || '';
   }
 
+  const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
   function profileValues(data) {
     const keys = ['name', 'logo', 'page_title', 'color_primary', 'color_secondary', 'color_detail', 'font_family'];
     const values = {};
@@ -74,6 +76,9 @@
     if (!values.font_family) values.font_family = 'Padrão institucional';
     if (!keys.every((k) => values[k]) || !PROFILE_FONTS.has(values.font_family)) {
       throw new ApiError(400, 'Perfil visual inválido.');
+    }
+    if (!['color_primary', 'color_secondary', 'color_detail'].every((k) => HEX_COLOR.test(values[k]))) {
+      throw new ApiError(400, 'As cores do perfil devem ser hexadecimais no formato #RRGGBB.');
     }
     return values;
   }
@@ -499,7 +504,7 @@
       if (!row) return [404, { error: 'Solicitação não encontrada.' }];
       row.status = status;
       if (status === 'approved' && !db.users.some((u) => u.cpf === row.cpf)) {
-        const temp = Math.random().toString(36).slice(2, 11) + Math.random().toString(36).slice(2, 11);
+        const temp = bytesToHex(crypto.getRandomValues(new Uint8Array(9)));
         db.users.push({ id: nextId(db, 'users'), name: row.name, cpf: row.cpf, email: row.email, role: 'site', password_hash: await passwordHash(temp), active: true, created_at: nowStamp() });
         return [200, { message: 'Acesso aprovado.', temporary_password: temp }];
       }
