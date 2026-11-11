@@ -236,3 +236,19 @@ por" alterado de "Desenvolvido pelo GTI" para "CGI - Coordenadoria de Gestão da
   erros de console.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Organização de imagens e correção da cascata do Período Eleitoral
+
+Duas entregas: (1) organização de arquivos de imagem — 8 logomarcas de redes sociais movidas de
+`docs/logo/` para `assets/images/social/`, duplicatas binárias exatas removidas (`BrasaoEstadoSP`/
+`GovTarcisio` em `docs/logo/`), e 3 banners legados do protótipo Python original removidos de
+`images_banner/` e do manifesto (`Teste.png`, `MuralhaPaulista.png`, `banner_periodoeleitoral.png`
+— este último confirmado com o usuário antes de remover, por nome ambíguo); (2) correção do
+comportamento de saída do Período Eleitoral: página de avisos, carrossel e avisos da home agora
+voltam a ser exibidos automaticamente (reativação em massa), substituindo o comportamento anterior
+que exigia reativação manual item a item.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 187 cenários
+  de lógica revalidados via harness Node.js após as duas mudanças. Todos passando.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
