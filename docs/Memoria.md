@@ -207,3 +207,8 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   que a logomarca muda sozinha se o perfil visual ativo mudar (ex.: Governo Tarcísio com fundo
   preto usa uma variante diferente da Paleta Padrão com fundo azul escuro — ambas "escuras" aqui,
   mas um perfil hipotético com fundo claro usaria a outra variante automaticamente).
+- **Favicon dinâmico reaproveita a mesma resolução de logo já existente.** `applySspTheme()` já
+  calculava `resolvedLogo = window.sspResolveImageSrc(p.logo, 'assets/images')` para os `<img>` de
+  marca; o favicon (`#site-favicon`) só precisou do mesmo valor + um `type` MIME correto (SVG dos
+  perfis semeados por arquivo estático vs. PNG das logos enviadas por upload/embutidas como data
+  URL) — nenhuma lógica de resolução nova foi necessária.

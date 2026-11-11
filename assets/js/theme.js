@@ -4,6 +4,9 @@ const themeContrast=hex=>themeLum(hex)>.48?'#172635':'#FFFFFF';
 const themeRatio=(a,b)=>{const [x,y]=[themeLum(a),themeLum(b)].sort((m,n)=>n-m);return(x+.05)/(y+.05)};
 const themeVisibleOn=(color,background)=>themeRatio(color,background)>=3?color:themeContrast(background);
 const themeMix=(hex,target,amount)=>{const a=themeRgb(hex),b=themeRgb(target);return'#'+a.map((v,i)=>Math.round(v+(b[i]-v)*amount).toString(16).padStart(2,'0')).join('')};
+// Tipo MIME do favicon a partir do valor resolvido da logomarca (data URL de upload ou arquivo
+// estático), para o navegador interpretar corretamente tanto SVG quanto PNG/JPEG/WebP/AVIF.
+const faviconType=src=>{const m=/^data:([^;,]+)/.exec(src);if(m)return m[1];if(/\.svg$/i.test(src))return'image/svg+xml';if(/\.(jpe?g)$/i.test(src))return'image/jpeg';if(/\.webp$/i.test(src))return'image/webp';if(/\.avif$/i.test(src))return'image/avif';return'image/png'};
 
 window.applySspTheme=async()=>{
   try{
@@ -15,8 +18,11 @@ window.applySspTheme=async()=>{
     root.setProperty('--on-primary',themeContrast(p.color_primary));root.setProperty('--on-secondary',themeContrast(p.color_secondary));root.setProperty('--on-detail',themeContrast(p.color_detail));
     root.setProperty('--primary-hover',primaryHover);root.setProperty('--secondary-hover',secondaryHover);root.setProperty('--on-primary-hover',themeContrast(primaryHover));root.setProperty('--on-secondary-hover',themeContrast(secondaryHover));
     root.setProperty('--primary-on-light',themeVisibleOn(p.color_primary,'#FFFFFF'));root.setProperty('--secondary-on-light',themeVisibleOn(p.color_secondary,'#FFFFFF'));root.setProperty('--secondary-hover-border',themeVisibleOn(secondaryHover,'#FFFFFF'));root.setProperty('--detail-on-light',themeVisibleOn(p.color_detail,'#FFFFFF'));root.setProperty('--detail-on-primary',themeVisibleOn(p.color_detail,p.color_primary));
-    document.querySelectorAll('[data-theme-logo],img[src$="logo-ssp.svg"]').forEach(img=>{img.src=window.sspResolveImageSrc(p.logo,'assets/images');img.dataset.themeLogo='true'});
+    const resolvedLogo=window.sspResolveImageSrc(p.logo,'assets/images');
+    document.querySelectorAll('[data-theme-logo],img[src$="logo-ssp.svg"]').forEach(img=>{img.src=resolvedLogo;img.dataset.themeLogo='true'});
     document.querySelectorAll('.brand span').forEach(el=>{const small=el.querySelector('small');el.textContent=p.page_title;if(small)el.prepend(small)});
+    const favicon=document.querySelector('#site-favicon');
+    if(favicon){favicon.type=faviconType(resolvedLogo);favicon.href=resolvedLogo}
   }catch(error){console.warn('Não foi possível aplicar o perfil visual.',error)}
 };
 window.applySspTheme();

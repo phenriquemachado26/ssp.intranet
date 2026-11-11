@@ -51,7 +51,8 @@ Atualizado em: 11/11/2026.
   mais um campo de texto com o nome de um arquivo em `assets/images`. A imagem enviada fica salva
   somente no navegador de quem a cadastrou (ver `docs/Auth.md`/`docs/ARQUITETURA.md`); perfis
   semeados (como a Paleta Padrão) continuam usando o arquivo estático `logo-ssp.svg`.
-- O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé e aos detalhes do site.
+- O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé, aos detalhes do site e ao favicon
+  (ícone da aba do navegador) — a troca de perfil também troca o favicon para a mesma logomarca.
 - A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
 - Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
 - Perfis podem ser criados, editados, ativados e excluídos pelo Master, com aplicação imediata.
@@ -321,3 +322,5 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: ícones de redes sociais do rodapé trocados de badge de letra única para a logomarca
   real (`assets/images/social/`), com escolha automática entre tema claro/escuro conforme o
   contraste do fundo do rodapé (cor primária do perfil visual ativo).
+- 11/11/2026: a pedido do usuário, o favicon do site passou a acompanhar a logomarca do perfil
+  visual ativo — troca automaticamente junto com a troca de perfil.

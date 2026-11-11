@@ -172,3 +172,8 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   `SOCIAL_NETWORKS` trocou a 3ª coluna de letra (`f`/`I`/`Y`/`W`) para slug de arquivo
   (`facebook`/`instagram`/`youtube`/`whatsapp`); o `<a>` do rodapé agora contém um `<img>` em vez
   de texto puro.
+- 11/11/2026: adicionado `<link id="site-favicon" rel="icon">` ao `<head>` das 4 páginas
+  (index/avisos/admin/painel); `applySspTheme()` em `theme.js` passou a atualizar seu `href`/`type`
+  junto com a logomarca do cabeçalho, reaproveitando `window.sspResolveImageSrc` (já usado para a
+  logo) e um novo helper `faviconType(src)` (deduz o MIME a partir do prefixo `data:...` ou da
+  extensão do arquivo estático).
