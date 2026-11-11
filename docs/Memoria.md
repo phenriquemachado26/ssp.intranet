@@ -40,6 +40,15 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **Reconciliação de avisos "adicionar item faltante" inverte a ordem se inserir sempre na
+  posição 1 (empurrando os demais).** Esse era o comportamento copiado de `insertNoticeFirst`
+  (correto para quando um Master cria 1 aviso por vez — o mais novo sempre fica em primeiro). Mas
+  ao adicionar VÁRIOS itens de `DEMO_NOTICES` em sequência dentro do mesmo loop de reconciliação,
+  inserir cada um na posição 1 faz o ÚLTIMO item do array terminar em primeiro — ordem invertida
+  em relação ao array. Corrigido trocando para "anexar no fim" (maior `display_order` atual + 1),
+  que preserva a ordem do array ao adicionar múltiplos itens de uma vez. Only `insertNoticeFirst`
+  (usada quando o Master cria avisos manualmente, um de cada vez) deve continuar com a semântica
+  de "sempre no topo".
 - **Ao mostrar a pré-visualização de um banner existente, usar `banner_resolved`, nunca
   `banner_file` direto.** `banner_file` guarda o nome-base sem extensão (ex.: `"CasaPaulista"`,
   convenção antiga de quando o admin digitava o nome) ou uma data URL (upload novo). Só

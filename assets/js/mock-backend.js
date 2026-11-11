@@ -72,9 +72,10 @@
   // em images_banner/, não enviados por upload). Ativos e no carrossel desde o início.
   const DEMO_NOTICES = [
     {
-      title: 'Campanha de Arrecadação de Prendas — Festa Junina do CCI',
-      description: 'O Centro de Comunicação Integrada (CCI) promove uma campanha de arrecadação de brinquedos e materiais recreativos para crianças de 6 meses a 5 anos: bonecas, carrinhos, bolas, jogos, livros infantis, quebra-cabeças, materiais de desenho, blocos de montar, massinhas, pelúcias e brinquedos educativos. Consulte o cartaz para o local de entrega e o ponto focal responsável.',
-      banner_file: 'Arrecadacao',
+      title: 'São Paulo por Todas — Dando Voz às Mulheres',
+      description: 'O programa São Paulo por Todas reúne iniciativas do Governo do Estado de São Paulo voltadas a dar voz, acolhimento e proteção às mulheres em todo o território paulista. Uma das principais ferramentas da iniciativa é o aplicativo Mulher Segura, um canal direto de apoio, orientação e acionamento de ajuda em situações de violência, disponível gratuitamente para qualquer mulher no estado. A campanha reforça o compromisso do governo com a construção de uma rede de proteção mais ampla, integrada e acessível, sob o lema: São Paulo são todos, São Paulo por todas.',
+      banner_file: 'SPTodas',
+      button_url: 'https://www.spportodas.sp.gov.br/sp-por-todas',
     },
     {
       title: 'Programa Casa Paulista',
@@ -88,10 +89,11 @@
       button_url: 'https://www.controladoriageral.sp.gov.br/dx/api/dam/v1/collections/a21d4faa-3d71-46b3-9a42-05e77bd81286/items/251d6028-6493-4873-b4b7-dd060ec1598f/renditions/ee4835ff-aea3-45a3-a646-da94b443db09?binary=true',
     },
     {
-      title: 'São Paulo por Todas — Dando Voz às Mulheres',
-      description: 'O programa São Paulo por Todas reúne ações do Governo do Estado para dar voz e proteção às mulheres paulistas. Conheça o aplicativo Mulher Segura, canal de apoio e orientação em situações de violência, disponível para todas as mulheres do estado de São Paulo. São Paulo são todos, São Paulo por todas.',
-      banner_file: 'SPTodas',
-      button_url: 'https://www.spportodas.sp.gov.br/sp-por-todas',
+      title: 'Campanha de Arrecadação de Prendas — Festa Junina do CCI',
+      description: 'O Centro de Comunicação Integrada (CCI) promove, em clima de Festa Junina, uma campanha solidária de arrecadação de brinquedos e materiais recreativos destinados a crianças de 6 meses a 5 anos. Entre as sugestões de doação estão bonecas, carrinhos, bolas, jogos, livros infantis, quebra-cabeças, materiais de desenho, blocos de montar, massinhas, pelúcias e demais brinquedos educativos. As doações podem ser entregues no 12º andar, no Gabinete do Secretário, aos cuidados da Cb PM Dóris Dantas, ponto focal da campanha, pelo telefone (11) 3291-6836. Participe e ajude a levar alegria para quem mais precisa.',
+      banner_file: 'Arrecadacao',
+      button_name: '',
+      button_url: '',
     },
   ].map((item) => ({ button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br', ...item }));
 
@@ -120,7 +122,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 12;
+  const SEED_VERSION = 13;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -317,22 +319,49 @@
     const existingNoticeTitles = new Set(db.notices.map((n) => n.title));
     for (const item of DEMO_NOTICES) {
       if (existingNoticeTitles.has(item.title)) continue;
-      db.notices.forEach((n) => { n.display_order += 1; });
+      const nextOrder = db.notices.reduce((max, n) => Math.max(max, n.display_order), 0) + 1;
       db.notices.push({
         id: nextId(db, 'notices'), title: item.title, description: item.description, banner_file: item.banner_file,
         button_name: item.button_name, button_url: item.button_url, active: true, active_carousel: true,
-        display_order: 1, created_at: nowStamp(),
+        display_order: nextOrder, created_at: nowStamp(),
       });
       existingNoticeTitles.add(item.title);
     }
-    // Upgrade: avisos semeados cujo botão ainda aponta para o link genérico antigo recebem o link
-    // específico mais recente, sem tocar em avisos que o Master já customizou de verdade.
-    const OLD_GENERIC_NOTICE_URL = 'https://www.ssp.sp.gov.br';
+    // Upgrade: avisos semeados cujo botão ainda é o par genérico antigo (nome + URL) recebem o
+    // botão específico mais recente (inclusive remover o botão, caso do novo default vazio),
+    // sem tocar em botão que o Master já customizou de verdade.
+    const OLD_GENERIC_NOTICE_BUTTON = { name: 'Acesse Aqui', url: 'https://www.ssp.sp.gov.br' };
     for (const notice of db.notices) {
       const def = DEMO_NOTICES.find((d) => d.title === notice.title);
-      if (def && notice.button_url === OLD_GENERIC_NOTICE_URL && notice.button_url !== def.button_url) {
+      if (!def) continue;
+      const isGenericButton = notice.button_name === OLD_GENERIC_NOTICE_BUTTON.name && notice.button_url === OLD_GENERIC_NOTICE_BUTTON.url;
+      if (isGenericButton && (notice.button_name !== def.button_name || notice.button_url !== def.button_url)) {
+        notice.button_name = def.button_name;
         notice.button_url = def.button_url;
       }
+    }
+    // Upgrade: descrição ainda igual ao texto de demonstração anterior é substituída pela nova
+    // versão mais detalhada, sem tocar em descrição que o Master já reescreveu de verdade.
+    const OLD_NOTICE_DESCRIPTIONS = {
+      'Campanha de Arrecadação de Prendas — Festa Junina do CCI': 'O Centro de Comunicação Integrada (CCI) promove uma campanha de arrecadação de brinquedos e materiais recreativos para crianças de 6 meses a 5 anos: bonecas, carrinhos, bolas, jogos, livros infantis, quebra-cabeças, materiais de desenho, blocos de montar, massinhas, pelúcias e brinquedos educativos. Consulte o cartaz para o local de entrega e o ponto focal responsável.',
+      'São Paulo por Todas — Dando Voz às Mulheres': 'O programa São Paulo por Todas reúne ações do Governo do Estado para dar voz e proteção às mulheres paulistas. Conheça o aplicativo Mulher Segura, canal de apoio e orientação em situações de violência, disponível para todas as mulheres do estado de São Paulo. São Paulo são todos, São Paulo por todas.',
+    };
+    for (const notice of db.notices) {
+      const oldDescription = OLD_NOTICE_DESCRIPTIONS[notice.title];
+      const def = DEMO_NOTICES.find((d) => d.title === notice.title);
+      if (oldDescription && def && notice.description === oldDescription && notice.description !== def.description) {
+        notice.description = def.description;
+      }
+    }
+    // Upgrade: se os 4 avisos de demonstração ainda estão exatamente na ordem antiga (ninguém
+    // reordenou manualmente), reordena para a nova sequência pedida pelo usuário.
+    const OLD_NOTICE_ORDER = ['Campanha de Arrecadação de Prendas — Festa Junina do CCI', 'Programa Casa Paulista', 'O que é uma Hospitalidade no Serviço Público?', 'São Paulo por Todas — Dando Voz às Mulheres'];
+    const stillInOldOrder = OLD_NOTICE_ORDER.every((title, index) => db.notices.find((n) => n.title === title)?.display_order === index + 1);
+    if (stillInOldOrder) {
+      DEMO_NOTICES.forEach((item, index) => {
+        const notice = db.notices.find((n) => n.title === item.title);
+        if (notice) notice.display_order = index + 1;
+      });
     }
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };

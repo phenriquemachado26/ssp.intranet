@@ -114,3 +114,10 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: botões de Hospitalidades e São Paulo por Todas ganharam `button_url` específico
   (antes usavam o mesmo link genérico de todos os avisos); reconciliação ganhou upgrade por valor
   antigo conhecido, igual ao já usado para o link de Polícia Civil. SEED_VERSION 11->12.
+- 11/11/2026: descrições de Arrecadação/São Paulo por Todas ampliadas, botão removido de
+  Arrecadação, ordem de `DEMO_NOTICES` invertida (São Paulo por Todas primeiro). Reconciliação
+  ganhou upgrade de descrição (por texto antigo conhecido), upgrade de botão por par
+  nome+URL (em vez de só URL) e reordenação condicional — só reordena se os 4 títulos ainda
+  estiverem exatamente na sequência antiga, preservando qualquer reordenação manual do Master.
+  Loop de "adicionar item semeado faltante" passou de inserir-no-topo-e-empurrar para anexar no
+  fim, evitando inversão de ordem ao adicionar múltiplos itens de uma vez. SEED_VERSION 12->13.
