@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Área Administrativa | Intranet SSP</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="admin-page">
+  <a class="back-link" href="index.html">← Voltar à Intranet</a>
+  <main class="auth-layout">
+    <section class="auth-brand-panel">
+      <img src="assets/images/logo-ssp.svg" alt="Símbolo da SSP">
+      <p class="eyebrow">Área restrita</p>
+      <h1>Intranet SSP.</h1>
+      <p>Ambiente exclusivo para administradores.</p>
+    </section>
+    <section class="auth-card" aria-labelledby="login-title">
+      <div class="admin-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0H5Zm15-8v2h-2v2h2v2h2v-2h2v-2h-2v-2h-2Z"/></svg></div>
+      <div class="auth-intro"><p class="eyebrow">Bem-vindo</p><h2 id="login-title">Acesso administrativo</h2><p></p></div>
+      <form id="login-form" novalidate>
+        <label for="cpf">CPF</label>
+        <input id="cpf" name="cpf" inputmode="numeric" autocomplete="username" placeholder="000.000.000-00" maxlength="14" required>
+        <label for="password">Senha</label>
+        <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required><button type="button" class="password-toggle" aria-label="Visualizar senha" aria-pressed="false">◉</button></div>
+        <p id="login-message" class="form-message" role="alert"></p>
+        <button class="button button-primary button-full" type="submit">Entrar</button>
+      </form>
+      <button id="request-open" class="text-button" type="button">Ainda não possui acesso? <strong>Solicitar acesso</strong></button>
+      <p class="demo-note"><b>Protótipo de demonstração, sem servidor nem banco de dados real.</b><b>CPF 000.000.000-00 · Senha Master@123</b></p>
+      <button id="reset-demo-data" class="text-button" type="button">Restaurar dados de demonstração</button>
+    </section>
+  </main>
+
+  <dialog id="request-dialog">
+    <form id="request-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">Novo acesso</p><h2>Solicitar acesso</h2></div><button class="dialog-close" type="button" aria-label="Fechar">×</button></div>
+      <p>Preencha seus dados. Um Administrador Master analisará a solicitação.</p>
+      <label for="request-name">Nome completo</label><input id="request-name" required>
+      <label for="request-cpf">CPF</label><input id="request-cpf" inputmode="numeric" maxlength="14" required>
+      <label for="request-email">E-mail institucional</label><input id="request-email" type="email" required>
+      <label for="request-unit">Unidade / setor</label><input id="request-unit" required>
+      <p id="request-message" class="form-message" role="alert"></p>
+      <button class="button button-primary button-full" type="submit">Enviar solicitação</button>
+    </form>
+  </dialog>
+  <script src="assets/js/mock-backend.js"></script><script src="assets/js/theme.js"></script><script src="assets/js/admin.js"></script>
+  <script>document.getElementById('reset-demo-data').addEventListener('click',()=>{if(confirm('Isso apaga todos os dados de demonstração salvos neste navegador e restaura o estado inicial. Continuar?'))window.sspResetDemoData()});</script>
+</body>
+</html>

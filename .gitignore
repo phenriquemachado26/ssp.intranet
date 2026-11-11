@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/*.db-shm
+data/*.db-wal
+data/server.pid
+logs/*.log
