@@ -55,6 +55,9 @@ Atualizado em: 11/11/2026.
 - A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
 - Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
 - Perfis podem ser criados, editados, ativados e excluídos pelo Master.
+- Um perfil pode ser marcado como **protegido**: não pode ser editado nem excluído por ninguém,
+  nem mesmo pelo Administrador Master (continua podendo ser ativado normalmente). O perfil
+  `Período Eleitoral` é semeado como protegido nesta demonstração.
 
 ## Cadastro Menu
 
@@ -169,3 +172,6 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: "Gestão do Cabeçalho" atualizada — logomarca passou de campo de texto (nome de
   arquivo) para upload de imagem; título da página passou a ser fixo ("Intranet SSP") em todos
   os perfis, não mais editável por perfil.
+- 11/11/2026: adicionada a regra de perfil protegido (sem edição/exclusão por ninguém); semeados
+  2 perfis visuais extras de demonstração: `Período Eleitoral` (protegido) e `Governo Tarcísio`
+  (não protegido, pode ser editado/excluído pelo Master normalmente).

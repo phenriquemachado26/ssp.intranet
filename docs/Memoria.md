@@ -32,6 +32,14 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   perfis com upload quebram. Limite de 300 KB por imagem (validado no navegador e em
   `profileValues`) existe para não estourar a cota de `localStorage` do navegador (tipicamente
   5-10 MB por origem) com poucos perfis.
+- **Logos de perfil visual embutidas como base64 direto no código.** Os perfis de demonstração
+  `Período Eleitoral` e `Governo Tarcísio` têm a logo codificada em base64 dentro de
+  `assets/js/mock-backend.js` (`DEMO_EXTRA_PROFILES`), gerada a partir de
+  `assets/images/BrasaoEstadoSP.png`/`GovTarcisio.png` por um script Node pontual (fora do
+  repositório) que fez a substituição de um placeholder de texto pelo conteúdo real — nunca
+  colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
+  Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
+  `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
 - **Dados de demonstração (`DEMO_ACCOUNTS`/`DEMO_ACCESS_REQUESTS`) usam reconciliação por
   `SEED_VERSION`, não resseed total**: navegadores que já tinham `localStorage` salvo de uma
   versão anterior do protótipo recebem automaticamente as contas/solicitações novas que ainda não

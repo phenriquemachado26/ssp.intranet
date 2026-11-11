@@ -72,3 +72,8 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: logomarca de perfil visual passou a ser upload de imagem (data URL em
   `localStorage`, até 300 KB) em vez de nome de arquivo estático; título da página fixado em
   "Intranet SSP" para todos os perfis.
+- 11/11/2026: adicionado o campo `locked` em `header_profiles` (perfil protegido: sem edição nem
+  exclusão por ninguém) e semeados 2 perfis extras (`Período Eleitoral`, protegido; `Governo
+  Tarcísio`, não protegido), com logos embutidas como data URL diretamente em
+  `assets/js/mock-backend.js` a partir de `assets/images/BrasaoEstadoSP.png` e
+  `assets/images/GovTarcisio.png`.
