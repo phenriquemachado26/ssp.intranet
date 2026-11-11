@@ -26,10 +26,11 @@ const SOCIAL_NETWORKS=[['social_facebook','Facebook','f'],['social_instagram','I
 window.applySspFooter=async()=>{
   try{
     const response=await fetch('/api/footer-settings',{cache:'no-store'});const {settings:s}=await response.json();if(!s)return;
-    const emailLink=document.querySelector('#footer-email-link'),phoneLink=document.querySelector('#footer-phone-link'),addressLine=document.querySelector('#footer-address-line'),developedBy=document.querySelector('#footer-developed-by'),social=document.querySelector('#footer-social');
+    const emailLink=document.querySelector('#footer-email-link'),phoneLink=document.querySelector('#footer-phone-link'),addressLine=document.querySelector('#footer-address-line'),hoursLine=document.querySelector('#footer-hours-line'),developedBy=document.querySelector('#footer-developed-by'),social=document.querySelector('#footer-social');
     if(emailLink){if(s.support_email){emailLink.href=`mailto:${s.support_email}`;emailLink.textContent=s.support_email;emailLink.hidden=false}else emailLink.hidden=true}
     if(phoneLink){if(s.phone){phoneLink.href=`tel:${s.phone.replace(/\D/g,'')}`;phoneLink.textContent=s.phone;phoneLink.hidden=false}else phoneLink.hidden=true}
     if(addressLine){const parts=[s.address_street&&(s.address_number?`${s.address_street}, ${s.address_number}`:s.address_street),s.address_district,s.address_city&&s.address_state?`${s.address_city} - ${s.address_state}`:(s.address_city||s.address_state||''),s.address_zip].filter(Boolean);if(parts.length){addressLine.textContent=parts.join(' - ');addressLine.hidden=false}else addressLine.hidden=true}
+    if(hoursLine){if(s.business_hours){hoursLine.textContent=s.business_hours;hoursLine.hidden=false}else hoursLine.hidden=true}
     if(developedBy)developedBy.textContent=s.developed_by||'';
     if(social){const links=SOCIAL_NETWORKS.filter(([key])=>s[key]).map(([key,label,letter])=>`<a href="${escapeFooter(s[key])}" target="_blank" rel="noopener noreferrer" aria-label="${label}" title="${label}">${letter}</a>`);social.innerHTML=links.join('');social.hidden=!links.length}
   }catch(error){console.warn('Não foi possível aplicar as informações do rodapé.',error)}

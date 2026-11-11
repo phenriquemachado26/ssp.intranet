@@ -46,6 +46,16 @@
     { title: 'Conseg', url: '#conseg' },
   ];
 
+  // Dados de contato de demonstração do rodapé (endereço real da sede da SSP-SP, usado só como mock).
+  const FOOTER_DEFAULTS = {
+    address_street: 'Rua Líbero Badaró', address_number: '39', address_district: 'Centro',
+    address_city: 'São Paulo', address_state: 'SP', address_zip: '01009-000',
+    phone: '(11) 3291-6500', support_email: 'contato@ssp.gov.br',
+    business_hours: 'Horário de atendimento (Setor de Protocolo - Térreo): de segunda a sexta-feira, das 9h00 às 17h00',
+    developed_by: 'Desenvolvido pelo GTI',
+    social_facebook: '', social_instagram: '', social_youtube: '', social_whatsapp: '',
+  };
+
   // Perfis visuais extras de demonstração (além da Paleta Padrão, sempre semeada à parte).
   // "Período Eleitoral" é protegido: `locked:true` impede edição e exclusão por qualquer perfil,
   // inclusive Master (ver checagens em PUT/DELETE /api/profiles/<id>).
@@ -58,7 +68,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 5;
+  const SEED_VERSION = 6;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -123,7 +133,7 @@
   const SOCIAL_URL_FORMAT = /^https?:\/\//i;
 
   function footerSettingsValues(data) {
-    const textKeys = ['address_street', 'address_number', 'address_district', 'address_city', 'address_state', 'address_zip', 'phone', 'support_email', 'developed_by'];
+    const textKeys = ['address_street', 'address_number', 'address_district', 'address_city', 'address_state', 'address_zip', 'phone', 'support_email', 'business_hours', 'developed_by'];
     const values = {};
     textKeys.forEach((k) => { values[k] = String(data[k] ?? '').trim(); });
     if (values.support_email && !EMAIL_FORMAT.test(values.support_email)) {
@@ -217,12 +227,18 @@
       existingQuickAccessTitles.add(item.title);
     }
     if (!db.footer_settings) {
-      db.footer_settings = {
-        address_street: '', address_number: '', address_district: '', address_city: '', address_state: '', address_zip: '',
-        phone: '(00) 0000-0000', support_email: 'contato@ssp.gov.br', developed_by: 'Desenvolvido pelo GTI',
-        social_facebook: '', social_instagram: '', social_youtube: '', social_whatsapp: '',
-        updated_at: nowStamp(),
-      };
+      db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
+    } else {
+      // Navegador já tinha footer_settings de uma versão anterior. Só substitui pelos novos
+      // dados de demonstração (endereço real da sede, horário de atendimento) se o rodapé ainda
+      // estiver "intocado" (telefone placeholder antigo e sem endereço) — nunca sobrescreve
+      // customização feita pelo Master.
+      const isPristineDemo = db.footer_settings.phone === '(00) 0000-0000' && !db.footer_settings.address_street;
+      if (isPristineDemo) {
+        Object.assign(db.footer_settings, FOOTER_DEFAULTS, { updated_at: nowStamp() });
+      } else if (db.footer_settings.business_hours === undefined) {
+        db.footer_settings.business_hours = FOOTER_DEFAULTS.business_hours;
+      }
     }
     db.seedVersion = SEED_VERSION;
     saveDb(db);
@@ -254,12 +270,7 @@
         })),
       ],
       change_control: { locked: false, note: '', carousel_enabled: true, notices_page_blocked: false, updated_at: nowStamp() },
-      footer_settings: {
-        address_street: '', address_number: '', address_district: '', address_city: '', address_state: '', address_zip: '',
-        phone: '(00) 0000-0000', support_email: 'contato@ssp.gov.br', developed_by: 'Desenvolvido pelo GTI',
-        social_facebook: '', social_instagram: '', social_youtube: '', social_whatsapp: '',
-        updated_at: nowStamp(),
-      },
+      footer_settings: { ...FOOTER_DEFAULTS, updated_at: nowStamp() },
       pending_changes: [],
       menu_items: [
         { id: 1, title: 'Polícia Civil', description: 'Investigação, polícia judiciária e atendimento ao cidadão.', url: '#civil', active: true, display_order: 1, created_at: nowStamp() },

@@ -81,7 +81,8 @@ Atualizado em: 11/11/2026.
   configurações (sem fila de validação — a alteração é direta e imediata, como em "Visão Geral").
 - Campos de endereço: logradouro, número, bairro, cidade, estado e CEP. Todos opcionais; a linha
   de endereço só aparece no rodapé público quando pelo menos um campo estiver preenchido.
-- Campos de contato: telefone, e-mail de suporte e "Desenvolvido por" (texto livre).
+- Campos de contato: telefone, e-mail de suporte, horário de atendimento e "Desenvolvido por"
+  (todos texto livre).
 - E-mail de suporte é validado no formato `usuario@dominio`.
 - Redes sociais: Facebook, Instagram, YouTube e WhatsApp, cada uma com um campo de URL. Uma rede
   com URL vazia tem seu ícone ocultado no rodapé público; URLs informadas devem começar com
@@ -189,7 +190,9 @@ Atualizado em: 11/11/2026.
 ## Dados institucionais pendentes
 
 - Confirmar e substituir o logotipo provisório pela marca oficial.
-- Confirmar e-mail e telefone oficiais exibidos no rodapé.
+- Confirmar e-mail, telefone, endereço e horário de atendimento oficiais exibidos no rodapé —
+  os valores atuais (endereço da sede da SSP-SP) são dados de demonstração fornecidos pelo
+  usuário como mock, não confirmados como definitivos.
 - Definir destinos reais dos acessos Polícia Civil, Polícia Militar, Polícia Científica e Conseg.
 
 ## Histórico
@@ -209,3 +212,6 @@ Atualizado em: 11/11/2026.
   entidade editável (até 5, com ocultar/exibir), gerenciada em Gestão do Cabeçalho.
 - 11/11/2026: seção renomeada de "Gestão do Cabeçalho" para "Cabeçalho e Rodapé"; adicionada a
   subseção "Rodapé" (endereço, contato e redes sociais, exclusivo do Master).
+- 11/11/2026: dados de demonstração do rodapé preenchidos com endereço/telefone/horário de
+  atendimento (mock fornecido pelo usuário, sede da SSP-SP); adicionado o campo "Horário de
+  atendimento".

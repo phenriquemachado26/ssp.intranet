@@ -90,3 +90,6 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: tela "Gestão do Cabeçalho" renomeada para "Cabeçalho e Rodapé"; nova entidade
   singleton `footer_settings` (endereço, contato, redes sociais), exclusiva do Master, renderizada
   no rodapé público por `assets/js/theme.js` (`window.applySspFooter`).
+- 11/11/2026: dados de demonstração do rodapé atualizados (endereço/telefone/horário de
+  atendimento da sede da SSP-SP, fornecidos como mock); reconciliação ganhou lógica de "upgrade"
+  para quem já tinha o placeholder antigo sem perder customizações reais do Master.

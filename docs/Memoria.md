@@ -40,6 +40,17 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **Atualizar os valores padrão de `FOOTER_DEFAULTS` não basta — é preciso tratar quem já
+  reconciliou.** Quando os dados de demonstração do rodapé mudaram (endereço/telefone/horário
+  reais da sede da SSP-SP), `reconcileSeed` não podia simplesmente pular por já existir
+  `footer_settings` (como faz com contas/perfis novos), senão quem já tinha visitado o site
+  ficaria preso nos placeholders antigos (`(00) 0000-0000`) para sempre. A regra adotada: se o
+  rodapé salvo ainda parece "intocado" (telefone igual ao placeholder antigo E sem endereço
+  preenchido), ele é substituído pelos novos `FOOTER_DEFAULTS` inteiros; caso contrário (o Master
+  já customizou algo), só os campos novos que ainda não existem no objeto salvo (ex.:
+  `business_hours` quando o campo foi criado depois) são preenchidos, sem tocar no resto. Ao
+  adicionar mais campos de demonstração no futuro, replicar esse cuidado — nunca sobrescrever
+  dado que pode ter sido editado de verdade pelo Master.
 - **`footer_settings` é Master-exclusivo, sem fila de validação — decisão deliberada, não
   esquecimento.** Ao contrário de `quick_access`/`menu_items`/`notices`/`header_profiles` (onde
   Administrador do Site também atua, sujeito a aprovação quando o bloqueio está ativo), o usuário
