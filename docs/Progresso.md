@@ -175,3 +175,11 @@ pré-visualização do banner quebrava ao editar um aviso com banner legado (usa
 sem extensão de arquivo). 111 cenários de lógica validados via harness Node (96 anteriores + 15
 novos). Revisão completa de Validator/Security Specialist segue acumulada — sugiro fortemente
 rodar essa auditoria antes de considerar este lote de mocks fechado.
+
+## 11/11/2026 — Links específicos nos botões de Hospitalidades e São Paulo por Todas
+
+A pedido do usuário: botão "Acesse Aqui" de "O que é uma Hospitalidade no Serviço Público?" agora
+aponta para o documento da Controladoria Geral; "São Paulo por Todas" aponta para
+https://www.spportodas.sp.gov.br/sp-por-todas. Demais avisos de demonstração continuam com o
+link genérico da SSP. 115 cenários de lógica validados via harness Node (111 anteriores + 4
+novos). Revisão completa de Validator/Security Specialist segue acumulada.
