@@ -28,3 +28,15 @@ e scripts existentes não foram reescritos. Publicado no GitHub Pages
   pré-existente ao projeto, mais ampla que esta tarefa.
 - Falta um passo manual do usuário: habilitar o GitHub Pages nas configurações do repositório
   (`Settings → Pages → Deploy from a branch → main / root`).
+
+## 11/11/2026 — GitHub Pages habilitado; contas de demonstração e seletor de CPF
+
+Usuário confirmou GitHub Pages habilitado e funcionando. Adicionadas 4 contas de demonstração
+semeadas (2 Master, 2 Administrador do Site) via `DEMO_ACCOUNTS` em `assets/js/mock-backend.js`.
+Tela de login (`admin.html`/`admin.js`) ganhou um seletor de CPF: clicar no campo abre a lista de
+contas cadastradas (ícone ★ para Master, ● para Site), selecionar uma preenche CPF e senha
+automaticamente. Removido o aviso estático com a credencial de demonstração. 31 cenários de
+lógica validados via harness Node (18 anteriores + regressões do Validator/Security + 4 do
+seletor de contas). Mudança pontual e de baixo risco (prototype, UI/seed de dados) — não
+reexecutado o ciclo completo Validator/Security Specialist desta vez; será reexecutado antes de
+fechar o lote de "mocks" que o usuário ainda vai pedir.
