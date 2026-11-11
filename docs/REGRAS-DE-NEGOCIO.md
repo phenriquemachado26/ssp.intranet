@@ -244,3 +244,6 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: banner de aviso passou de campo de texto (nome-base) para upload de imagem, no
   mesmo padrão da logomarca; semeados 4 avisos de demonstração com banner, descrição longa e
   botão "Acesse Aqui", já ativos e no carrossel.
+- 11/11/2026: botão "Acesse Aqui" dos avisos "O que é uma Hospitalidade no Serviço Público?" e
+  "São Paulo por Todas" passou a usar links específicos fornecidos pelo usuário, em vez do link
+  genérico da SSP; os demais avisos de demonstração continuam com o link genérico.

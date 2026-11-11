@@ -111,3 +111,6 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   + `MAX_BANNER_DATA_URL_LENGTH`); `resolveBanner` agora retorna a própria data URL sem passar pelo
   manifesto estático quando o valor já é uma imagem enviada. Semeados 4 avisos de demonstração
   (`DEMO_NOTICES`) com banner por nome-base, já ativos e no carrossel. SEED_VERSION 10->11.
+- 11/11/2026: botões de Hospitalidades e São Paulo por Todas ganharam `button_url` específico
+  (antes usavam o mesmo link genérico de todos os avisos); reconciliação ganhou upgrade por valor
+  antigo conhecido, igual ao já usado para o link de Polícia Civil. SEED_VERSION 11->12.

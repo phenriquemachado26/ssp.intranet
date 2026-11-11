@@ -85,13 +85,15 @@
       title: 'O que é uma Hospitalidade no Serviço Público?',
       description: 'Hospitalidade é a oferta de serviço ou cobertura de despesas concedida por um agente privado a um agente público, como transporte, alimentação, hospedagem ou participação em cursos e eventos. Toda hospitalidade deve ser registrada no SP-Agendas para garantir transparência e prevenir conflitos de interesse. A integridade começa na atitude de cada um de nós.',
       banner_file: 'Hospitalidades',
+      button_url: 'https://www.controladoriageral.sp.gov.br/dx/api/dam/v1/collections/a21d4faa-3d71-46b3-9a42-05e77bd81286/items/251d6028-6493-4873-b4b7-dd060ec1598f/renditions/ee4835ff-aea3-45a3-a646-da94b443db09?binary=true',
     },
     {
       title: 'São Paulo por Todas — Dando Voz às Mulheres',
       description: 'O programa São Paulo por Todas reúne ações do Governo do Estado para dar voz e proteção às mulheres paulistas. Conheça o aplicativo Mulher Segura, canal de apoio e orientação em situações de violência, disponível para todas as mulheres do estado de São Paulo. São Paulo são todos, São Paulo por todas.',
       banner_file: 'SPTodas',
+      button_url: 'https://www.spportodas.sp.gov.br/sp-por-todas',
     },
-  ].map((item) => ({ ...item, button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br' }));
+  ].map((item) => ({ button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br', ...item }));
 
   // Dados de contato de demonstração do rodapé (endereço real da sede da SSP-SP, usado só como mock).
   const FOOTER_DEFAULTS = {
@@ -118,7 +120,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 11;
+  const SEED_VERSION = 12;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -322,6 +324,15 @@
         display_order: 1, created_at: nowStamp(),
       });
       existingNoticeTitles.add(item.title);
+    }
+    // Upgrade: avisos semeados cujo botão ainda aponta para o link genérico antigo recebem o link
+    // específico mais recente, sem tocar em avisos que o Master já customizou de verdade.
+    const OLD_GENERIC_NOTICE_URL = 'https://www.ssp.sp.gov.br';
+    for (const notice of db.notices) {
+      const def = DEMO_NOTICES.find((d) => d.title === notice.title);
+      if (def && notice.button_url === OLD_GENERIC_NOTICE_URL && notice.button_url !== def.button_url) {
+        notice.button_url = def.button_url;
+      }
     }
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
