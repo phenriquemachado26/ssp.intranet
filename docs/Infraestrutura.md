@@ -25,3 +25,15 @@ Ver "Próxima arquitetura recomendada" em `docs/ARQUITETURA.md`. Opções de men
 recursos, já usadas em outros projetos do mesmo usuário: Neon Postgres (free tier, usado no
 PortalCGI) ou Upstash Redis (KV). Qualquer uma delas mudaria a hospedagem de GitHub Pages para
 Vercel (ou GitHub Pages para o frontend + função serverless à parte).
+
+## GitHub Pages — build/deploy
+
+- 11/11/2026: adicionado `.nojekyll` na raiz do repositório. O GitHub Pages processa o conteúdo via
+  Jekyll por padrão quando esse arquivo não existe; como este é um protótipo 100% estático sem
+  nenhuma dependência de Jekyll, o arquivo evita esse processamento desnecessário — builds mais
+  rápidos e mais previsíveis. Adicionado após observar o site publicado travado em uma versão
+  antiga (~7 commits atrás) por tempo bem além do esperado para um deploy normal.
+- Se o site publicado ficar visivelmente desatualizado por mais de alguns minutos após um push,
+  verificar em `Settings → Pages` (banner de erro) e em `Settings → Environments → github-pages`
+  (histórico de deployments) no GitHub — não há como diagnosticar isso só por fora (curl), pois
+  requer acesso autenticado ao painel do repositório.
