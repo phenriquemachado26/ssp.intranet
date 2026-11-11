@@ -53,3 +53,15 @@ no navegador. Também adicionada 1 solicitação de acesso de exemplo (pendente)
 lógica validados via harness Node (31 anteriores + 4 novos, incluindo simulação de localStorage
 desatualizado). Revisão completa de Validator/Security Specialist ainda pendente — será feita ao
 fechar o lote de mocks.
+
+## 11/11/2026 — Upload de logomarca e título fixo em perfis visuais
+
+A pedido do usuário: campo "Nome do arquivo da logomarca" virou upload de imagem real (antes era
+texto livre com o nome de um arquivo que precisava já existir em `assets/images`); e "Título da
+página" passou a ser fixo ("Intranet SSP", somente leitura) em todos os perfis, em vez de
+editável por perfil. Logo enviada é lida via `FileReader`, validada (tipo de imagem, até 300 KB)
+tanto no navegador quanto em `profileValues` (mock-backend.js), e guardada como data URL no
+próprio registro do perfil em `localStorage`. `window.sspResolveImageSrc` passou a ser o ponto
+único de resolução de logo (data URL ou arquivo estático semeado), usado em `theme.js` e
+`painel.js`. 40 cenários de lógica validados via harness Node (35 anteriores + 5 novos). Revisão
+completa de Validator/Security Specialist segue pendente (acumulada do lote de mocks).
