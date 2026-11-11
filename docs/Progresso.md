@@ -206,3 +206,19 @@ destaque da página inicial. SEED_VERSION 12→13→14.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado de
   mudanças de dados mock desta sessão) ainda não executados — segue como item de housekeeping em
   aberto.
+
+## 11/11/2026 — Regra de negócio: quantidade mínima de perfis e cascata do Período Eleitoral
+
+Atendido pedido do usuário para formalizar duas regras sobre perfis visuais: (1) além do Período
+Eleitoral, é obrigatório manter ao menos mais um perfil cadastrado (mínimo de 2 no total); (2) ao
+ativar o Período Eleitoral, a página de avisos é bloqueada, o pop-up de destaque some, o carrossel
+é desativado e todos os avisos são inativados; ao sair dele, página de avisos e carrossel voltam
+automaticamente, mas cada aviso individual precisa ser reativado manualmente pelo Master.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 179 cenários
+  de lógica validados via harness Node.js, incluindo a visão do visitante público durante o
+  período eleitoral (nenhum aviso/destaque/carrossel escapa da vedação) e a regra de quantidade
+  mínima isolada da proteção específica da Paleta Padrão. Todos passando.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado de
+  mudanças de dados mock e regras de negócio desta sessão) ainda não executados — segue como item
+  de housekeeping em aberto.
