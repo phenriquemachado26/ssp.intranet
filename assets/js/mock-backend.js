@@ -110,7 +110,7 @@
     address_city: 'São Paulo', address_state: 'SP', address_zip: '01009-000',
     phone: '(11) 3291-6500', support_email: 'contato@ssp.gov.br',
     business_hours: 'Horário de atendimento (Setor de Protocolo - Térreo): de segunda a sexta-feira, das 9h00 às 17h00',
-    developed_by: 'Desenvolvido pelo GTI',
+    developed_by: 'CGI - Coordenadoria de Gestão da Informação',
     social_facebook: 'https://www.facebook.com/segurancapublicasp/?locale=pt_BR',
     social_instagram: 'https://www.instagram.com/seguranca_ssp/',
     social_youtube: 'https://www.youtube.com/@governosp/live',
@@ -129,7 +129,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 14;
+  const SEED_VERSION = 15;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -385,6 +385,11 @@
         Object.assign(db.footer_settings, FOOTER_DEFAULTS, { updated_at: nowStamp() });
       } else if (db.footer_settings.business_hours === undefined) {
         db.footer_settings.business_hours = FOOTER_DEFAULTS.business_hours;
+      }
+      // Upgrade: "desenvolvido por" ainda com o texto genérico antigo ("Desenvolvido pelo GTI")
+      // recebe o novo texto, sem tocar em customização real do Master.
+      if (db.footer_settings.developed_by === 'Desenvolvido pelo GTI') {
+        db.footer_settings.developed_by = FOOTER_DEFAULTS.developed_by;
       }
       // Backfill individual: preenche só as redes sociais ainda vazias (nunca preenchidas pelo
       // Master), mesmo em rodapés já customizados em outros campos.

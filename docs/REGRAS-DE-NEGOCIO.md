@@ -108,6 +108,10 @@ Atualizado em: 11/11/2026.
   com URL vazia tem seu ícone ocultado no rodapé público; URLs informadas devem começar com
   `http://` ou `https://`. Facebook, Instagram e YouTube já vêm semeados com os perfis oficiais
   reais da SSP-SP (mock fornecido pelo usuário); WhatsApp permanece vazio/oculto até ser definido.
+- No rodapé público, e-mail e telefone ficam lado a lado na mesma linha (não mais em linhas
+  separadas); endereço, e-mail/telefone e horário de atendimento exibem um pequeno ícone (pino,
+  envelope, telefone e relógio) ao lado do texto.
+- "Desenvolvido por" vem semeado com `CGI - Coordenadoria de Gestão da Informação`.
 - As informações são exibidas no rodapé de todas as páginas públicas (`index.html`, `avisos.html`).
 
 ## Cadastro Menu
@@ -280,3 +284,8 @@ Atualizado em: 11/11/2026.
   página de avisos, suprime o pop-up de destaque, desativa o carrossel e inativa todos os avisos;
   ao sair do perfil, a página de avisos e o carrossel voltam a ficar disponíveis automaticamente,
   mas os avisos individuais continuam inativos até o Master reativá-los manualmente, um a um).
+- 11/11/2026: rodapé público reorganizado — e-mail e telefone passaram a ficar na mesma linha;
+  endereço, contato e horário de atendimento ganharam ícones; texto de "Desenvolvido por" alterado
+  de "Desenvolvido pelo GTI" para "CGI - Coordenadoria de Gestão da Informação" (reconciliação
+  atualiza quem ainda tinha o texto antigo, sem tocar em customização real do Master). SEED_VERSION
+  14->15.

@@ -138,3 +138,10 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   branch `delete` de `applyPendingChange`) ganharam checagem de quantidade mínima
   (`db.header_profiles.length <= 2` bloqueia a exclusão), redundante na prática com a proteção já
   existente da Paleta Padrão, mas mantida como regra genérica e explícita.
+- 11/11/2026: rodapé reestruturado — `#footer-address-line`/`#footer-hours-line` agora têm um
+  `<span class="footer-info-text">` interno (o texto é escrito ali, não mais direto no elemento
+  com `hidden`, para não apagar o ícone ao lado); e-mail e telefone viraram
+  `#footer-email-item`/`#footer-phone-item` (wrappers com ícone + link, visibilidade controlada no
+  wrapper) dentro de um único `.footer-contact-line`, colocando-os na mesma linha. `developed_by`
+  teve o texto padrão alterado para "CGI - Coordenadoria de Gestão da Informação", com upgrade de
+  reconciliação para quem ainda tinha o texto genérico anterior. SEED_VERSION 14->15.
