@@ -145,3 +145,12 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   wrapper) dentro de um único `.footer-contact-line`, colocando-os na mesma linha. `developed_by`
   teve o texto padrão alterado para "CGI - Coordenadoria de Gestão da Informação", com upgrade de
   reconciliação para quem ainda tinha o texto genérico anterior. SEED_VERSION 14->15.
+- 11/11/2026: organização de arquivos de imagem. Criada `assets/images/social/` com 8 logomarcas
+  de redes sociais fornecidas pelo usuário (Facebook/Instagram/WhatsApp/YouTube, temas claro e
+  escuro, 512px) — **ainda não usadas por nenhum código**; o rodapé público continua exibindo os
+  ícones-letra gerados em `theme.js` (`SOCIAL_NETWORKS`) até que uma tarefa futura troque por essas
+  imagens. Removidos `docs/logo/BrasaoEstadoSP.png` e `docs/logo/GovTarcisio.png` (duplicatas
+  binárias exatas dos arquivos já existentes em `assets/images/`, confirmado por hash). Removidos
+  de `images_banner/` e do manifesto `BANNER_FILES`: `Teste.png`, `MuralhaPaulista.png` e
+  `banner_periodoeleitoral.png` — herdados do protótipo Python original, sem vínculo com nenhum
+  aviso ou perfil semeado nesta versão estática.

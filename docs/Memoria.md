@@ -171,3 +171,14 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   (ver `assets/js/main.js`/`avisos.js`). Por isso, a cascata do perfil `Período Eleitoral` não
   precisou de nenhuma lógica nova de ocultação: bastou forçar essas mesmas flags já existentes
   (mesmo truque já usado pelo bloqueio geral de alterações em `PUT /api/change-control`).
+- **Antes de excluir arquivo "duplicado", confirmar por hash (md5sum), não só por nome/tamanho
+  parecido.** Ao organizar `docs/logo/` (pasta de entrada criada pelo usuário para novos assets),
+  `BrasaoEstadoSP.png`/`GovTarcisio.png` lá dentro eram bytes idênticos aos já existentes em
+  `assets/images/` — confirmado por hash antes de remover. Arquivos com nome parecido mas conteúdo
+  diferente não devem ser tratados como duplicata.
+- **`images_banner/Teste.png`, `MuralhaPaulista.png` e `banner_periodoeleitoral.png` eram lixo
+  herdado do protótipo Python original** (presentes desde o commit inicial, antes da migração
+  estática), sem nenhum aviso/perfil semeado referenciando-os — removidos do disco e do manifesto
+  `BANNER_FILES`. `banner_periodoeleitoral.png` tinha nome ambíguo (parecia ligado à regra do
+  Período Eleitoral), então essa remoção específica foi confirmada com o usuário antes de agir, em
+  vez de decidir sozinho.

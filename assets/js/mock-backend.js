@@ -13,9 +13,9 @@
   // Não há mais listagem dinâmica de diretório (sem servidor): ao adicionar um novo banner,
   // é necessário incluir o nome do arquivo aqui também.
   const BANNER_FILES = [
-    'SPTodas.gif', 'Arrecadacao.png', 'banner_periodoeleitoral.png',
-    'Hospitalidades.png', 'Teste.png', 'AcessoRapido.png',
-    'CasaPaulista.png', 'MuralhaPaulista.png', 'banner_ConselhoUsuarios.png',
+    'SPTodas.gif', 'Arrecadacao.png',
+    'Hospitalidades.png', 'AcessoRapido.png',
+    'CasaPaulista.png', 'banner_ConselhoUsuarios.png',
   ];
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
