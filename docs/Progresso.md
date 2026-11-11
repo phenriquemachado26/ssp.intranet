@@ -284,3 +284,23 @@ para a logomarca real, escolhendo automaticamente tema claro/escuro pelo contras
   erros de console nas duas páginas).
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Badge de validações pendentes e aviso "Agência SP" ativo só no carrossel
+
+Duas entregas a pedido do usuário: (1) badge vermelho destacado (com animação de pulso) no item
+"Validações pendentes" do menu do Master, mostrando a quantidade de solicitações pendentes, oculto
+quando a fila está vazia; (2) novo aviso de demonstração "Agência SP" cadastrado como o último da
+ordem, reaproveitando a regra já existente de "5 primeiros avisos na home" para que ele fique
+visível apenas no carrossel e na listagem completa de avisos.html, sem aparecer como card na home.
+
+Também em andamento (não documentado ainda, aguardando verificação visual): favicon composto com
+fundo preto para perfis com cor primária preta/quase preta (Governo Tarcísio, Período Eleitoral),
+cujas logomarcas têm traço claro pensado para fundo escuro e ficavam ilegíveis direto sobre o fundo
+claro da aba do navegador.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 209 cenários
+  de lógica validados via harness Node.js. Badge verificado visualmente com Playwright (ciclo
+  completo: oculto → aparece com contagem correta após solicitação pendente → oculto após
+  aprovação), sem erros de console.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
