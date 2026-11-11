@@ -40,6 +40,15 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **Ao mostrar a pré-visualização de um banner existente, usar `banner_resolved`, nunca
+  `banner_file` direto.** `banner_file` guarda o nome-base sem extensão (ex.: `"CasaPaulista"`,
+  convenção antiga de quando o admin digitava o nome) ou uma data URL (upload novo). Só
+  `banner_resolved` (calculado no servidor/mock por `resolveBanner`) tem o nome do arquivo REAL
+  com extensão (`"CasaPaulista.png"`) ou, se já for upload, a própria data URL. Ao abrir "Editar
+  aviso" e popular a pré-visualização do dropzone, usar `item.banner_resolved || item.banner_file`
+  — usar só `banner_file` quebra a imagem para qualquer aviso com banner por nome-base (sem
+  extensão não há arquivo para carregar). Esse foi um bug real encontrado e corrigido nesta tarefa,
+  só visível testando de verdade a tela de edição com Playwright, não apenas lendo o código.
 - **Bug visual: borda do campo ficava branca/invisível ao focar, dependendo do perfil ativo.**
   `.auth-card input:focus`, `dialog input:focus/select:focus`, `dialog textarea:focus` e
   `.footer-form input:focus` usavam `border-color:var(--blue-2)` direto — `--blue-2` é a cor
@@ -104,6 +113,14 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   `business_hours` quando o campo foi criado depois) são preenchidos, sem tocar no resto. Ao
   adicionar mais campos de demonstração no futuro, replicar esse cuidado — nunca sobrescrever
   dado que pode ter sido editado de verdade pelo Master.
+- **Os 4 banners de demonstração (`Arrecadacao.png`, `CasaPaulista.png`, `Hospitalidades.png`,
+  `SPTodas.gif`) NÃO foram embutidos como data URL no seed, ao contrário das logos de perfil.**
+  Eles pesam entre 700 KB e 2 MB cada (~6 MB juntos) — embutir isso em `mock-backend.js` inflaria
+  o arquivo em megabytes e arriscaria estourar a cota de `localStorage` do navegador (tipicamente
+  5-10 MB) sozinho. Por isso `DEMO_NOTICES` usa `banner_file` por nome-base (arquivo físico já
+  existente em `images_banner/`, servido como estático via HTTP, fora do `localStorage`), não
+  upload. O limite de 800 KB em `validateBannerFile`/`MAX_BANNER_DATA_URL_LENGTH` existe
+  justamente para impedir que um upload futuro repita esse problema.
 - **`footer_settings` é Master-exclusivo, sem fila de validação — decisão deliberada, não
   esquecimento.** Ao contrário de `quick_access`/`menu_items`/`notices`/`header_profiles` (onde
   Administrador do Site também atua, sujeito a aprovação quando o bloqueio está ativo), o usuário

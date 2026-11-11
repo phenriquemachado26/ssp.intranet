@@ -68,6 +68,31 @@
     { title: 'Sala de Reuniões', description: 'Agendamento de salas de reunião da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/salareunioes/' },
   ];
 
+  // Avisos de demonstração, com banner resolvido pelo manifesto estático (arquivos já existentes
+  // em images_banner/, não enviados por upload). Ativos e no carrossel desde o início.
+  const DEMO_NOTICES = [
+    {
+      title: 'Campanha de Arrecadação de Prendas — Festa Junina do CCI',
+      description: 'O Centro de Comunicação Integrada (CCI) promove uma campanha de arrecadação de brinquedos e materiais recreativos para crianças de 6 meses a 5 anos: bonecas, carrinhos, bolas, jogos, livros infantis, quebra-cabeças, materiais de desenho, blocos de montar, massinhas, pelúcias e brinquedos educativos. Consulte o cartaz para o local de entrega e o ponto focal responsável.',
+      banner_file: 'Arrecadacao',
+    },
+    {
+      title: 'Programa Casa Paulista',
+      description: 'O Governo do Estado de São Paulo, por meio do Programa Casa Paulista, oferece até R$ 16 mil de crédito para a aquisição da casa própria a famílias com renda de até 3 salários mínimos. Consulte a lista de imóveis disponíveis em casapaulista.sp.gov.br e realize a simulação diretamente com a construtora.',
+      banner_file: 'CasaPaulista',
+    },
+    {
+      title: 'O que é uma Hospitalidade no Serviço Público?',
+      description: 'Hospitalidade é a oferta de serviço ou cobertura de despesas concedida por um agente privado a um agente público, como transporte, alimentação, hospedagem ou participação em cursos e eventos. Toda hospitalidade deve ser registrada no SP-Agendas para garantir transparência e prevenir conflitos de interesse. A integridade começa na atitude de cada um de nós.',
+      banner_file: 'Hospitalidades',
+    },
+    {
+      title: 'São Paulo por Todas — Dando Voz às Mulheres',
+      description: 'O programa São Paulo por Todas reúne ações do Governo do Estado para dar voz e proteção às mulheres paulistas. Conheça o aplicativo Mulher Segura, canal de apoio e orientação em situações de violência, disponível para todas as mulheres do estado de São Paulo. São Paulo são todos, São Paulo por todas.',
+      banner_file: 'SPTodas',
+    },
+  ].map((item) => ({ ...item, button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br' }));
+
   // Dados de contato de demonstração do rodapé (endereço real da sede da SSP-SP, usado só como mock).
   const FOOTER_DEFAULTS = {
     address_street: 'Rua Líbero Badaró', address_number: '39', address_district: 'Centro',
@@ -93,7 +118,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 10;
+  const SEED_VERSION = 11;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -127,6 +152,8 @@
   }
 
   function resolveBanner(value) {
+    // Banner enviado por upload (data URL) já É a imagem — não precisa resolver contra o manifesto.
+    if (String(value || '').startsWith('data:')) return value;
     const base = String(value || '').split(/[\\/]/).pop() || '';
     const dot = base.lastIndexOf('.');
     const stem = (dot > 0 ? base.slice(0, dot) : base).trim().toLowerCase();
@@ -145,6 +172,16 @@
   const HEX_COLOR = /^#[0-9a-f]{6}$/i;
   const LOGO_DATA_URL = /^data:image\/(png|jpe?g|webp|svg\+xml|avif);base64,/i;
   const MAX_LOGO_DATA_URL_LENGTH = 420_000; // ~300 KB de arquivo original já em base64
+  const BANNER_DATA_URL = /^data:image\/(png|jpe?g|webp|gif|svg\+xml|avif);base64,/i;
+  const MAX_BANNER_DATA_URL_LENGTH = 1_100_000; // ~800 KB de arquivo original já em base64
+
+  function validateBannerFile(value) {
+    const v = String(value || '').trim();
+    if (v.startsWith('data:') && (!BANNER_DATA_URL.test(v) || v.length > MAX_BANNER_DATA_URL_LENGTH)) {
+      throw new ApiError(400, 'O banner enviado é inválido ou excede o tamanho máximo permitido (~800 KB).');
+    }
+    return v;
+  }
 
   // Resolve a logomarca de um perfil visual: imagens enviadas por upload viram uma data URL
   // (armazenada no próprio localStorage, sem servidor); perfis antigos/semeados continuam
@@ -275,6 +312,17 @@
     // Continuam existindo normalmente em quick_access (Acessos Rápidos do cabeçalho).
     const REMOVED_MENU_TITLES = new Set(['Polícia Civil', 'Polícia Militar', 'Polícia Científica', 'Conseg']);
     db.menu_items = db.menu_items.filter((i) => !REMOVED_MENU_TITLES.has(i.title));
+    const existingNoticeTitles = new Set(db.notices.map((n) => n.title));
+    for (const item of DEMO_NOTICES) {
+      if (existingNoticeTitles.has(item.title)) continue;
+      db.notices.forEach((n) => { n.display_order += 1; });
+      db.notices.push({
+        id: nextId(db, 'notices'), title: item.title, description: item.description, banner_file: item.banner_file,
+        button_name: item.button_name, button_url: item.button_url, active: true, active_carousel: true,
+        display_order: 1, created_at: nowStamp(),
+      });
+      existingNoticeTitles.add(item.title);
+    }
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
     } else {
@@ -302,7 +350,7 @@
   async function seedDb() {
     const db = {
       seedVersion: SEED_VERSION,
-      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: 0, pending_changes: 0 },
+      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: DEMO_NOTICES.length, pending_changes: 0 },
       users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
         id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
         password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
@@ -333,7 +381,11 @@
       quick_access: DEFAULT_QUICK_ACCESS.map((item, index) => ({
         id: index + 1, title: item.title, url: item.url, active: true, display_order: index + 1, created_at: nowStamp(),
       })),
-      notices: [],
+      notices: DEMO_NOTICES.map((item, index) => ({
+        id: index + 1, title: item.title, description: item.description, banner_file: item.banner_file,
+        button_name: item.button_name, button_url: item.button_url, active: true, active_carousel: true,
+        display_order: index + 1, created_at: nowStamp(),
+      })),
     };
     saveDb(db);
     return db;
@@ -589,8 +641,9 @@
       const buttonName = String(data.button_name || '').trim(), buttonUrl = String(data.button_url || '').trim();
       if (!title || !description) return [400, { error: 'Título e descrição são obrigatórios.' }];
       if (buttonName && !safeUrl(buttonUrl)) return [400, { error: 'Informe uma URL válida quando houver nome do botão.' }];
+      const bannerFile = validateBannerFile(data.banner_file);
       if (queueIfRequired(db, session, 'create', 'notice', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
-      insertNoticeFirst(db, { title, description, banner_file: String(data.banner_file || '').trim(), button_name: buttonName, button_url: buttonUrl, active: data.active, active_carousel: data.active_carousel });
+      insertNoticeFirst(db, { title, description, banner_file: bannerFile, button_name: buttonName, button_url: buttonUrl, active: data.active, active_carousel: data.active_carousel });
       return [201, { message: 'Aviso incluído.' }];
     }
 
@@ -722,11 +775,12 @@
       const buttonName = String(data.button_name || '').trim(), buttonUrl = String(data.button_url || '').trim();
       if (!title || !description) return [400, { error: 'Título e descrição são obrigatórios.' }];
       if (buttonName && !safeUrl(buttonUrl)) return [400, { error: 'Informe uma URL válida quando houver nome do botão.' }];
+      const bannerFile = validateBannerFile(data.banner_file);
       if (queueIfRequired(db, session, 'update', 'notice', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       const order = Number(data.display_order ?? 1);
       if (db.notices.some((n) => n.id !== id && n.display_order === order)) return [409, { error: 'Já existe um aviso nesta ordem. Use a ordenação por arrastar.' }];
       const notice = db.notices.find((n) => n.id === id);
-      if (notice) Object.assign(notice, { title, description, banner_file: String(data.banner_file || '').trim(), button_name: buttonName, button_url: buttonUrl, active: !!data.active, active_carousel: !!data.active_carousel, display_order: order });
+      if (notice) Object.assign(notice, { title, description, banner_file: bannerFile, button_name: buttonName, button_url: buttonUrl, active: !!data.active, active_carousel: !!data.active_carousel, display_order: order });
       return [200, { message: 'Aviso atualizado.' }];
     }
 
@@ -841,13 +895,13 @@
         if (!ids.length) throw new Error('Seleção vazia');
         db.notices.filter((n) => ids.includes(n.id)).forEach((n) => { n.active_carousel = !!payload.active_carousel; });
       } else if (row.action === 'reorder') reorder(db.notices, payload.ids || []);
-      else if (row.action === 'create') insertNoticeFirst(db, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: String(payload.banner_file || '').trim(), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: payload.active, active_carousel: payload.active_carousel });
+      else if (row.action === 'create') insertNoticeFirst(db, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: validateBannerFile(payload.banner_file), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: payload.active, active_carousel: payload.active_carousel });
       else if (row.action === 'update') {
         const notice = db.notices.find((n) => n.id === pid);
         if (notice) {
           const order = Number(payload.display_order ?? 1);
           if (db.notices.some((n) => n.id !== pid && n.display_order === order)) throw new Error('Ordem de aviso duplicada.');
-          Object.assign(notice, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: String(payload.banner_file || '').trim(), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: !!payload.active, active_carousel: !!payload.active_carousel, display_order: order });
+          Object.assign(notice, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: validateBannerFile(payload.banner_file), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: !!payload.active, active_carousel: !!payload.active_carousel, display_order: order });
         }
       } else if (row.action === 'delete') db.notices = db.notices.filter((n) => n.id !== pid);
     } else if (row.entity === 'menu_item') {

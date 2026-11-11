@@ -119,7 +119,10 @@ Atualizado em: 11/11/2026.
 - A participação no carrossel também pode ser ativada ou desativada individualmente, por seleção múltipla ou por seleção de todos.
 - Alterações de status em lote feitas por Administradores do Site seguem o fluxo de validação quando o bloqueio estiver ativo.
 - Título e descrição são obrigatórios; a descrição aceita texto longo.
-- Banner é informado pelo nome disponível em `images_banner`; o servidor ignora a extensão cadastrada e resolve o arquivo real pelo nome-base.
+- Banner é enviado por upload de imagem (PNG, JPG, WebP, GIF, SVG ou AVIF, até 800 KB), no mesmo
+  padrão de arrastar-e-soltar usado na logomarca dos perfis visuais; fica salvo somente no
+  navegador de quem o cadastrou. Avisos semeados com banner por nome-base (arquivo já existente em
+  `images_banner`, sem upload) continuam funcionando normalmente — o sistema resolve os dois casos.
 - Extensões aceitas para banners: PNG, JPG/JPEG, WebP, GIF, SVG e AVIF.
 - Nome e URL do botão são opcionais, mas a URL torna-se obrigatória quando houver nome de botão.
 - As flags controlam se o aviso está ativo e se participa da área de banners.
@@ -133,6 +136,10 @@ Atualizado em: 11/11/2026.
 - Ao desativar o bloqueio, as flags não são alteradas: permanecem ativos somente os avisos que já estavam ativos.
 - A página inicial exibe somente os cinco primeiros avisos ativos na ordem; os demais ficam disponíveis na página `avisos.html`.
 - Ao expandir um aviso, qualquer outro aviso aberto é recolhido automaticamente.
+- São semeados 4 avisos de demonstração (Campanha de Arrecadação de Prendas, Programa Casa
+  Paulista, O que é uma Hospitalidade no Serviço Público, São Paulo por Todas), cada um com banner,
+  botão "Acesse Aqui" e descrição longa o bastante para exibir "Ver mais"; todos já ativos e no
+  carrossel.
 
 ## Carrossel de imagens
 
@@ -234,3 +241,6 @@ Atualizado em: 11/11/2026.
   do usuário (continuam só nos Acessos Rápidos). Rodapé: Facebook/Instagram/YouTube semeados com
   perfis oficiais reais; corrigido bug visual de borda branca/invisível ao focar campos quando o
   perfil ativo tem cor secundária clara (ver `docs/Memoria.md`).
+- 11/11/2026: banner de aviso passou de campo de texto (nome-base) para upload de imagem, no
+  mesmo padrão da logomarca; semeados 4 avisos de demonstração com banner, descrição longa e
+  botão "Acesse Aqui", já ativos e no carrossel.

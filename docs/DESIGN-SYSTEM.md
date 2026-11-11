@@ -50,7 +50,7 @@ Visual institucional, sóbrio e contemporâneo. Azul representa segurança e con
 
 `assets/images/logo-ssp.svg` é um símbolo provisório criado para esta versão, usado pela Paleta Padrão. Deve ser substituído pelo arquivo oficial da Secretaria quando disponibilizado, preservando texto alternativo e proporções.
 
-Nos demais perfis visuais (Cabeçalho e Rodapé), a logomarca é enviada por upload (PNG, JPG, SVG, WebP ou AVIF, até 300 KB) em vez de referenciar um arquivo estático; fica salva como imagem embutida no navegador de quem a cadastrou. O campo de upload é uma área de arrastar-e-soltar (ícone + "Clique para enviar" / "ou arraste a imagem aqui"); com uma imagem selecionada, a área exibe a pré-visualização e um link "Remover logomarca" para limpar a seleção.
+Nos demais perfis visuais (Cabeçalho e Rodapé), a logomarca é enviada por upload (PNG, JPG, SVG, WebP ou AVIF, até 300 KB) em vez de referenciar um arquivo estático; fica salva como imagem embutida no navegador de quem a cadastrou. O campo de upload é uma área de arrastar-e-soltar (ícone + "Clique para enviar" / "ou arraste a imagem aqui"); com uma imagem selecionada, a área exibe a pré-visualização e um link "Remover logomarca" para limpar a seleção. O banner de avisos (Cadastro de Avisos) usa o mesmo componente de dropzone, com limite de 800 KB e formatos PNG/JPG/WebP/GIF/SVG/AVIF.
 
 ## Acessibilidade
 

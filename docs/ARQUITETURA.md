@@ -105,3 +105,9 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   SEED_VERSION 8->9. Rodapé: Facebook/Instagram/YouTube semeados com perfis oficiais reais,
   SEED_VERSION 9->10. Corrigido bug de contraste (borda de campo em foco usando `--blue-2` cru em
   vez de `--secondary-on-light`) que ficava invisível com perfis de cor secundária clara.
+- 11/11/2026: campo de upload de logomarca (perfis visuais) redesenhado como área de
+  arrastar-e-soltar (`setupImageDropzone`, reaproveitada também pelo banner de avisos). Banner de
+  aviso passou de campo de texto (nome-base) para upload de imagem (até 800 KB, `validateBannerFile`
+  + `MAX_BANNER_DATA_URL_LENGTH`); `resolveBanner` agora retorna a própria data URL sem passar pelo
+  manifesto estático quando o valor já é uma imagem enviada. Semeados 4 avisos de demonstração
+  (`DEMO_NOTICES`) com banner por nome-base, já ativos e no carrossel. SEED_VERSION 10->11.
