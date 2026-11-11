@@ -229,3 +229,7 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   exatamente com o `SEED_VERSION` atual de `mock-backend.js` (senão a reconciliação dispara sobre
   aquele banco mínimo e quebra o teste com erro confuso). Lembrar de atualizar esse valor sempre
   que `SEED_VERSION` for incrementado — já esquecido 2 vezes nesta sessão.
+- **Composição de favicon com fundo preto (canvas) foi revertida a pedido do usuário** — mesmo
+  tecnicamente correta (confirmada por verificação visual antes do revert), o resultado não
+  agradou. Lição: nem toda solução tecnicamente correta é a solução desejada; preferências visuais
+  do usuário podem reverter uma feature mesmo sem bug.

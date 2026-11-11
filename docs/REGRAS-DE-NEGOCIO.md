@@ -53,11 +53,10 @@ Atualizado em: 11/11/2026.
   semeados (como a Paleta Padrão) continuam usando o arquivo estático `logo-ssp.svg`.
 - O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé, aos detalhes do site e ao favicon
   (ícone da aba do navegador) — a troca de perfil também troca o favicon para a mesma logomarca.
-- Quando a cor primária do perfil é preto puro (ou quase: `#000000`–`#101010`, caso de "Governo
-  Tarcísio" e "Período Eleitoral"), o favicon exibe a logo sobre um fundo preto composto via
-  canvas — essas logos têm traço claro pensado para fundo escuro e ficariam ilegíveis direto sobre
-  o fundo claro da aba do navegador. Perfis com cor primária clara ou escura-mas-não-preta (ex.: a
-  Paleta Padrão, azul-marinho) exibem a logo normalmente, sem composição.
+- ⚠ `revogada` (11/11/2026): o favicon exibia a logo sobre um fundo preto composto via canvas
+  quando a cor primária do perfil era preto puro/quase puro (Governo Tarcísio, Período Eleitoral).
+  O usuário não gostou do resultado; revertido. O favicon volta a exibir a logo diretamente em
+  todos os perfis, como antes dessa tentativa.
 - A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
 - Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
 - Perfis podem ser criados, editados, ativados e excluídos pelo Master, com aplicação imediata.
@@ -347,3 +346,6 @@ Atualizado em: 11/11/2026.
   "ativo só no carrossel" a pedido do usuário: por ficar fora dos "5 primeiros avisos" da home
   (regra já existente), não aparece como card na página inicial, mas continua no carrossel e na
   listagem completa de avisos.html. Botão "Acesse Aqui" → agenciasp.sp.gov.br. SEED_VERSION 15->16.
+- 11/11/2026: revertida a composição de favicon com fundo preto (perfis de cor primária preta) —
+  usuário não gostou do resultado visual. Favicon volta a exibir a logo diretamente em todos os
+  perfis, sem composição.

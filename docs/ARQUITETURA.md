@@ -192,3 +192,6 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   em `assets/js/main.js` — por ficar na 6ª posição, o item sai da home mas continua elegível para
   `setupCarousel(notices, ...)`, que opera sobre a lista completa de avisos ativos, não só os
   cinco primeiros. SEED_VERSION 15->16.
+- 11/11/2026: revertido `isNearBlack`/`faviconOnBlackBacking` (commit anterior de composição de
+  favicon com fundo preto) via `git revert` — usuário não gostou do resultado. `applySspTheme()`
+  volta a atribuir a logo resolvida direto ao favicon (`favicon.href=resolvedLogo`), sem canvas.
