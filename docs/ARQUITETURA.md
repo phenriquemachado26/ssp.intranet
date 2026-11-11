@@ -127,3 +127,14 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   `display_order` de todos os avisos pela ordem atual de `DEMO_NOTICES` quando os 4 avisos
   originais ainda estão intocados) para posicioná-lo em primeiro sem precisar de lógica nova de
   "inserir no topo" na reconciliação. SEED_VERSION 13->14.
+- 11/11/2026: nova função `applyElectoralCascade(db, profile, wasElectoralActive)` chamada tanto
+  no `PUT /api/profiles/<id>` (ação `activate`) quanto em `applyPendingChange` (mesma ação, via
+  fila de aprovação): ao ativar o perfil `Período Eleitoral`, força
+  `change_control.notices_page_blocked=true`, `change_control.carousel_enabled=false` e
+  `active=false`/`active_carousel=false` em todos os avisos; ao sair dele (ativar qualquer outro
+  perfil), restaura só as duas flags globais (`notices_page_blocked=false`,
+  `carousel_enabled=true`), sem mexer nas flags individuais dos avisos — mesmo padrão já usado em
+  `PUT /api/change-control` para o bloqueio geral de alterações. `DELETE /api/profiles/<id>` (e o
+  branch `delete` de `applyPendingChange`) ganharam checagem de quantidade mínima
+  (`db.header_profiles.length <= 2` bloqueia a exclusão), redundante na prática com a proteção já
+  existente da Paleta Padrão, mas mantida como regra genérica e explícita.

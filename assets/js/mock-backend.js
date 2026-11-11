@@ -459,6 +459,25 @@
     });
   }
 
+  // Regra de negócio: enquanto o perfil "Período Eleitoral" está ativo, a página de avisos fica
+  // bloqueada, o pop-up de destaque não aparece, o carrossel é desativado e todos os avisos são
+  // inativados (nenhum conteúdo administrativo "escapa" da vedação eleitoral). Ao sair do perfil
+  // eleitoral (ativar qualquer outro), a página de avisos e o carrossel voltam a ficar
+  // disponíveis automaticamente, mas os avisos individuais permanecem inativos — cada um volta a
+  // poder ser (re)ativado manualmente pelo Master, assim como já acontece ao desativar o bloqueio
+  // geral de alterações (`change_control.locked`; ver regra correspondente).
+  function applyElectoralCascade(db, profile, wasElectoralActive) {
+    const isElectoralNow = profile?.name === 'Período Eleitoral';
+    if (isElectoralNow) {
+      db.change_control.notices_page_blocked = true;
+      db.change_control.carousel_enabled = false;
+      db.notices.forEach((n) => { n.active = false; n.active_carousel = false; });
+    } else if (wasElectoralActive) {
+      db.change_control.notices_page_blocked = false;
+      db.change_control.carousel_enabled = true;
+    }
+  }
+
   function insertNoticeFirst(db, values) {
     db.notices.forEach((n) => { n.display_order += 1; });
     db.notices.push({
@@ -722,9 +741,11 @@
       const action = data.activate ? 'activate' : 'update';
       if (queueIfRequired(db, session, action, 'header_profile', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (data.activate) {
+        const wasElectoralActive = db.header_profiles.find((p) => p.active)?.name === 'Período Eleitoral';
         db.header_profiles.forEach((p) => { p.active = false; });
         const profile = db.header_profiles.find((p) => p.id === id);
         if (profile) profile.active = true;
+        applyElectoralCascade(db, profile, wasElectoralActive);
       } else {
         const values = profileValues(data);
         if (db.header_profiles.some((p) => p.id !== id && p.name === values.name)) return [409, { error: 'Nome já utilizado.' }];
@@ -916,6 +937,7 @@
         if (!profile) return [404, { error: 'Perfil não encontrado.' }];
         if (profile.active) return [409, { error: 'O perfil em uso não pode ser excluído.' }];
         if (profile.name === 'Paleta Padrão') return [409, { error: 'A Paleta Padrão não pode ser excluída.' }];
+        if (db.header_profiles.length <= 2) return [409, { error: 'É necessário manter ao menos 2 perfis cadastrados, além do Período Eleitoral.' }];
         db.header_profiles = db.header_profiles.filter((p) => p.id !== id);
       } else if (path.startsWith('/api/menu/')) {
         db.menu_items = db.menu_items.filter((i) => i.id !== id);
@@ -992,11 +1014,14 @@
       const values = profileValues(payload);
       Object.assign(db.header_profiles.find((p) => p.id === pid) || {}, values);
     } else if (row.action === 'activate') {
+      const wasElectoralActive = db.header_profiles.find((p) => p.active)?.name === 'Período Eleitoral';
       db.header_profiles.forEach((p) => { p.active = false; });
       const profile = db.header_profiles.find((p) => p.id === pid);
       if (profile) profile.active = true;
+      applyElectoralCascade(db, profile, wasElectoralActive);
     } else if (row.action === 'delete') {
-      db.header_profiles = db.header_profiles.filter((p) => !(p.id === pid && !p.active && p.name !== 'Paleta Padrão'));
+      const wouldBreakMinimum = db.header_profiles.length <= 2;
+      db.header_profiles = db.header_profiles.filter((p) => !(p.id === pid && !p.active && p.name !== 'Paleta Padrão' && !wouldBreakMinimum));
     }
   }
 

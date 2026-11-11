@@ -57,9 +57,26 @@ Atualizado em: 11/11/2026.
 - Perfis podem ser criados, editados, ativados e excluídos pelo Master.
 - Um perfil pode ser marcado como **protegido**: não pode ser editado nem excluído por ninguém,
   nem mesmo pelo Administrador Master (continua podendo ser ativado normalmente). O perfil
-  `Período Eleitoral` é semeado como protegido nesta demonstração.
+  `Período Eleitoral` é semeado como protegido nesta demonstração; os demais perfis (inclusive a
+  Paleta Padrão e o Governo Tarcísio) podem ser editados e excluídos normalmente pelo Master,
+  respeitada a regra de quantidade mínima abaixo.
 - Ao semear os dados de demonstração (primeira visita ou "Restaurar dados de demonstração"), o
   perfil ativo por padrão é `Governo Tarcísio`, não a Paleta Padrão.
+- **Quantidade mínima de perfis**: além do `Período Eleitoral`, é obrigatório manter ao menos mais
+  um perfil cadastrado (mínimo de 2 perfis no total). Uma exclusão que deixaria menos de 2 perfis
+  é rejeitada. Na prática esse piso já é garantido pela própria Paleta Padrão (que também nunca
+  pode ser excluída), mas a regra vale de forma genérica para qualquer combinação de perfis.
+- **Cascata do período eleitoral**: ao ativar o perfil `Período Eleitoral`, automaticamente (a)
+  a página de avisos é bloqueada (mesmo efeito do bloqueio manual em "Visão Geral": nav oculto e
+  acesso direto a `avisos.html` redireciona para a página inicial); (b) o pop-up de destaque da
+  página inicial deixa de aparecer; (c) o carrossel de imagens é desativado; (d) todos os avisos
+  são inativados (removidos também do carrossel individualmente). Nenhum aviso, destaque ou
+  carrossel fica visível ao público enquanto esse perfil estiver ativo, mesmo que um Administrador
+  tenha ativado algum item individualmente antes. Ao sair do perfil `Período Eleitoral` (ativar
+  qualquer outro perfil), a página de avisos e a capacidade do carrossel voltam a ficar disponíveis
+  automaticamente, mas os avisos individuais **não** são reativados sozinhos — cada um volta a
+  poder ser (re)ativado manualmente pelo Master, no mesmo espírito da regra já existente para o
+  bloqueio geral de alterações ("Ao desativar o bloqueio, as flags não são alteradas").
 
 ### Acessos Rápidos
 
@@ -258,3 +275,8 @@ Atualizado em: 11/11/2026.
   também aparecer no pop-up de destaque da página inicial (primeiro aviso ativo com banner).
   Banner próprio (`banner_ConselhoUsuarios.png`), descrição baseada em conteúdo fornecido pelo
   usuário e botão "Participe" com link para o Portal Fala.SP.
+- 11/11/2026: adicionada a regra de quantidade mínima de perfis (além do Período Eleitoral, ao
+  menos mais um perfil é obrigatório) e a cascata de ativação do Período Eleitoral (bloqueia a
+  página de avisos, suprime o pop-up de destaque, desativa o carrossel e inativa todos os avisos;
+  ao sair do perfil, a página de avisos e o carrossel voltam a ficar disponíveis automaticamente,
+  mas os avisos individuais continuam inativos até o Master reativá-los manualmente, um a um).

@@ -165,3 +165,9 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   `DEMO_NOTICES` — que já tem o novo item na frente — e não sobre uma lista fixa de 4 títulos.
   Nenhuma lógica nova de inserção foi necessária; só a condição de guarda (4 títulos antigos
   intocados) precisa continuar valendo para o reposicionamento acontecer.
+- **Reaproveitar `notices_page_blocked` + `active=false` em massa, em vez de criar um novo
+  mecanismo de "ocultar tudo"**: o pop-up de destaque, o carrossel e a própria renderização de
+  avisos na home já filtram por `notice.active` e por `config.settings.notices_page_blocked`
+  (ver `assets/js/main.js`/`avisos.js`). Por isso, a cascata do perfil `Período Eleitoral` não
+  precisou de nenhuma lógica nova de ocultação: bastou forçar essas mesmas flags já existentes
+  (mesmo truque já usado pelo bloqueio geral de alterações em `PUT /api/change-control`).
