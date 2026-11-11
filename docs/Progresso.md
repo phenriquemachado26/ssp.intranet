@@ -267,3 +267,20 @@ desativados ao bloquear) não mudou, só o texto do pop-up.
   diálogo conferem exatamente com o texto pedido, sem erros de console.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Perfis sempre exigem aprovação do Master; ícones reais de redes sociais no rodapé
+
+Duas entregas a pedido do usuário: (1) criação/edição/exclusão/ativação de perfil visual por um
+Administrador do Site agora sempre entra na fila de aprovação do Master, mesmo com o bloqueio geral
+de alterações desligado — mensagem orienta o Administrador do Site a contatar um Master; a mudança
+só reflete no site após aprovação; (2) ícones de redes sociais do rodapé trocados de badge de letra
+para a logomarca real, escolhendo automaticamente tema claro/escuro pelo contraste do fundo.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 201 cenários
+  de lógica validados via harness Node.js (16 novos cobrindo o fluxo completo de aprovação de
+  perfil). Ambas as mudanças também verificadas visualmente com Playwright: fluxo completo Site
+  Admin → Master → aprovação (mensagem exata conferida, perfil só aparece após aprovação); e
+  carregamento das imagens reais no rodapé de `index.html`/`avisos.html` (200 OK, 512x512, sem
+  erros de console nas duas páginas).
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
