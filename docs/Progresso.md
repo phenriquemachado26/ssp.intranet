@@ -349,3 +349,23 @@ como card/listagem.
   real do Master. Todos passando.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Nova descrição do Conselho de Usuários; consolidação de banners largos
+
+Duas entregas: (1) descrição do aviso "Consulta ao Conselho de Usuários" substituída por versão
+com parágrafos e itens de lista (quebras de linha preservadas no site via CSS `white-space:
+pre-line` já existente); (2) consolidação de banners após o usuário substituir arquivos
+diretamente no disco — Conselho de Usuários e Hospitalidade passaram a usar imagens largas
+(2560x397); o aviso separado "carrossel-only" de Hospitalidade (de uma entrega anterior) foi
+consolidado de volta no aviso original, evitando duplicidade.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 221 cenários
+  de lógica validados via harness Node.js, incluindo upgrades de banner e remoção de duplicado
+  preservando customização real do Master. Verificado visualmente com Playwright: quebras de linha
+  renderizando (21 linhas confirmadas), 6 avisos corretos sem erro 404, ambas as imagens novas
+  carregando (2560px de largura), sem erros de console em `index.html` e `avisos.html`.
+- Observação incidental (fora do escopo desta tarefa, não é regressão): `avisos.html` não exibe
+  banners na listagem completa (`.notice-banner` com `display:none` ali) — comportamento uniforme
+  em todos os avisos, parece design já existente, não investigado a fundo.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
