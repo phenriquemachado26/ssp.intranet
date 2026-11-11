@@ -98,3 +98,6 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   Corrigidos dois bugs de responsividade mobile (sidebar do painel presa aberta por sobreposição
   de z-index; nav de `avisos.html` sobrepondo o título por herdar `position:absolute` do
   breakpoint), encontrados com Playwright + Chromium headless.
+- 11/11/2026: `menu_items` ("Instituições e serviços") ganhou `DEFAULT_MENU_ITEMS` com 15 itens
+  extras de demonstração (sistemas internos reais da SSP-SP); link de "Polícia Civil" nos
+  acessos rápidos simplificado. SEED_VERSION 7->8.

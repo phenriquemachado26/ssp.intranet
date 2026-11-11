@@ -40,6 +40,21 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **Os 4 itens "Polícia Civil/Militar/Científica/Conseg" existem em DOIS lugares com URLs
+  DIFERENTES de propósito — isso é intencional, não inconsistência.** Em `quick_access`
+  (cabeçalho) apontam para os sites oficiais reais, abrindo em nova aba. Em `menu_items`
+  ("Instituições e serviços") continuam com âncora interna (`#civil` etc.), porque o usuário só
+  pediu para trocar os do cabeçalho — o destino real desses 4 em "Instituições e serviços" segue
+  em aberto (ver `docs/REGRAS-DE-NEGOCIO.md` → "Dados institucionais pendentes"). Não "corrigir"
+  um para bater com o outro sem confirmar com o usuário.
+- **Upgrade de URL "por valor antigo conhecido", não só por padrão (`#`).** Quando o link de
+  "Polícia Civil" em `quick_access` foi simplificado (de uma URL longa com parâmetros ADF para
+  `https://www.policiacivil.sp.gov.br/`), a heurística de upgrade existente (só trocava URLs que
+  começassem com `#`) não pegava esse caso, porque a URL antiga já não era mais uma âncora interna.
+  Foi necessário adicionar uma checagem extra comparando com o valor antigo literal
+  (`OLD_POLICIA_CIVIL_URL`) em `reconcileSeed`. Ao trocar um valor de demonstração que já não é
+  mais o placeholder genérico (`#x` ou vazio), lembrar de fazer o mesmo: checar o valor antigo
+  específico, não só os padrões genéricos de "nunca customizado".
 - **Playwright já está disponível neste ambiente via `npx` (cache em
   `AppData/Local/npm-cache/_npx/<hash>/node_modules/playwright`), com Chromium funcional —
   mesmo sem `chromium-cli`.** Para rodar um script `.mjs`, importar com caminho absoluto

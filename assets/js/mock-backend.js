@@ -40,10 +40,35 @@
   // Acessos rápidos padrão do cabeçalho público (os 4 links que hoje existem fixos no HTML).
   // Usado tanto no seed inicial quanto na reconciliação de bancos já existentes no navegador.
   const DEFAULT_QUICK_ACCESS = [
-    { title: 'Polícia Civil', url: 'https://www.policiacivil.sp.gov.br/portal/faces/pages_home?_afrLoop=1883351569234470&_afrWindowMode=0&_afrWindowId=null#!%40%40%3F_afrWindowId%3Dnull%26_afrLoop%3D1883351569234470%26_afrWindowMode%3D0%26_adf.ctrl-state%3D16bqq1ymrp_4' },
+    { title: 'Polícia Civil', url: 'https://www.policiacivil.sp.gov.br/' },
     { title: 'Polícia Militar', url: 'https://www.policiamilitar.sp.gov.br/' },
     { title: 'Polícia Científica', url: 'https://www.policiacientifica.sp.gov.br/' },
     { title: 'Conseg', url: 'https://www.ssp.sp.gov.br/conseg/' },
+  ];
+
+  // Itens semeados de "Instituições e serviços" (Cadastro Menu). Os 4 primeiros são os acessos
+  // institucionais originais; os demais são sistemas internos reais da SSP-SP, fornecidos como
+  // mock pelo usuário — todos abrem em nova aba (ver renderização em assets/js/main.js).
+  const DEFAULT_MENU_ITEMS = [
+    { title: 'Polícia Civil', description: 'Investigação, polícia judiciária e atendimento ao cidadão.', url: '#civil' },
+    { title: 'Polícia Militar', description: 'Policiamento ostensivo e preservação da ordem pública.', url: '#militar' },
+    { title: 'Polícia Científica', description: 'Perícia oficial e produção de conhecimento técnico-científico.', url: '#cientifica' },
+    { title: 'Conseg', description: 'Participação comunitária e integração com a segurança pública.', url: '#conseg' },
+    { title: 'Lista Ramais', description: 'Consulta de ramais telefônicos dos setores e unidades da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/listaramais/pages/home' },
+    { title: 'Infocrim', description: 'Consulta e registro de informações criminais da Secretaria de Segurança Pública.', url: 'https://www.infocrim.ssp.sp.gov.br/login' },
+    { title: 'Expedição de Documentos', description: 'Emissão e acompanhamento da expedição de documentos oficiais.', url: 'https://www.intranet.ssp.sp.gov.br/expDocumentos/' },
+    { title: 'RH', description: 'Serviços e informações de Recursos Humanos para servidores da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/PessoasRH/Login.aspx' },
+    { title: 'FISP', description: 'Sistema de controle de informações funcionais da Secretaria de Segurança Pública.', url: 'https://www.intranet.ssp.sp.gov.br/fisp/login' },
+    { title: 'Placas Reservadas', description: 'Consulta e solicitação de placas reservadas para veículos oficiais.', url: 'https://www.intranet.ssp.sp.gov.br/fisp/login' },
+    { title: 'SICON', description: 'Sistema de controle de processos administrativos da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/sic/' },
+    { title: 'Consulta Jurídica', description: 'Pareceres e orientações da Consultoria Jurídica da SSP.', url: 'https://www.ssp.sp.gov.br/cjssp/cjssp.aspx' },
+    { title: 'CLC', description: 'Controle de agendamento e registro da lavagem de viaturas.', url: 'https://www.intranet.ssp.sp.gov.br/clc/Login.aspx' },
+    { title: 'Protocolo', description: 'Protocolo eletrônico de documentos e processos administrativos.', url: 'https://www.intranet.ssp.sp.gov.br/eProtocolo/Login.aspx' },
+    { title: 'Infoseg', description: 'Integração de informações de segurança pública entre órgãos e unidades.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/infoseg.aspx' },
+    { title: 'RDO', description: 'Registro Digital de Ocorrência da Polícia Civil.', url: 'http://rdo.policiacivil.sp.gov.br/nrdo/' },
+    { title: 'WIKI', description: 'Documentação colaborativa com procedimentos e orientações da Secretaria.', url: 'https://wiki.ssp.sp.gov.br/doku.php?id=start' },
+    { title: 'Informativos', description: 'Comunicados e informativos internos da Secretaria de Segurança Pública.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/informativossp/' },
+    { title: 'Sala de Reuniões', description: 'Agendamento de salas de reunião da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/salareunioes/' },
   ];
 
   // Dados de contato de demonstração do rodapé (endereço real da sede da SSP-SP, usado só como mock).
@@ -68,7 +93,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 7;
+  const SEED_VERSION = 8;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -226,10 +251,27 @@
       });
       existingQuickAccessTitles.add(item.title);
     }
-    // Upgrade: itens semeados que ainda apontam para a antiga âncora interna (ex.: "#civil")
-    // passam a usar o link externo real, sem tocar em acessos que o Master já customizou.
+    // Upgrade: itens semeados que ainda apontam para a antiga âncora interna (ex.: "#civil") ou
+    // para a URL antiga e mais longa de "Polícia Civil" passam a usar o link real/simplificado
+    // atual, sem tocar em acessos que o Master já customizou de verdade.
+    const OLD_POLICIA_CIVIL_URL = 'https://www.policiacivil.sp.gov.br/portal/faces/pages_home?_afrLoop=1883351569234470&_afrWindowMode=0&_afrWindowId=null#!%40%40%3F_afrWindowId%3Dnull%26_afrLoop%3D1883351569234470%26_afrWindowMode%3D0%26_adf.ctrl-state%3D16bqq1ymrp_4';
     for (const item of db.quick_access) {
       const def = DEFAULT_QUICK_ACCESS.find((d) => d.title === item.title);
+      if (def && (item.url.startsWith('#') || item.url === OLD_POLICIA_CIVIL_URL) && item.url !== def.url) item.url = def.url;
+    }
+    const existingMenuTitles = new Set(db.menu_items.map((i) => i.title));
+    let nextMenuOrder = db.menu_items.reduce((max, i) => Math.max(max, i.display_order), 0);
+    for (const item of DEFAULT_MENU_ITEMS) {
+      if (existingMenuTitles.has(item.title)) continue;
+      nextMenuOrder += 1;
+      db.menu_items.push({
+        id: nextId(db, 'menu_items'), title: item.title, description: item.description, url: item.url,
+        active: true, display_order: nextMenuOrder, created_at: nowStamp(),
+      });
+      existingMenuTitles.add(item.title);
+    }
+    for (const item of db.menu_items) {
+      const def = DEFAULT_MENU_ITEMS.find((d) => d.title === item.title);
       if (def && item.url.startsWith('#') && item.url !== def.url) item.url = def.url;
     }
     if (!db.footer_settings) {
@@ -254,7 +296,7 @@
   async function seedDb() {
     const db = {
       seedVersion: SEED_VERSION,
-      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: 4, quick_access: DEFAULT_QUICK_ACCESS.length, notices: 0, pending_changes: 0 },
+      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: 0, pending_changes: 0 },
       users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
         id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
         password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
@@ -278,12 +320,10 @@
       change_control: { locked: false, note: '', carousel_enabled: true, notices_page_blocked: false, updated_at: nowStamp() },
       footer_settings: { ...FOOTER_DEFAULTS, updated_at: nowStamp() },
       pending_changes: [],
-      menu_items: [
-        { id: 1, title: 'Polícia Civil', description: 'Investigação, polícia judiciária e atendimento ao cidadão.', url: '#civil', active: true, display_order: 1, created_at: nowStamp() },
-        { id: 2, title: 'Polícia Militar', description: 'Policiamento ostensivo e preservação da ordem pública.', url: '#militar', active: true, display_order: 2, created_at: nowStamp() },
-        { id: 3, title: 'Polícia Científica', description: 'Perícia oficial e produção de conhecimento técnico-científico.', url: '#cientifica', active: true, display_order: 3, created_at: nowStamp() },
-        { id: 4, title: 'Conseg', description: 'Participação comunitária e integração com a segurança pública.', url: '#conseg', active: true, display_order: 4, created_at: nowStamp() },
-      ],
+      menu_items: DEFAULT_MENU_ITEMS.map((item, index) => ({
+        id: index + 1, title: item.title, description: item.description, url: item.url,
+        active: true, display_order: index + 1, created_at: nowStamp(),
+      })),
       quick_access: DEFAULT_QUICK_ACCESS.map((item, index) => ({
         id: index + 1, title: item.title, url: item.url, active: true, display_order: index + 1, created_at: nowStamp(),
       })),

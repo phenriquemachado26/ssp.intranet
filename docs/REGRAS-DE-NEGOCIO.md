@@ -103,7 +103,13 @@ Atualizado em: 11/11/2026.
 - URLs aceitas devem iniciar com `https://`, `http://`, `/` ou `#`.
 - Os quatro acessos institucionais originais permanecem no cabeçalho.
 - Na página inicial, “Instituições e serviços” permanece recolhido e só exibe os itens após um clique.
+- Todos os cartões de “Instituições e serviços” abrem em nova aba, independentemente do destino.
 - Com o bloqueio ativo, alterações feitas por Administradores do Site entram na fila de validação do Master.
+- Além dos 4 acessos institucionais, são semeados 15 sistemas internos reais da SSP-SP como
+  demonstração (Lista Ramais, Infocrim, Expedição de Documentos, RH, FISP, Placas Reservadas,
+  SICON, Consulta Jurídica, CLC, Protocolo, Infoseg, RDO, WIKI, Informativos, Sala de Reuniões),
+  cada um com URL e breve descrição; os 4 institucionais originais continuam usando âncora interna
+  (`#civil` etc.), sem destino real definido nesta seção (ver "Dados institucionais pendentes").
 
 ## Cadastro de Avisos
 
@@ -220,3 +226,6 @@ Atualizado em: 11/11/2026.
   atendimento".
 - 11/11/2026: os 4 acessos rápidos passaram de âncoras internas (`#civil` etc.) para os links
   oficiais reais dos respectivos órgãos, abrindo em nova aba.
+- 11/11/2026: "Instituições e serviços" ganhou 15 itens de demonstração com sistemas internos
+  reais da SSP-SP (Lista Ramais, Infocrim, RH, FISP etc.), cada um com descrição e URL; o link
+  de "Polícia Civil" nos acessos rápidos foi simplificado para `https://www.policiacivil.sp.gov.br/`.
