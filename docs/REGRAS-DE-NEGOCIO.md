@@ -40,7 +40,7 @@ Atualizado em: 11/11/2026.
 - A senha temporária deve possuir no mínimo oito caracteres nesta demonstração.
 - Em produção, CPF e e-mail devem ser únicos e validados no servidor.
 
-## Gestão do Cabeçalho
+## Cabeçalho e Rodapé
 
 - Podem existir no máximo cinco perfis visuais.
 - Apenas um perfil pode ficar em uso por vez.
@@ -74,6 +74,19 @@ Atualizado em: 11/11/2026.
   de validação do Master, como nas demais funcionalidades administrativas.
 - Esta é uma entidade própria (`quick_access`), independente do Cadastro Menu/"Instituições e
   serviços": editar um não afeta o outro, mesmo que os 4 itens semeados tenham os mesmos títulos.
+
+### Rodapé
+
+- Exclusivo do Administrador Master: Administrador do Site não acessa nem altera estas
+  configurações (sem fila de validação — a alteração é direta e imediata, como em "Visão Geral").
+- Campos de endereço: logradouro, número, bairro, cidade, estado e CEP. Todos opcionais; a linha
+  de endereço só aparece no rodapé público quando pelo menos um campo estiver preenchido.
+- Campos de contato: telefone, e-mail de suporte e "Desenvolvido por" (texto livre).
+- E-mail de suporte é validado no formato `usuario@dominio`.
+- Redes sociais: Facebook, Instagram, YouTube e WhatsApp, cada uma com um campo de URL. Uma rede
+  com URL vazia tem seu ícone ocultado no rodapé público; URLs informadas devem começar com
+  `http://` ou `https://`.
+- As informações são exibidas no rodapé de todas as páginas públicas (`index.html`, `avisos.html`).
 
 ## Cadastro Menu
 
@@ -194,3 +207,5 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: perfil ativo por padrão no seed passou de `Paleta Padrão` para `Governo Tarcísio`.
 - 11/11/2026: nova seção "Acessos Rápidos" — os 4 links fixos do cabeçalho público viraram uma
   entidade editável (até 5, com ocultar/exibir), gerenciada em Gestão do Cabeçalho.
+- 11/11/2026: seção renomeada de "Gestão do Cabeçalho" para "Cabeçalho e Rodapé"; adicionada a
+  subseção "Rodapé" (endereço, contato e redes sociais, exclusivo do Master).

@@ -4,7 +4,7 @@
 <body class="dashboard-page">
   <aside class="sidebar">
     <a class="brand brand-light" href="index.html"><img src="assets/images/logo-ssp.svg" alt="SSP"><span><small>Administração</small>Intranet SSP</span></a>
-    <nav><p>GESTÃO</p><button class="side-item active" data-view="overview">⌂ <span>Visão geral</span></button><button class="side-item" data-view="users" data-master-only hidden>♙ <span>Cadastro de Usuários</span></button><button class="side-item" data-view="headers">◈ <span>Gestão do Cabeçalho</span></button><button class="side-item" data-view="menu">☰ <span>Cadastro Menu</span></button><button class="side-item" data-view="notices">▤ <span>Cadastro de Avisos</span></button><button class="side-item" data-view="approvals" data-master-only hidden>✓ <span>Validações pendentes</span></button></nav>
+    <nav><p>GESTÃO</p><button class="side-item active" data-view="overview">⌂ <span>Visão geral</span></button><button class="side-item" data-view="users" data-master-only hidden>♙ <span>Cadastro de Usuários</span></button><button class="side-item" data-view="headers">◈ <span>Cabeçalho e Rodapé</span></button><button class="side-item" data-view="menu">☰ <span>Cadastro Menu</span></button><button class="side-item" data-view="notices">▤ <span>Cadastro de Avisos</span></button><button class="side-item" data-view="approvals" data-master-only hidden>✓ <span>Validações pendentes</span></button></nav>
     <button id="logout" class="side-item logout">↪ <span>Sair</span></button>
   </aside>
   <main class="dashboard-main">
@@ -29,10 +29,43 @@
       <article id="notices-page-control-card" class="control-card compact-control" data-master-only hidden><div><p class="eyebrow">Página de avisos</p><h2>Bloqueio da tela de avisos</h2><p>Impede o acesso à página de avisos, inclusive por link direto.</p></div><div class="change-toggle-wrap"><span>Bloquear página</span><label class="yes-no-switch" for="notices-page-blocked"><span>Não</span><input id="notices-page-blocked" type="checkbox" role="switch" aria-label="Bloquear página de avisos"><i></i><span>Sim</span></label></div></article>
     </section>
     <section id="headers-view" class="dashboard-view">
-      <div class="view-heading"><div><p class="eyebrow">Personalização</p><h1>Gestão do Cabeçalho</h1><p>Crie até 5 perfis visuais. Somente um perfil pode ficar em uso.</p></div><button id="new-profile-open" class="button button-primary">+ Novo perfil</button></div>
+      <div class="view-heading"><div><p class="eyebrow">Personalização</p><h1>Cabeçalho e Rodapé</h1><p>Crie até 5 perfis visuais. Somente um perfil pode ficar em uso.</p></div><button id="new-profile-open" class="button button-primary">+ Novo perfil</button></div>
       <div id="profiles-grid" class="profiles-grid"></div>
       <div class="view-heading" style="margin-top:46px"><div><p class="eyebrow">Navegação</p><h2>Acessos Rápidos</h2><p>Até 5 atalhos exibidos no cabeçalho público, antes do botão Avisos. Cada um pode ser ocultado sem ser excluído.</p></div><button id="new-quick-access-open" class="button button-primary">+ Novo acesso</button></div>
       <div class="table-wrap"><table><thead><tr><th>Reordenar</th><th>Título</th><th>URL</th><th>Status</th><th>Ações</th></tr></thead><tbody id="quick-access-table"></tbody></table></div>
+      <div class="view-heading" style="margin-top:46px" data-master-only hidden><div><p class="eyebrow">Rodapé</p><h2>Contato e redes sociais</h2><p>Exibidos no rodapé público. Exclusivo do Administrador Master.</p></div></div>
+      <form id="footer-form" class="footer-form" data-master-only hidden>
+        <section>
+          <h3>Endereço</h3>
+          <div class="form-grid">
+            <div><label for="footer-street">Logradouro</label><input id="footer-street" maxlength="120"></div>
+            <div><label for="footer-number">Número</label><input id="footer-number" maxlength="20"></div>
+            <div><label for="footer-district">Bairro</label><input id="footer-district" maxlength="80"></div>
+            <div><label for="footer-city">Cidade</label><input id="footer-city" maxlength="80"></div>
+            <div><label for="footer-state">Estado</label><input id="footer-state" maxlength="2" placeholder="SP"></div>
+            <div><label for="footer-zip">CEP</label><input id="footer-zip" maxlength="9" placeholder="00000-000"></div>
+          </div>
+        </section>
+        <section>
+          <h3>Contato</h3>
+          <div class="form-grid">
+            <div><label for="footer-phone">Telefone</label><input id="footer-phone" maxlength="20"></div>
+            <div><label for="footer-email">E-mail de suporte</label><input id="footer-email" type="email" maxlength="120"></div>
+            <div><label for="footer-developed-by">Desenvolvido por</label><input id="footer-developed-by" maxlength="80"></div>
+          </div>
+        </section>
+        <section>
+          <h3>Redes sociais</h3>
+          <div class="form-grid">
+            <div><label for="footer-facebook">Facebook (URL)</label><input id="footer-facebook" type="url" placeholder="https://facebook.com/..."></div>
+            <div><label for="footer-instagram">Instagram (URL)</label><input id="footer-instagram" type="url" placeholder="https://instagram.com/..."></div>
+            <div><label for="footer-youtube">YouTube (URL)</label><input id="footer-youtube" type="url" placeholder="https://youtube.com/..."></div>
+            <div><label for="footer-whatsapp">WhatsApp (URL)</label><input id="footer-whatsapp" type="url" placeholder="https://wa.me/55..."></div>
+          </div>
+        </section>
+        <p id="footer-message" class="form-message"></p>
+        <button class="button button-primary" type="submit">Salvar rodapé</button>
+      </form>
     </section>
     <section id="menu-view" class="dashboard-view">
       <div class="view-heading"><div><p class="eyebrow">Navegação</p><h1>Cadastro Menu</h1><p>Gerencie os itens exibidos em Instituições e serviços.</p></div><button id="new-menu-open" class="button button-primary">+ Novo item</button></div>

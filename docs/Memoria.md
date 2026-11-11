@@ -40,6 +40,12 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **`footer_settings` é Master-exclusivo, sem fila de validação — decisão deliberada, não
+  esquecimento.** Ao contrário de `quick_access`/`menu_items`/`notices`/`header_profiles` (onde
+  Administrador do Site também atua, sujeito a aprovação quando o bloqueio está ativo), o usuário
+  pediu explicitamente que o rodapé fosse gerenciado só pelo Master. Por isso `PUT
+  /api/footer-settings` usa `requireMaster()` direto, sem passar por `queueIfRequired`. Se um dia
+  o Site admin precisar editar o rodapé, replicar o padrão de fila das outras entidades.
 - **`quick_access` é uma entidade própria, não reaproveita `menu_items`.** Os 4 links do
   cabeçalho público tinham o mesmo título dos itens semeados em "Cadastro Menu" (Polícia Civil,
   Militar, etc.), mas sempre foram HTML fixo, nunca ligados a `menu_items` de fato. Em vez de

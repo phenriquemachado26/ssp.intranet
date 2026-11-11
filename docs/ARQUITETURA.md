@@ -40,6 +40,10 @@ para o modelo de sessão e suas limitações de segurança.
 - `quick_access`: entidade própria para os acessos rápidos do cabeçalho público (título, URL,
   `active`, `display_order`), independente de `menu_items`. Mesmas regras de ordenação única e
   fila de validação das demais entidades administrativas; limite de 5 itens.
+- `footer_settings`: objeto único (não é lista) com endereço, telefone, e-mail de suporte,
+  "desenvolvido por" e URLs de redes sociais (Facebook/Instagram/YouTube/WhatsApp), exibidos no
+  rodapé público. Exclusivo do Administrador Master — sem fila de validação, ao contrário das
+  demais entidades administrativas, porque não há papel de Administrador do Site envolvido aqui.
 - Resolução de banner (`resolveBanner`) usa um manifesto estático de nomes de arquivo
   (`BANNER_FILES` em `mock-backend.js`), já que não existe mais servidor para listar o diretório
   `images_banner/` dinamicamente — precisa ser atualizado manualmente a cada novo arquivo.
@@ -83,3 +87,6 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: nova entidade `quick_access` (acessos rápidos do cabeçalho, até 5, com
   ocultar/exibir); os 4 links antes fixos no HTML de `index.html` viraram renderização dinâmica
   via `GET /api/quick-access`, inseridos em `#quick-access-anchor` por `assets/js/main.js`.
+- 11/11/2026: tela "Gestão do Cabeçalho" renomeada para "Cabeçalho e Rodapé"; nova entidade
+  singleton `footer_settings` (endereço, contato, redes sociais), exclusiva do Master, renderizada
+  no rodapé público por `assets/js/theme.js` (`window.applySspFooter`).

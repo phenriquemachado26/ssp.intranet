@@ -58,7 +58,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 4;
+  const SEED_VERSION = 5;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -118,6 +118,24 @@
     const v = String(value || '');
     return v.startsWith('data:') ? v : `${staticDir}/${encodeURIComponent(v)}`;
   };
+
+  const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const SOCIAL_URL_FORMAT = /^https?:\/\//i;
+
+  function footerSettingsValues(data) {
+    const textKeys = ['address_street', 'address_number', 'address_district', 'address_city', 'address_state', 'address_zip', 'phone', 'support_email', 'developed_by'];
+    const values = {};
+    textKeys.forEach((k) => { values[k] = String(data[k] ?? '').trim(); });
+    if (values.support_email && !EMAIL_FORMAT.test(values.support_email)) {
+      throw new ApiError(400, 'Informe um e-mail de suporte válido.');
+    }
+    ['social_facebook', 'social_instagram', 'social_youtube', 'social_whatsapp'].forEach((k) => {
+      const v = String(data[k] ?? '').trim();
+      if (v && !SOCIAL_URL_FORMAT.test(v)) throw new ApiError(400, 'Links de redes sociais devem começar com http:// ou https://.');
+      values[k] = v;
+    });
+    return values;
+  }
 
   function profileValues(data) {
     const keys = ['name', 'logo', 'page_title', 'color_primary', 'color_secondary', 'color_detail', 'font_family'];
@@ -198,6 +216,14 @@
       });
       existingQuickAccessTitles.add(item.title);
     }
+    if (!db.footer_settings) {
+      db.footer_settings = {
+        address_street: '', address_number: '', address_district: '', address_city: '', address_state: '', address_zip: '',
+        phone: '(00) 0000-0000', support_email: 'contato@ssp.gov.br', developed_by: 'Desenvolvido pelo GTI',
+        social_facebook: '', social_instagram: '', social_youtube: '', social_whatsapp: '',
+        updated_at: nowStamp(),
+      };
+    }
     db.seedVersion = SEED_VERSION;
     saveDb(db);
     return db;
@@ -228,6 +254,12 @@
         })),
       ],
       change_control: { locked: false, note: '', carousel_enabled: true, notices_page_blocked: false, updated_at: nowStamp() },
+      footer_settings: {
+        address_street: '', address_number: '', address_district: '', address_city: '', address_state: '', address_zip: '',
+        phone: '(00) 0000-0000', support_email: 'contato@ssp.gov.br', developed_by: 'Desenvolvido pelo GTI',
+        social_facebook: '', social_instagram: '', social_youtube: '', social_whatsapp: '',
+        updated_at: nowStamp(),
+      },
       pending_changes: [],
       menu_items: [
         { id: 1, title: 'Polícia Civil', description: 'Investigação, polícia judiciária e atendimento ao cidadão.', url: '#civil', active: true, display_order: 1, created_at: nowStamp() },
@@ -350,6 +382,10 @@
     if (method === 'GET' && path === '/api/site-settings') {
       const c = db.change_control;
       return [200, { settings: { carousel_enabled: !!c.carousel_enabled, notices_page_blocked: !!c.notices_page_blocked } }];
+    }
+
+    if (method === 'GET' && path === '/api/footer-settings') {
+      return [200, { settings: db.footer_settings }];
     }
 
     if (method === 'GET' && path === '/api/menu') {
@@ -649,6 +685,13 @@
       db.change_control[setting] = !!data.value;
       db.change_control.updated_at = nowStamp();
       return [200, { message: 'Configuração atualizada.' }];
+    }
+
+    if (method === 'PUT' && path === '/api/footer-settings') {
+      requireMaster();
+      const values = footerSettingsValues(data);
+      Object.assign(db.footer_settings, values, { updated_at: nowStamp() });
+      return [200, { message: 'Rodapé atualizado.' }];
     }
 
     if (method === 'PUT' && path.startsWith('/api/pending-changes/')) {
