@@ -40,3 +40,16 @@ lógica validados via harness Node (18 anteriores + regressões do Validator/Sec
 seletor de contas). Mudança pontual e de baixo risco (prototype, UI/seed de dados) — não
 reexecutado o ciclo completo Validator/Security Specialist desta vez; será reexecutado antes de
 fechar o lote de "mocks" que o usuário ainda vai pedir.
+
+## 11/11/2026 — Solicitação de acesso de exemplo + reconciliação automática de seed
+
+Usuário reportou que os administradores semeados não apareciam em Cadastro de Usuários em um
+navegador que já tinha acessado o site antes da mudança anterior (localStorage antigo, com seed
+de apenas 1 usuário). Em vez de depender do botão "Restaurar dados de demonstração" (que apagaria
+qualquer customização do visitante), implementada reconciliação automática por `SEED_VERSION`:
+`loadDb()` detecta banco salvo desatualizado e adiciona só os itens de `DEMO_ACCOUNTS`/
+`DEMO_ACCESS_REQUESTS` que ainda não existem (por CPF), preservando tudo que já foi criado/editado
+no navegador. Também adicionada 1 solicitação de acesso de exemplo (pendente). 35 cenários de
+lógica validados via harness Node (31 anteriores + 4 novos, incluindo simulação de localStorage
+desatualizado). Revisão completa de Validator/Security Specialist ainda pendente — será feita ao
+fechar o lote de mocks.
