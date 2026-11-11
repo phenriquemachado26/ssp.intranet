@@ -304,3 +304,20 @@ claro da aba do navegador.
   aprovação), sem erros de console.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 11/11/2026 — Favicon com fundo preto para perfis de cor primária preta
+
+Atendido pedido do usuário: logomarcas pensadas para fundo escuro (Governo Tarcísio, Período
+Eleitoral — ambos com `color_primary: '#000000'`) ficavam ilegíveis quando exibidas direto como
+favicon, sobre o fundo claro padrão da aba do navegador. `theme.js` passou a compor o favicon
+desses perfis sobre um fundo preto (via canvas 64x64, exportado como PNG); perfis com cor primária
+clara ou escura-mas-não-preta (ex.: a Paleta Padrão, azul-marinho) continuam exibindo a logo
+normalmente, sem composição.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): mudança
+  restrita a `theme.js` (lógica de UI), fora do escopo do harness Node de regras de negócio.
+  Verificado visualmente com Playwright (Chromium headless): pixel do canto do favicon composto é
+  preto puro (0,0,0), confirmando o fundo desenhado; favicon do perfil não-preto permanece a logo
+  estática direta, sem composição. Sem erros de console.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.
