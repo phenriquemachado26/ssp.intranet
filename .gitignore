@@ -1,6 +1,9 @@
+.DS_Store
+Thumbs.db
 __pycache__/
 *.pyc
-data/*.db-shm
-data/*.db-wal
-data/server.pid
-logs/*.log
+
+# Resíduos do antigo backend Python (app.py), removido nesta migração para protótipo estático.
+# Mantidos no disco local apenas como lixo inofensivo; nunca commitados.
+/data/
+/logs/

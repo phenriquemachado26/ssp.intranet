@@ -1,6 +1,10 @@
 # Regras de Negócio
 
-Atualizado em: 01/07/2026.
+Atualizado em: 11/11/2026.
+
+> Protótipo 100% estático, sem servidor nem banco de dados real: todas as regras abaixo são
+> simuladas no navegador (`assets/js/mock-backend.js`) e persistidas em `localStorage`, por
+> navegador/aba — sem compartilhamento entre visitantes. Ver `docs/Auth.md`.
 
 ## Perfis administrativos
 
@@ -126,9 +130,13 @@ Atualizado em: 01/07/2026.
 
 ## Autenticação
 
-- O login consulta usuários ativos no SQLite.
-- Senhas nunca são armazenadas ou enviadas de volta ao navegador; apenas hashes com salt ficam no banco.
-- O encerramento invalida o token e retorna ao login.
+- O login consulta usuários ativos na base simulada em `localStorage` (sem servidor).
+- Senhas nunca são enviadas de volta à interface; apenas hashes com salt ficam armazenados.
+- O encerramento invalida a sessão local e retorna ao login.
+- **Aviso de protótipo**: como toda a lógica roda no navegador do próprio visitante, esta
+  autenticação não tem valor de segurança real — qualquer pessoa com acesso ao código-fonte
+  (sempre visível no navegador) pode inspecionar ou contornar a verificação. Não usar senhas
+  reais nem tratar este login como controle de acesso de produção. Detalhes em `docs/Auth.md`.
 
 ## Estados
 
@@ -140,3 +148,8 @@ Atualizado em: 01/07/2026.
 - Confirmar e substituir o logotipo provisório pela marca oficial.
 - Confirmar e-mail e telefone oficiais exibidos no rodapé.
 - Definir destinos reais dos acessos Polícia Civil, Polícia Militar, Polícia Científica e Conseg.
+
+## Histórico
+
+- 11/11/2026: seção Autenticação atualizada para refletir a migração para protótipo estático
+  (sem servidor); demais regras de negócio permanecem válidas, apenas a camada de persistência mudou.

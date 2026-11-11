@@ -82,7 +82,7 @@
     constructor(status, message) { super(message); this.status = status; }
   }
 
-  function loadDb() {
+  async function loadDb() {
     try {
       const raw = localStorage.getItem(DB_KEY);
       if (raw) return JSON.parse(raw);
@@ -94,7 +94,7 @@
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   }
 
-  function seedDb() {
+  async function seedDb() {
     const db = {
       seq: { users: 1, access_requests: 0, header_profiles: 1, menu_items: 4, notices: 0, pending_changes: 0 },
       users: [{
@@ -117,13 +117,8 @@
       ],
       notices: [],
     };
+    db.users[0].password_hash = await passwordHash('Master@123');
     saveDb(db);
-    // Hash da senha de demonstração é gerado de forma assíncrona (Web Crypto); grava assim que pronto.
-    passwordHash('Master@123').then((hash) => {
-      const fresh = loadDb();
-      const master = fresh.users.find((u) => u.id === 1);
-      if (master) { master.password_hash = hash; saveDb(fresh); }
-    });
     return db;
   }
 
@@ -210,7 +205,7 @@
   }
 
   async function handleApi(method, path, data) {
-    const db = loadDb();
+    const db = await loadDb();
     const result = await route(db, method, path, data || {});
     saveDb(db);
     return result;

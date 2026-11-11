@@ -1,41 +1,51 @@
 # Arquitetura
 
-Atualizado em: 01/07/2026.
+Atualizado em: 11/11/2026.
 
 ## Estado atual
 
-Aplicação multipágina em HTML5, CSS3 e JavaScript nativo, servida por backend Python. A persistência utiliza SQLite sem dependências externas.
+Aplicação multipágina em HTML5, CSS3 e JavaScript nativo, **100% estática, sem servidor e sem
+banco de dados real**. Hospedada no GitHub Pages. Toda a persistência (usuários, perfis, menu,
+avisos, fila de validação) é simulada no navegador por `assets/js/mock-backend.js`, que intercepta
+`window.fetch('/api/...')` e guarda os dados em `localStorage` — por navegador/aba, sem
+compartilhamento entre visitantes. Veja `docs/API.md` para o contrato simulado e `docs/Auth.md`
+para o modelo de sessão e suas limitações de segurança.
 
 ## Páginas
 
 - `index.html`: portal público, acessos institucionais e informações de contato.
 - `admin.html`: autenticação e criação de solicitação de acesso.
 - `painel.html`: visão geral e módulo Cadastro de Usuários.
+- `avisos.html`: lista pública de todos os avisos ativos.
 
 ## Persistência e segurança
 
-- `data/intranet.db`: usuários, solicitações e perfis visuais.
-- `change_control`: estado e observação do bloqueio de alterações.
-- `pending_changes`: fila de alterações submetidas por Administradores do Site, com solicitante, conteúdo, decisão e revisor.
-- `menu_items`: itens do menu público, conteúdo, destino e ordem de exibição.
-- `ux_menu_display_order`: índice único que impede posições duplicadas no menu.
-- `notices`: avisos, banners, links, flags e ordem de exibição.
-- `ux_notice_display_order`: índice único que impede posições duplicadas entre avisos.
-- `change_control.carousel_enabled`: controla o carrossel público.
-- `change_control.notices_page_blocked`: bloqueia `avisos.html` também no servidor.
-- Senhas: PBKDF2-HMAC-SHA256 com salt individual e 210 mil iterações.
-- Sessão: token aleatório em cookie `HttpOnly`, `SameSite=Strict`, duração de oito horas.
-- A API nunca devolve hashes de senha.
-- Operações de usuários e perfis validam o perfil Master no servidor.
+- `localStorage["sspIntranetDb"]`: usuários, solicitações, perfis visuais, `change_control`,
+  `pending_changes`, `menu_items`, `notices` — mesmo modelo de dados do antigo SQLite, agora em JSON.
+- `localStorage["sspIntranetSession"]`: sessão ativa (token conceitual embutido no próprio objeto,
+  já que não há servidor para emitir cookie), expira em oito horas.
+- Reordenação de menu e avisos impede posições duplicadas (equivalente aos antigos índices únicos).
+- `change_control.carousel_enabled` / `notices_page_blocked`: mesmas regras de antes.
+- Senhas: PBKDF2-HMAC-SHA256 (Web Crypto `crypto.subtle`), salt individual, 210 mil iterações —
+  mantido por fidelidade ao desenho original, mas **sem valor de segurança real**: qualquer
+  visitante tem acesso total ao código-fonte e aos dados no próprio navegador.
+- A API simulada nunca devolve hashes de senha nas respostas.
+- Resolução de banner (`resolveBanner`) usa um manifesto estático de nomes de arquivo
+  (`BANNER_FILES` em `mock-backend.js`), já que não existe mais servidor para listar o diretório
+  `images_banner/` dinamicamente — precisa ser atualizado manualmente a cada novo arquivo.
 
-O dicionário de sessões está em memória; reiniciar o servidor encerra as sessões, sem apagar dados.
+Reiniciar o navegador não apaga os dados (ficam em `localStorage`); o botão "Restaurar dados de
+demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
-## Próxima arquitetura recomendada
+## Próxima arquitetura recomendada (quando sair de protótipo)
 
-- Frontend mantido como aplicação modular ou migrado para framework conforme o crescimento.
-- Migrar a API atual para um servidor de produção com TLS e armazenamento compartilhado de sessões.
+- Backend real (serverless ou dedicado) com banco gerenciado mínimo (ex.: Postgres/Neon free tier,
+  como no PortalCGI) ou um KV leve (ex.: Upstash Redis), conforme a necessidade de persistência
+  compartilhada entre usuários.
+- Hashing de senha com Argon2id no servidor (PBKDF2 client-side não deve ser tratado como controle
+  de acesso real).
+- Sessões com token revogável emitido e validado no servidor, com TLS.
 - Banco de dados relacional com restrições únicas para CPF e e-mail.
-- Serviço de identidade com senhas em hash, MFA opcional e sessões revogáveis.
 - Registro imutável de quem aprovou, recusou ou alterou cada acesso.
 - Variáveis de ambiente para configurações e dados de contato.
 
@@ -46,3 +56,9 @@ O dicionário de sessões está em memória; reiniciar o servidor encerra as ses
 - Tokens visuais centralizados em `:root` no CSS.
 - Conteúdo, estilos, scripts, imagens e documentação em diretórios próprios.
 - Alterações de regra de negócio e design devem acompanhar a atualização da documentação no mesmo conjunto de mudanças.
+
+## Histórico
+
+- 11/11/2026: removido o backend Python (`app.py`) e o SQLite (`data/intranet.db`); toda a
+  persistência passou a ser simulada em `localStorage` via `assets/js/mock-backend.js`. Projeto
+  publicado como protótipo estático no GitHub Pages, sem banco de dados real.
