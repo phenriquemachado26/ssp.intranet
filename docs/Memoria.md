@@ -25,3 +25,10 @@ Decisões técnicas, convenções e armadilhas não óbvias.
 - **Autenticação sem valor de segurança real**: PBKDF2 client-side via `crypto.subtle` foi mantido
   por fidelidade ao desenho original, mas qualquer visitante pode inspecionar ou contornar via
   DevTools. Nunca usar senhas reais neste protótipo. Ver `docs/Auth.md`.
+- **Dados de demonstração (`DEMO_ACCOUNTS`/`DEMO_ACCESS_REQUESTS`) usam reconciliação por
+  `SEED_VERSION`, não resseed total**: navegadores que já tinham `localStorage` salvo de uma
+  versão anterior do protótipo recebem automaticamente as contas/solicitações novas que ainda não
+  existem (comparando por CPF), sem apagar nada que o visitante já tenha criado, editado ou
+  excluído. Ao adicionar um novo item em `DEMO_ACCOUNTS`/`DEMO_ACCESS_REQUESTS` em
+  `assets/js/mock-backend.js`, é obrigatório incrementar `SEED_VERSION` no mesmo arquivo —
+  senão o item novo nunca chega a quem já visitou o site antes.

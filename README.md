@@ -15,7 +15,8 @@ Link público (GitHub Pages): `https://phenriquemachado26.github.io/ssp.intranet
 A tela de login (`admin.html`) já vem com 4 contas de demonstração semeadas (2 Administradores
 Master, 2 Administradores do Site). Clique no campo CPF para abrir a lista de contas cadastradas
 — cada linha mostra um ícone (★ Master, ● Administrador do Site) e, ao selecionar uma, o CPF e a
-senha são preenchidos automaticamente.
+senha são preenchidos automaticamente. Também há uma solicitação de acesso de exemplo (pendente)
+visível em Cadastro de Usuários → aba Solicitações, para um Master testar aprovação/recusa.
 
 Se os dados de demonstração ficarem inconsistentes neste navegador, use o botão
 **"Restaurar dados de demonstração"** na página `admin.html` (apaga o `localStorage` e recarrega).

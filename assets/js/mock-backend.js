@@ -32,6 +32,16 @@
 
   window.sspDemoAccounts = () => DEMO_ACCOUNTS.map(({ name, cpf, role, password }) => ({ name, cpf, role, password }));
 
+  // Exemplo de solicitação de acesso pendente, para a aba "Solicitações" de Cadastro de Usuários.
+  const DEMO_ACCESS_REQUESTS = [
+    { name: 'Marcos Vinícius Oliveira', cpf: '55555555555', email: 'marcos.oliveira@ssp.gov.br', unit: 'Delegacia Seccional de Campinas' },
+  ];
+
+  // Incrementar sempre que DEMO_ACCOUNTS/DEMO_ACCESS_REQUESTS ganharem itens novos, para que
+  // navegadores que já tinham dados salvos (localStorage antigo) recebam os itens novos
+  // automaticamente, sem apagar usuários/avisos/menus que o visitante já tiver criado ou alterado.
+  const SEED_VERSION = 2;
+
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
   const hexToBytes = (hex) => new Uint8Array((hex.match(/.{1,2}/g) || []).map((h) => parseInt(h, 16)));
@@ -102,7 +112,10 @@
   async function loadDb() {
     try {
       const raw = localStorage.getItem(DB_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const db = JSON.parse(raw);
+        return db.seedVersion === SEED_VERSION ? db : reconcileSeed(db);
+      }
     } catch { /* localStorage indisponível ou dado corrompido: resemeia abaixo */ }
     return seedDb();
   }
@@ -111,14 +124,45 @@
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   }
 
+  // Preenche, em um banco já existente no navegador, as contas/solicitações de demonstração
+  // novas que ainda não existem (por CPF) — sem tocar em nada que o visitante já tenha criado,
+  // editado ou excluído.
+  async function reconcileSeed(db) {
+    const existingUserCpfs = new Set(db.users.map((u) => u.cpf));
+    for (const account of DEMO_ACCOUNTS) {
+      if (existingUserCpfs.has(account.cpf)) continue;
+      db.users.push({
+        id: nextId(db, 'users'), name: account.name, cpf: account.cpf, email: account.email,
+        role: account.role, password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
+      });
+      existingUserCpfs.add(account.cpf);
+    }
+    const existingRequestCpfs = new Set(db.access_requests.map((r) => r.cpf));
+    for (const request of DEMO_ACCESS_REQUESTS) {
+      if (existingRequestCpfs.has(request.cpf) || existingUserCpfs.has(request.cpf)) continue;
+      db.access_requests.push({
+        id: nextId(db, 'access_requests'), name: request.name, cpf: request.cpf, email: request.email,
+        unit: request.unit, status: 'pending', created_at: nowStamp(),
+      });
+      existingRequestCpfs.add(request.cpf);
+    }
+    db.seedVersion = SEED_VERSION;
+    saveDb(db);
+    return db;
+  }
+
   async function seedDb() {
     const db = {
-      seq: { users: DEMO_ACCOUNTS.length, access_requests: 0, header_profiles: 1, menu_items: 4, notices: 0, pending_changes: 0 },
+      seedVersion: SEED_VERSION,
+      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1, menu_items: 4, notices: 0, pending_changes: 0 },
       users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
         id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
         password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
       }))),
-      access_requests: [],
+      access_requests: DEMO_ACCESS_REQUESTS.map((request, index) => ({
+        id: index + 1, name: request.name, cpf: request.cpf, email: request.email,
+        unit: request.unit, status: 'pending', created_at: nowStamp(),
+      })),
       header_profiles: [{
         id: 1, name: 'Paleta Padrão', logo: 'logo-ssp.svg', page_title: 'Intranet SSP',
         color_primary: '#0B2D48', color_secondary: '#19577F', color_detail: '#D7A62A',
