@@ -25,6 +25,13 @@ Decisões técnicas, convenções e armadilhas não óbvias.
 - **Autenticação sem valor de segurança real**: PBKDF2 client-side via `crypto.subtle` foi mantido
   por fidelidade ao desenho original, mas qualquer visitante pode inspecionar ou contornar via
   DevTools. Nunca usar senhas reais neste protótipo. Ver `docs/Auth.md`.
+- **Logo de perfil visual: data URL vs. arquivo estático.** `p.logo` pode ser um nome de arquivo
+  em `assets/images` (perfis semeados, ex.: `logo-ssp.svg`) OU uma data URL base64 (perfis com
+  logo enviada por upload). Qualquer lugar que renderize a logo deve usar
+  `window.sspResolveImageSrc(logo, 'assets/images')` — nunca montar o `src` manualmente, senão
+  perfis com upload quebram. Limite de 300 KB por imagem (validado no navegador e em
+  `profileValues`) existe para não estourar a cota de `localStorage` do navegador (tipicamente
+  5-10 MB por origem) com poucos perfis.
 - **Dados de demonstração (`DEMO_ACCOUNTS`/`DEMO_ACCESS_REQUESTS`) usam reconciliação por
   `SEED_VERSION`, não resseed total**: navegadores que já tinham `localStorage` salvo de uma
   versão anterior do protótipo recebem automaticamente as contas/solicitações novas que ainda não

@@ -32,6 +32,11 @@ para o modelo de sessão e suas limitações de segurança.
   mantido por fidelidade ao desenho original, mas **sem valor de segurança real**: qualquer
   visitante tem acesso total ao código-fonte e aos dados no próprio navegador.
 - A API simulada nunca devolve hashes de senha nas respostas.
+- Logomarca de perfil visual: enviada por upload (`<input type="file">` + `FileReader`), guardada
+  como data URL dentro do próprio registro do perfil em `localStorage` (limite de ~300 KB por
+  imagem, validado tanto no navegador quanto em `profileValues`). `window.sspResolveImageSrc`
+  resolve o valor correto tanto para perfis com logo enviada (data URL) quanto para perfis
+  semeados com arquivo estático (ex.: `logo-ssp.svg`).
 - Resolução de banner (`resolveBanner`) usa um manifesto estático de nomes de arquivo
   (`BANNER_FILES` em `mock-backend.js`), já que não existe mais servidor para listar o diretório
   `images_banner/` dinamicamente — precisa ser atualizado manualmente a cada novo arquivo.
@@ -64,3 +69,6 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: removido o backend Python (`app.py`) e o SQLite (`data/intranet.db`); toda a
   persistência passou a ser simulada em `localStorage` via `assets/js/mock-backend.js`. Projeto
   publicado como protótipo estático no GitHub Pages, sem banco de dados real.
+- 11/11/2026: logomarca de perfil visual passou a ser upload de imagem (data URL em
+  `localStorage`, até 300 KB) em vez de nome de arquivo estático; título da página fixado em
+  "Intranet SSP" para todos os perfis.

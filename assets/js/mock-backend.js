@@ -90,6 +90,16 @@
   }
 
   const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+  const LOGO_DATA_URL = /^data:image\/(png|jpe?g|webp|svg\+xml|avif);base64,/i;
+  const MAX_LOGO_DATA_URL_LENGTH = 420_000; // ~300 KB de arquivo original já em base64
+
+  // Resolve a logomarca de um perfil visual: imagens enviadas por upload viram uma data URL
+  // (armazenada no próprio localStorage, sem servidor); perfis antigos/semeados continuam
+  // referenciando um arquivo estático em assets/images (ex.: "logo-ssp.svg").
+  window.sspResolveImageSrc = (value, staticDir) => {
+    const v = String(value || '');
+    return v.startsWith('data:') ? v : `${staticDir}/${encodeURIComponent(v)}`;
+  };
 
   function profileValues(data) {
     const keys = ['name', 'logo', 'page_title', 'color_primary', 'color_secondary', 'color_detail', 'font_family'];
@@ -101,6 +111,9 @@
     }
     if (!['color_primary', 'color_secondary', 'color_detail'].every((k) => HEX_COLOR.test(values[k]))) {
       throw new ApiError(400, 'As cores do perfil devem ser hexadecimais no formato #RRGGBB.');
+    }
+    if (values.logo.startsWith('data:') && (!LOGO_DATA_URL.test(values.logo) || values.logo.length > MAX_LOGO_DATA_URL_LENGTH)) {
+      throw new ApiError(400, 'A logomarca enviada é inválida ou excede o tamanho máximo permitido (~300 KB).');
     }
     return values;
   }

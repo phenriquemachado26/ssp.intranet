@@ -44,7 +44,13 @@ Atualizado em: 11/11/2026.
 
 - Podem existir no máximo cinco perfis visuais.
 - Apenas um perfil pode ficar em uso por vez.
-- Cada perfil contém nome, arquivo de logomarca, título e três cores.
+- Cada perfil contém nome, logomarca e três cores. O título da página é fixo
+  (“Intranet SSP”) em todos os perfis, para preservar a identidade institucional, e não é
+  editável no cadastro.
+- A logomarca é enviada por upload de imagem (PNG, JPG, SVG, WebP ou AVIF, até 300 KB); não é
+  mais um campo de texto com o nome de um arquivo em `assets/images`. A imagem enviada fica salva
+  somente no navegador de quem a cadastrou (ver `docs/Auth.md`/`docs/ARQUITETURA.md`); perfis
+  semeados (como a Paleta Padrão) continuam usando o arquivo estático `logo-ssp.svg`.
 - O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé e aos detalhes do site.
 - A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
 - Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
@@ -160,3 +166,6 @@ Atualizado em: 11/11/2026.
   (sem servidor); demais regras de negócio permanecem válidas, apenas a camada de persistência mudou.
 - 11/11/2026: seção "Página de avisos" corrigida — o bloqueio deixou de retornar HTTP 403 real
   (não há mais servidor) e passou a ser um redirecionamento client-side sem valor de segurança real.
+- 11/11/2026: "Gestão do Cabeçalho" atualizada — logomarca passou de campo de texto (nome de
+  arquivo) para upload de imagem; título da página passou a ser fixo ("Intranet SSP") em todos
+  os perfis, não mais editável por perfil.

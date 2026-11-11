@@ -15,7 +15,7 @@ window.applySspTheme=async()=>{
     root.setProperty('--on-primary',themeContrast(p.color_primary));root.setProperty('--on-secondary',themeContrast(p.color_secondary));root.setProperty('--on-detail',themeContrast(p.color_detail));
     root.setProperty('--primary-hover',primaryHover);root.setProperty('--secondary-hover',secondaryHover);root.setProperty('--on-primary-hover',themeContrast(primaryHover));root.setProperty('--on-secondary-hover',themeContrast(secondaryHover));
     root.setProperty('--primary-on-light',themeVisibleOn(p.color_primary,'#FFFFFF'));root.setProperty('--secondary-on-light',themeVisibleOn(p.color_secondary,'#FFFFFF'));root.setProperty('--secondary-hover-border',themeVisibleOn(secondaryHover,'#FFFFFF'));root.setProperty('--detail-on-light',themeVisibleOn(p.color_detail,'#FFFFFF'));root.setProperty('--detail-on-primary',themeVisibleOn(p.color_detail,p.color_primary));
-    document.querySelectorAll('[data-theme-logo],img[src$="logo-ssp.svg"]').forEach(img=>{img.src=`assets/images/${p.logo}`;img.dataset.themeLogo='true'});
+    document.querySelectorAll('[data-theme-logo],img[src$="logo-ssp.svg"]').forEach(img=>{img.src=window.sspResolveImageSrc(p.logo,'assets/images');img.dataset.themeLogo='true'});
     document.querySelectorAll('.brand span').forEach(el=>{const small=el.querySelector('small');el.textContent=p.page_title;if(small)el.prepend(small)});
   }catch(error){console.warn('Não foi possível aplicar o perfil visual.',error)}
 };
