@@ -112,3 +112,17 @@ Líbero Badaró 39, Centro, São Paulo-SP, CEP 01009-000; telefone (11) 3291-650
 quem já tinha visitado o site (com os placeholders antigos) recebesse os novos dados sem perder
 eventual customização já feita pelo Master. 78 cenários de lógica validados via harness Node (74
 anteriores + 4 novos). Revisão completa de Validator/Security Specialist segue acumulada.
+
+## 11/11/2026 — Auditoria de responsividade mobile + links reais dos acessos rápidos
+
+Usuário pediu que o protótipo fosse responsivo para smartphone. Em vez de só revisar o CSS "de
+olho", usei Playwright + Chromium headless (disponível neste ambiente via `npx`, sem instalação)
+para navegar e tirar screenshot de todas as páginas públicas e do painel administrativo completo
+em viewport de celular (390×844), checando overflow horizontal e interagindo com menus/dialogs.
+Dois bugs reais encontrados e corrigidos: (1) sidebar do painel ficava presa aberta no celular
+(o próprio sidebar cobria o botão que deveria fechá-la, por falta de z-index no header); (2) nav
+de `avisos.html` sobrepunha o título da página (herdava `position:absolute` do breakpoint mobile
+genérico). Nenhum overflow horizontal em nenhuma tela. Também preenchidos os links reais dos 4
+acessos rápidos (sites oficiais de Polícia Civil/Militar/Científica e Conseg), abrindo em nova
+aba. 82 cenários de lógica validados via harness Node (78 anteriores + 4 novos). Revisão completa
+de Validator/Security Specialist segue acumulada.
