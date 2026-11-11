@@ -93,3 +93,13 @@ GitHub Pages está correto; diagnóstico aponta para resíduo de `localStorage` 
 anterior — usuário orientado a usar "Restaurar dados de demonstração"; confirmação ainda
 pendente. Revisão completa de Validator/Security Specialist segue acumulada, pendente para
 quando o usuário fechar o lote de mocks.
+
+## 11/11/2026 — Cabeçalho e Rodapé: gestão de endereço, contato e redes sociais
+
+A pedido do usuário: "Gestão do Cabeçalho" renomeada para "Cabeçalho e Rodapé"; nova seção
+"Rodapé" (exclusiva do Administrador Master, sem fila de validação) com endereço, telefone,
+e-mail de suporte, "Desenvolvido por" e 4 redes sociais (Facebook/Instagram/YouTube/WhatsApp,
+conjunto fixo escolhido pelo usuário). Nova entidade singleton `footer_settings`, renderizada no
+rodapé público via `window.applySspFooter()` em `theme.js`. 74 cenários de lógica validados via
+harness Node (62 anteriores + 12 novos). Revisão completa de Validator/Security Specialist segue
+acumulada, pendente para quando o usuário fechar o lote de mocks.
