@@ -160,3 +160,18 @@ upload com "Clique para enviar"/"ou arraste a imagem aqui" quando vazia, e previ
 agora reaproveitada tanto pelo clique quanto pelo arrastar. Testado visualmente com Playwright
 (desktop e mobile), sem overflow. Revisão completa de Validator/Security Specialist segue
 acumulada.
+
+## 11/11/2026 — 4 avisos de demonstração + banner como upload de imagem
+
+A pedido do usuário: campo "Nome do banner" em Cadastro de Avisos virou upload de imagem (mesmo
+componente de dropzone da logomarca de perfil, extraído para reutilização). Semeados 4 avisos de
+demonstração com base nos banners já existentes em `images_banner/` (Arrecadação, CasaPaulista,
+Hospitalidades, SPTodas) — títulos e descrições escritos após inspecionar visualmente o conteúdo
+real de cada banner (não apenas o nome do arquivo), todos com botão "Acesse Aqui", já ativos e no
+carrossel, com descrição longa o bastante para acionar "Ver mais". Banners seguem referenciados
+pelo nome-base (arquivos estáticos existentes), não por upload — evita inflar o `localStorage`
+com imagens de 700 KB a 2 MB. Testando com Playwright, encontrado e corrigido um bug real: a
+pré-visualização do banner quebrava ao editar um aviso com banner legado (usava o campo errado,
+sem extensão de arquivo). 111 cenários de lógica validados via harness Node (96 anteriores + 15
+novos). Revisão completa de Validator/Security Specialist segue acumulada — sugiro fortemente
+rodar essa auditoria antes de considerar este lote de mocks fechado.
