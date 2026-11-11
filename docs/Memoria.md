@@ -40,6 +40,15 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **Autofill do navegador pode sobrescrever o formulário de rodapé antes de salvar.** Campos
+  rotulados "Logradouro", "Número", "Bairro", "Cidade", "Estado", "CEP" são reconhecidos pelo
+  Chrome/Edge como endereço e podem ser preenchidos automaticamente com dados salvos do perfil do
+  usuário, substituindo os valores corretos antes do clique em "Salvar rodapé" — o usuário salva
+  sem perceber a substituição. Por isso todos os campos do `#footer-form` têm
+  `autocomplete="off"` (no `<form>` e em cada `<input>`); como o rodapé então passa a ser tratado
+  como "customizado" pela lógica de reconciliação (ver item abaixo), um autofill indevido que já
+  foi salvo não se autocorrige sozinho — é preciso editar os campos manualmente ou usar
+  "Restaurar dados de demonstração".
 - **Atualizar os valores padrão de `FOOTER_DEFAULTS` não basta — é preciso tratar quem já
   reconciliou.** Quando os dados de demonstração do rodapé mudaram (endereço/telefone/horário
   reais da sede da SSP-SP), `reconcileSeed` não podia simplesmente pular por já existir

@@ -34,34 +34,34 @@
       <div class="view-heading" style="margin-top:46px"><div><p class="eyebrow">Navegação</p><h2>Acessos Rápidos</h2><p>Até 5 atalhos exibidos no cabeçalho público, antes do botão Avisos. Cada um pode ser ocultado sem ser excluído.</p></div><button id="new-quick-access-open" class="button button-primary">+ Novo acesso</button></div>
       <div class="table-wrap"><table><thead><tr><th>Reordenar</th><th>Título</th><th>URL</th><th>Status</th><th>Ações</th></tr></thead><tbody id="quick-access-table"></tbody></table></div>
       <div class="view-heading" style="margin-top:46px" data-master-only hidden><div><p class="eyebrow">Rodapé</p><h2>Contato e redes sociais</h2><p>Exibidos no rodapé público. Exclusivo do Administrador Master.</p></div></div>
-      <form id="footer-form" class="footer-form" data-master-only hidden>
+      <form id="footer-form" class="footer-form" autocomplete="off" data-master-only hidden>
         <section>
           <h3>Endereço</h3>
           <div class="form-grid">
-            <div><label for="footer-street">Logradouro</label><input id="footer-street" maxlength="120"></div>
-            <div><label for="footer-number">Número</label><input id="footer-number" maxlength="20"></div>
-            <div><label for="footer-district">Bairro</label><input id="footer-district" maxlength="80"></div>
-            <div><label for="footer-city">Cidade</label><input id="footer-city" maxlength="80"></div>
-            <div><label for="footer-state">Estado</label><input id="footer-state" maxlength="2" placeholder="SP"></div>
-            <div><label for="footer-zip">CEP</label><input id="footer-zip" maxlength="9" placeholder="00000-000"></div>
+            <div><label for="footer-street">Logradouro</label><input id="footer-street" maxlength="120" autocomplete="off"></div>
+            <div><label for="footer-number">Número</label><input id="footer-number" maxlength="20" autocomplete="off"></div>
+            <div><label for="footer-district">Bairro</label><input id="footer-district" maxlength="80" autocomplete="off"></div>
+            <div><label for="footer-city">Cidade</label><input id="footer-city" maxlength="80" autocomplete="off"></div>
+            <div><label for="footer-state">Estado</label><input id="footer-state" maxlength="2" placeholder="SP" autocomplete="off"></div>
+            <div><label for="footer-zip">CEP</label><input id="footer-zip" maxlength="9" placeholder="00000-000" autocomplete="off"></div>
           </div>
         </section>
         <section>
           <h3>Contato</h3>
           <div class="form-grid">
-            <div><label for="footer-phone">Telefone</label><input id="footer-phone" maxlength="20"></div>
-            <div><label for="footer-email">E-mail de suporte</label><input id="footer-email" type="email" maxlength="120"></div>
-            <div><label for="footer-developed-by">Desenvolvido por</label><input id="footer-developed-by" maxlength="80"></div>
-            <div style="grid-column:1/-1"><label for="footer-hours">Horário de atendimento</label><input id="footer-hours" maxlength="160"></div>
+            <div><label for="footer-phone">Telefone</label><input id="footer-phone" maxlength="20" autocomplete="off"></div>
+            <div><label for="footer-email">E-mail de suporte</label><input id="footer-email" type="email" maxlength="120" autocomplete="off"></div>
+            <div><label for="footer-developed-by">Desenvolvido por</label><input id="footer-developed-by" maxlength="80" autocomplete="off"></div>
+            <div style="grid-column:1/-1"><label for="footer-hours">Horário de atendimento</label><input id="footer-hours" maxlength="160" autocomplete="off"></div>
           </div>
         </section>
         <section>
           <h3>Redes sociais</h3>
           <div class="form-grid">
-            <div><label for="footer-facebook">Facebook (URL)</label><input id="footer-facebook" type="url" placeholder="https://facebook.com/..."></div>
-            <div><label for="footer-instagram">Instagram (URL)</label><input id="footer-instagram" type="url" placeholder="https://instagram.com/..."></div>
-            <div><label for="footer-youtube">YouTube (URL)</label><input id="footer-youtube" type="url" placeholder="https://youtube.com/..."></div>
-            <div><label for="footer-whatsapp">WhatsApp (URL)</label><input id="footer-whatsapp" type="url" placeholder="https://wa.me/55..."></div>
+            <div><label for="footer-facebook">Facebook (URL)</label><input id="footer-facebook" type="url" placeholder="https://facebook.com/..." autocomplete="off"></div>
+            <div><label for="footer-instagram">Instagram (URL)</label><input id="footer-instagram" type="url" placeholder="https://instagram.com/..." autocomplete="off"></div>
+            <div><label for="footer-youtube">YouTube (URL)</label><input id="footer-youtube" type="url" placeholder="https://youtube.com/..." autocomplete="off"></div>
+            <div><label for="footer-whatsapp">WhatsApp (URL)</label><input id="footer-whatsapp" type="url" placeholder="https://wa.me/55..." autocomplete="off"></div>
           </div>
         </section>
         <p id="footer-message" class="form-message"></p>
