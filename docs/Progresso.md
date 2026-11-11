@@ -137,3 +137,16 @@ serviços" (total 19), todos já abrindo em nova aba (comportamento que já exis
 de "Polícia Civil" nos acessos rápidos simplificado para a URL curta oficial. 88 cenários de
 lógica validados via harness Node (82 anteriores + 6 novos). Revisão completa de
 Validator/Security Specialist segue acumulada.
+
+## 11/11/2026 — Remove institucionais do menu, preenche redes sociais, corrige borda invisível
+
+A pedido do usuário: (1) removidos Polícia Civil/Militar/Científica/Conseg de "Instituições e
+serviços" — seguem apenas nos Acessos Rápidos do cabeçalho; (2) Facebook, Instagram e YouTube do
+rodapé pré-preenchidos com os perfis oficiais reais da SSP-SP (WhatsApp continua vazio). Também
+corrigido um bug visual real reportado pelo usuário: a borda dos campos de formulário ficava
+branca/invisível ao clicar para editar, porque o CSS de foco usava a cor secundária do perfil
+ativo sem garantia de contraste — e o perfil padrão atual ("Governo Tarcísio") tem cor secundária
+branca. Trocado pela variável de contraste garantido que `theme.js` já calcula. 96 cenários de
+lógica validados via harness Node (88 anteriores + 8 novos). Revisão completa de
+Validator/Security Specialist segue acumulada, cada vez maior — recomendo fazer essa rodada em
+breve para não acumular risco.
