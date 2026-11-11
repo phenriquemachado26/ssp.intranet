@@ -65,3 +65,15 @@ próprio registro do perfil em `localStorage`. `window.sspResolveImageSrc` passo
 único de resolução de logo (data URL ou arquivo estático semeado), usado em `theme.js` e
 `painel.js`. 40 cenários de lógica validados via harness Node (35 anteriores + 5 novos). Revisão
 completa de Validator/Security Specialist segue pendente (acumulada do lote de mocks).
+
+## 11/11/2026 — Perfis visuais "Período Eleitoral" (protegido) e "Governo Tarcísio"
+
+Semeados 2 perfis visuais extras via `DEMO_EXTRA_PROFILES`: "Período Eleitoral" (preto/branco/
+preto, logo `BrasaoEstadoSP.png`) e "Governo Tarcísio" (preto/branco/vermelho, logo
+`GovTarcisio.png`), ambos com título fixo e fonte padrão. Logos embutidas como data URL direto em
+`mock-backend.js`. Nova regra de negócio: perfil "protegido" (`locked`) não pode ser editado nem
+excluído por ninguém, nem Master — "Período Eleitoral" é protegido, "Governo Tarcísio" não.
+Reconciliação de seed estendida (agora também cobre perfis visuais, SEED_VERSION 2→3). 49
+cenários de lógica validados via harness Node (40 anteriores + 9 novos). Revisão completa de
+Validator/Security Specialist segue acumulada, pendente para quando o usuário fechar o lote de
+mocks.
