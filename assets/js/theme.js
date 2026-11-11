@@ -7,6 +7,36 @@ const themeMix=(hex,target,amount)=>{const a=themeRgb(hex),b=themeRgb(target);re
 // Tipo MIME do favicon a partir do valor resolvido da logomarca (data URL de upload ou arquivo
 // estático), para o navegador interpretar corretamente tanto SVG quanto PNG/JPEG/WebP/AVIF.
 const faviconType=src=>{const m=/^data:([^;,]+)/.exec(src);if(m)return m[1];if(/\.svg$/i.test(src))return'image/svg+xml';if(/\.(jpe?g)$/i.test(src))return'image/jpeg';if(/\.webp$/i.test(src))return'image/webp';if(/\.avif$/i.test(src))return'image/avif';return'image/png'};
+// Logomarcas pensadas para fundo preto (ex.: Governo Tarcísio, Período Eleitoral) costumam ter
+// traço claro/branco sobre fundo transparente — exibidas direto como favicon (fundo claro da aba
+// do navegador) ficam ilegíveis. Detectado pela cor primária do perfil ser (quase) preto puro;
+// nesse caso, compõe o favicon com um fundo preto atrás da logo via canvas. Perfis com cor
+// primária clara ou escura-mas-não-preta (ex.: a Paleta Padrão, azul-marinho) continuam exibindo a
+// logo normalmente, sem composição.
+const isNearBlack=hex=>themeRgb(hex).every(v=>v<=16);
+function faviconOnBlackBacking(src){
+  return new Promise(resolve=>{
+    try{
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          const size=64,canvas=document.createElement('canvas');
+          canvas.width=size;canvas.height=size;
+          const ctx=canvas.getContext('2d');
+          ctx.fillStyle='#000000';ctx.fillRect(0,0,size,size);
+          const pad=size*0.12,maxDim=size-pad*2;
+          const w0=img.naturalWidth||size,h0=img.naturalHeight||size;
+          const scale=Math.min(maxDim/w0,maxDim/h0);
+          const w=w0*scale,h=h0*scale;
+          ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+          resolve(canvas.toDataURL('image/png'));
+        }catch{resolve(src)}
+      };
+      img.onerror=()=>resolve(src);
+      img.src=src;
+    }catch{resolve(src)}
+  });
+}
 
 window.applySspTheme=async()=>{
   try{
@@ -22,7 +52,14 @@ window.applySspTheme=async()=>{
     document.querySelectorAll('[data-theme-logo],img[src$="logo-ssp.svg"]').forEach(img=>{img.src=resolvedLogo;img.dataset.themeLogo='true'});
     document.querySelectorAll('.brand span').forEach(el=>{const small=el.querySelector('small');el.textContent=p.page_title;if(small)el.prepend(small)});
     const favicon=document.querySelector('#site-favicon');
-    if(favicon){favicon.type=faviconType(resolvedLogo);favicon.href=resolvedLogo}
+    if(favicon){
+      if(isNearBlack(p.color_primary)){
+        const composed=await faviconOnBlackBacking(resolvedLogo);
+        favicon.type='image/png';favicon.href=composed;
+      }else{
+        favicon.type=faviconType(resolvedLogo);favicon.href=resolvedLogo;
+      }
+    }
   }catch(error){console.warn('Não foi possível aplicar o perfil visual.',error)}
 };
 window.applySspTheme();
