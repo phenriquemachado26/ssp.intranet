@@ -193,7 +193,12 @@ Atualizado em: 11/11/2026.
 - O Administrador Master pode ativar a flag “Exigir validação do Master”.
 - O controle é apresentado como seletor “Não / Sim”, sem campo de observação ou botão para salvar.
 - Ao alterar o seletor, o sistema pede confirmação e aplica a mudança imediatamente; cancelamentos restauram o estado anterior.
-- Ao selecionar “Sim”, o pop-up detalha previamente todas as consequências: necessidade de validação, ocultação e desativação dos avisos, desativação do carrossel, ausência do destaque e exigência de resolver pendências antes do desbloqueio.
+- Ao selecionar “Sim”, o pop-up "Regras do bloqueio de alterações" exibe apenas a regra principal
+  ("Ao ativar o bloqueio: Todas as alterações feitas por Administradores do Site precisarão da
+  validação de um Administrador Master.") seguida de "Deseja continuar?". As demais consequências
+  (ocultação/desativação dos avisos, desativação do carrossel, ausência do destaque, exigência de
+  resolver pendências antes do desbloqueio) continuam ocorrendo de fato, apenas não são mais
+  detalhadas no texto do pop-up.
 - Com o bloqueio ativo, ações do Administrador do Site são registradas como pendentes e não alteram o site imediatamente.
 - Um Master pode aprovar, aplicando a alteração, ou recusar a solicitação.
 - Alterações feitas diretamente por um Master continuam sendo aplicadas imediatamente.
@@ -294,3 +299,7 @@ Atualizado em: 11/11/2026.
   página de avisos, carrossel e avisos da página inicial devem voltar a ser exibidos
   automaticamente ao ativar outro perfil (reativação em massa de todos os avisos), substituindo o
   comportamento anterior (flags preservadas, exigindo reativação manual item a item).
+- 11/11/2026: simplificado o texto do pop-up de confirmação ao ativar "Bloqueio de alterações" —
+  passou a exibir apenas a regra principal (validação obrigatória do Master para alterações de
+  Administradores do Site), a pedido do usuário, em vez da lista completa de consequências. O
+  comportamento de fato (avisos/carrossel desativados ao bloquear) não mudou, só o texto exibido.
