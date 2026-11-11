@@ -195,3 +195,10 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: revertido `isNearBlack`/`faviconOnBlackBacking` (commit anterior de composição de
   favicon com fundo preto) via `git revert` — usuário não gostou do resultado. `applySspTheme()`
   volta a atribuir a logo resolvida direto ao favicon (`favicon.href=resolvedLogo`), sem canvas.
+- 11/11/2026: novo aviso "Hospitalidade-banner" (carrossel-only) semeado como último da ordem,
+  mesmo mecanismo do Agência SP (reaproveita o corte de "5 primeiros" em `main.js`, sem flag nova).
+  `seedDb()`'s mapeamento de notices passou a respeitar `item.active_carousel` por item quando
+  definido (antes sempre forçava `true`), para permitir um item semeado já nascer com o carrossel
+  desligado (o aviso original de Hospitalidade). Reconciliação ganhou upgrade dedicado: desliga
+  `active_carousel` do aviso original de Hospitalidade se ainda estiver no valor padrão (`true`),
+  sem tocar em customização real do Master. SEED_VERSION 16->17.

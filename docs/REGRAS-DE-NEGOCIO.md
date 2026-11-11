@@ -174,16 +174,21 @@ Atualizado em: 11/11/2026.
 - Ao desativar o bloqueio, as flags não são alteradas: permanecem ativos somente os avisos que já estavam ativos.
 - A página inicial exibe somente os cinco primeiros avisos ativos na ordem; os demais ficam disponíveis na página `avisos.html`.
 - Ao expandir um aviso, qualquer outro aviso aberto é recolhido automaticamente.
-- São semeados 6 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
+- São semeados 7 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
   também é o que aparece no pop-up de destaque), São Paulo por Todas, Programa Casa Paulista, O
-  que é uma Hospitalidade no Serviço Público, Campanha de Arrecadação de Prendas e Agência SP (por
-  último). Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já ativos e
-  no carrossel. O Conselho de Usuários tem botão "Participe"; São Paulo por Todas, Casa Paulista,
-  Hospitalidade e Agência SP têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
-- Com 6 avisos ativos, o Agência SP (último na ordem) fica de fora dos "cinco primeiros avisos"
-  exibidos como cards na página inicial (regra já existente acima), mas continua aparecendo no
-  carrossel (que considera todos os avisos ativos com banner, não só os cinco primeiros) e na
-  listagem completa de `avisos.html` — na prática, "ativo só no carrossel" a pedido do usuário.
+  que é uma Hospitalidade no Serviço Público, Campanha de Arrecadação de Prendas, Agência SP e
+  Hospitalidade no Serviço Público — Registre no SP-Agendas (por último). Todos com banner e
+  descrição longa o bastante para exibir "Ver mais"; todos já ativos. O Conselho de Usuários tem
+  botão "Participe"; São Paulo por Todas, Casa Paulista, Hospitalidade e Agência SP têm botão
+  "Acesse Aqui"; Arrecadação e o novo banner de Hospitalidade não têm botão.
+- Com 7 avisos ativos, Agência SP e o novo banner de Hospitalidade (os dois últimos na ordem)
+  ficam de fora dos "cinco primeiros avisos" exibidos como cards na página inicial (regra já
+  existente acima), mas continuam aparecendo no carrossel (que considera todos os avisos ativos
+  com banner, não só os cinco primeiros) e na listagem completa de `avisos.html` — na prática,
+  "ativos só no carrossel" a pedido do usuário.
+- O novo banner de Hospitalidade substitui o aviso original "O que é uma Hospitalidade no Serviço
+  Público?" no carrossel: esse aviso original teve `active_carousel` desligado (continua ativo e
+  visível normalmente como card na home/`avisos.html`, só não aparece mais no carrossel).
 
 ## Carrossel de imagens
 
@@ -349,3 +354,8 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: revertida a composição de favicon com fundo preto (perfis de cor primária preta) —
   usuário não gostou do resultado visual. Favicon volta a exibir a logo diretamente em todos os
   perfis, sem composição.
+- 11/11/2026: novo aviso de demonstração "Hospitalidade no Serviço Público — Registre no
+  SP-Agendas" cadastrado como o último da ordem (`images_banner/hospitalidade-banner-2560x397.png`),
+  também "ativo só no carrossel" (mesmo mecanismo do Agência SP). O aviso original de Hospitalidade
+  teve `active_carousel` desligado (substituído por este no carrossel), permanecendo ativo
+  normalmente como card/listagem. SEED_VERSION 16->17.

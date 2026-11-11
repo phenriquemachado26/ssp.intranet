@@ -233,3 +233,13 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   tecnicamente correta (confirmada por verificação visual antes do revert), o resultado não
   agradou. Lição: nem toda solução tecnicamente correta é a solução desejada; preferências visuais
   do usuário podem reverter uma feature mesmo sem bug.
+- **`seedDb()` forçava `active_carousel: true` para TODO item de `DEMO_NOTICES`, sem permitir
+  override por item.** Para o aviso original de Hospitalidade nascer já com o carrossel desligado
+  (substituído pelo novo banner carrossel-only), foi preciso trocar
+  `active_carousel: true` fixo por `item.active_carousel !== undefined ? item.active_carousel :
+  true` — compatível com todos os itens anteriores (que não definem o campo, continuam `true`).
+- **Harness de teste (`C:\tmp\intranet-ssp-test\test-v2.mjs`) parou de hardcodar `SEED_VERSION`
+  em testes que simulam "banco já na versão atual".** Esqueci de atualizar esse número 2 vezes
+  seguidas a cada bump de versão; agora é extraído dinamicamente do próprio `mock-backend.js` via
+  regex (`CURRENT_SEED_VERSION`) logo após carregá-lo, eliminando a necessidade de lembrar disso
+  manualmente no futuro.

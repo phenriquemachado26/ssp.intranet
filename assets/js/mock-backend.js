@@ -16,6 +16,7 @@
     'SPTodas.gif', 'Arrecadacao.png',
     'Hospitalidades.png', 'AcessoRapido.png',
     'CasaPaulista.png', 'banner_ConselhoUsuarios.png', 'ssp-agenciaSP.png',
+    'hospitalidade-banner-2560x397.png',
   ];
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
@@ -94,6 +95,7 @@
       description: 'Hospitalidade é a oferta de serviço ou cobertura de despesas concedida por um agente privado a um agente público, como transporte, alimentação, hospedagem ou participação em cursos e eventos. Toda hospitalidade deve ser registrada no SP-Agendas para garantir transparência e prevenir conflitos de interesse. A integridade começa na atitude de cada um de nós.',
       banner_file: 'Hospitalidades',
       button_url: 'https://www.controladoriageral.sp.gov.br/dx/api/dam/v1/collections/a21d4faa-3d71-46b3-9a42-05e77bd81286/items/251d6028-6493-4873-b4b7-dd060ec1598f/renditions/ee4835ff-aea3-45a3-a646-da94b443db09?binary=true',
+      active_carousel: false,
     },
     {
       title: 'Campanha de Arrecadação de Prendas — Festa Junina do CCI',
@@ -107,6 +109,13 @@
       description: 'A Agência SP é o canal oficial de notícias do Governo do Estado de São Paulo, reunindo em um só lugar informações sobre ações, projetos e serviços prestados à população. Acompanhe de perto o que o Governo de São Paulo faz: na rua você vê, na Agência SP você lê. Acesse agenciasp.sp.gov.br e fique por dentro das novidades.',
       banner_file: 'ssp-agenciaSP',
       button_url: 'https://agenciasp.sp.gov.br',
+    },
+    {
+      title: 'Hospitalidade no Serviço Público — Registre no SP-Agendas',
+      description: 'Hospitalidade é a oferta de serviço ou cobertura de despesas concedida por um agente privado a um agente público — como transporte, alimentação, hospedagem, cursos e eventos. Toda hospitalidade deve ser registrada no SP-Agendas para garantir transparência e prevenir situações de conflito de interesses. A integridade começa na atitude de cada um de nós.',
+      banner_file: 'hospitalidade-banner-2560x397',
+      button_name: '',
+      button_url: '',
     },
   ].map((item) => ({ button_name: 'Acesse Aqui', button_url: 'https://www.ssp.sp.gov.br', ...item }));
 
@@ -135,7 +144,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 16;
+  const SEED_VERSION = 17;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -379,6 +388,13 @@
         if (notice) notice.display_order = index + 1;
       });
     }
+    // Upgrade: o novo banner "hospitalidade-banner-2560x397" (carrossel-only) substitui o aviso
+    // original de Hospitalidade no carrossel; tira esse aviso do carrossel se ainda estiver com o
+    // valor padrão (true), sem tocar em quem o Master já desativou/reativou manualmente.
+    const hospitalidadeNotice = db.notices.find((n) => n.title === 'O que é uma Hospitalidade no Serviço Público?');
+    if (hospitalidadeNotice && hospitalidadeNotice.active_carousel === true) {
+      hospitalidadeNotice.active_carousel = false;
+    }
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
     } else {
@@ -444,7 +460,8 @@
       })),
       notices: DEMO_NOTICES.map((item, index) => ({
         id: index + 1, title: item.title, description: item.description, banner_file: item.banner_file,
-        button_name: item.button_name, button_url: item.button_url, active: true, active_carousel: true,
+        button_name: item.button_name, button_url: item.button_url, active: true,
+        active_carousel: item.active_carousel !== undefined ? item.active_carousel : true,
         display_order: index + 1, created_at: nowStamp(),
       })),
     };
