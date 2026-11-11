@@ -189,3 +189,21 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   `active=true`/`active_carousel=true` em todos os avisos ao desativar. Não assumir que todo
   "sair de um estado bloqueado" segue o mesmo padrão de outro já existente no código; cada regra
   pode ter semântica própria mesmo quando a implementação se parece.
+- **Nem toda entidade usa a mesma regra de fila de aprovação.** A maioria (avisos, menu, acessos
+  rápidos) só enfileira ação de Administrador do Site quando `change_control.locked=true`
+  (`queueIfRequired`). Perfis visuais têm regra própria e mais restritiva: enfileiram sempre,
+  independente do bloqueio geral (`queueProfileChange`) — não assumir que uma regra vista em uma
+  entidade se aplica às demais sem conferir.
+- **Validar payload antes de enfileirar, não só na aprovação.** Os endpoints de perfil (POST/PUT)
+  chamavam `queueIfRequired`/`queueProfileChange` antes de `profileValues(data)`, então um
+  Administrador do Site podia enfileirar um payload totalmente inválido (cores erradas, nome
+  duplicado) que só falhava de forma pouco clara na hora da aprovação pelo Master. Reordenado para
+  validar primeiro; `applyPendingChange` também ganhou checagem de nome duplicado nos branches
+  `create`/`update` de perfil, que faltava.
+- **Calcular o tema claro/escuro do ícone a partir da cor do perfil ativo, não de uma preferência
+  de UI fixa.** O rodapé já tinha `themeLum`/`themeContrast` em `theme.js` para decidir cor de
+  texto sobre fundo colorido; reaproveitado para decidir qual arquivo de logomarca
+  (`tema-claro`/`tema-escuro`) carregar, em vez de inventar uma lógica nova. Isso também significa
+  que a logomarca muda sozinha se o perfil visual ativo mudar (ex.: Governo Tarcísio com fundo
+  preto usa uma variante diferente da Paleta Padrão com fundo azul escuro — ambas "escuras" aqui,
+  mas um perfil hipotético com fundo claro usaria a outra variante automaticamente).

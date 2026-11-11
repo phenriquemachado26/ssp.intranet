@@ -542,6 +542,19 @@
     return true;
   }
 
+  // Perfis visuais (criar, editar, excluir, ativar) sempre exigem aprovação do Master quando a
+  // ação é de um Administrador do Site — regra própria, independente da flag geral de bloqueio de
+  // alterações (`change_control.locked`), ao contrário das demais entidades administrativas.
+  function queueProfileChange(db, session, action, entityId, payload) {
+    if (session.role === 'master') return false;
+    db.pending_changes.push({
+      id: nextId(db, 'pending_changes'), action, entity: 'header_profile', entity_id: entityId ?? null,
+      payload: JSON.stringify(payload), requested_by: session.id, requester_name: session.name,
+      status: 'pending', created_at: nowStamp(), reviewed_by: null, reviewed_at: null,
+    });
+    return true;
+  }
+
   function parseId(path) {
     const id = Number(path.split('/').pop());
     if (!Number.isInteger(id)) throw new ApiError(400, 'Identificador inválido.');
@@ -675,10 +688,10 @@
 
     if (method === 'POST' && path === '/api/profiles') {
       const session = requireAuth();
-      if (queueIfRequired(db, session, 'create', 'header_profile', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (db.header_profiles.length >= 5) return [409, { error: 'O limite de 5 perfis foi atingido.' }];
       const values = profileValues(data);
       if (db.header_profiles.some((p) => p.name === values.name)) return [409, { error: 'Nome inválido ou já utilizado.' }];
+      if (queueProfileChange(db, session, 'create', null, data)) return [202, { message: 'Sua solicitação de novo perfil foi registrada. Entre em contato com um Administrador Master para solicitar a aprovação desta alteração.', pending: true }];
       db.header_profiles.push({ id: nextId(db, 'header_profiles'), ...values, active: false, locked: false, created_at: nowStamp() });
       return [201, { message: 'Perfil criado.' }];
     }
@@ -745,7 +758,13 @@
         return [409, { error: 'Este perfil é protegido e não pode ser editado.' }];
       }
       const action = data.activate ? 'activate' : 'update';
-      if (queueIfRequired(db, session, action, 'header_profile', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      const profileActionLabel = data.activate ? 'de ativação do perfil' : 'de edição do perfil';
+      let values = null;
+      if (!data.activate) {
+        values = profileValues(data);
+        if (db.header_profiles.some((p) => p.id !== id && p.name === values.name)) return [409, { error: 'Nome já utilizado.' }];
+      }
+      if (queueProfileChange(db, session, action, id, data)) return [202, { message: `Sua solicitação ${profileActionLabel} foi registrada. Entre em contato com um Administrador Master para solicitar a aprovação desta alteração.`, pending: true }];
       if (data.activate) {
         const wasElectoralActive = db.header_profiles.find((p) => p.active)?.name === 'Período Eleitoral';
         db.header_profiles.forEach((p) => { p.active = false; });
@@ -753,8 +772,6 @@
         if (profile) profile.active = true;
         applyElectoralCascade(db, profile, wasElectoralActive);
       } else {
-        const values = profileValues(data);
-        if (db.header_profiles.some((p) => p.id !== id && p.name === values.name)) return [409, { error: 'Nome já utilizado.' }];
         Object.assign(db.header_profiles.find((p) => p.id === id) || {}, values);
       }
       return [200, { message: 'Perfil atualizado.' }];
@@ -930,7 +947,7 @@
       if (path.startsWith('/api/profiles/') && db.header_profiles.find((p) => p.id === id)?.locked) {
         return [409, { error: 'Este perfil é protegido e não pode ser excluído.' }];
       }
-      if (path.startsWith('/api/profiles/') && queueIfRequired(db, session, 'delete', 'header_profile', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      if (path.startsWith('/api/profiles/') && queueProfileChange(db, session, 'delete', id, {})) return [202, { message: 'Sua solicitação de exclusão do perfil foi registrada. Entre em contato com um Administrador Master para solicitar a aprovação desta alteração.', pending: true }];
       if (path.startsWith('/api/menu/') && queueIfRequired(db, session, 'delete', 'menu_item', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (path.startsWith('/api/quick-access/') && queueIfRequired(db, session, 'delete', 'quick_access', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (path.startsWith('/api/notices/') && queueIfRequired(db, session, 'delete', 'notice', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
@@ -1015,9 +1032,11 @@
     } else if (row.action === 'create') {
       if (db.header_profiles.length >= 5) throw new Error('Limite de perfis atingido.');
       const values = profileValues(payload);
+      if (db.header_profiles.some((p) => p.name === values.name)) throw new Error('Nome de perfil já utilizado.');
       db.header_profiles.push({ id: nextId(db, 'header_profiles'), ...values, active: false, locked: false, created_at: nowStamp() });
     } else if (row.action === 'update') {
       const values = profileValues(payload);
+      if (db.header_profiles.some((p) => p.id !== pid && p.name === values.name)) throw new Error('Nome de perfil já utilizado.');
       Object.assign(db.header_profiles.find((p) => p.id === pid) || {}, values);
     } else if (row.action === 'activate') {
       const wasElectoralActive = db.header_profiles.find((p) => p.active)?.name === 'Período Eleitoral';

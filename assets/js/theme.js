@@ -22,17 +22,23 @@ window.applySspTheme=async()=>{
 window.applySspTheme();
 
 const escapeFooter=v=>{const el=document.createElement('div');el.textContent=v??'';return el.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;')};
-const SOCIAL_NETWORKS=[['social_facebook','Facebook','f'],['social_instagram','Instagram','I'],['social_youtube','YouTube','Y'],['social_whatsapp','WhatsApp','W']];
+// Logomarcas reais (claro/escuro, 512px) em assets/images/social/<slug>-tema-<claro|escuro>-512.png.
+// A variante é escolhida pelo contraste do fundo do rodapé (cor primária do perfil ativo): fundo
+// escuro usa a logo "tema-escuro" (clara, legível sobre fundo escuro); fundo claro usa "tema-claro".
+const SOCIAL_NETWORKS=[['social_facebook','Facebook','facebook'],['social_instagram','Instagram','instagram'],['social_youtube','YouTube','youtube'],['social_whatsapp','WhatsApp','whatsapp']];
 window.applySspFooter=async()=>{
   try{
-    const response=await fetch('/api/footer-settings',{cache:'no-store'});const {settings:s}=await response.json();if(!s)return;
+    const [footerResponse,themeResponse]=await Promise.all([fetch('/api/footer-settings',{cache:'no-store'}),fetch('/api/theme',{cache:'no-store'})]);
+    const {settings:s}=await footerResponse.json();if(!s)return;
+    const {profile:p}=await themeResponse.json();
+    const socialTheme=(p&&themeLum(p.color_primary)>.48)?'tema-claro':'tema-escuro';
     const emailItem=document.querySelector('#footer-email-item'),emailLink=document.querySelector('#footer-email-link'),phoneItem=document.querySelector('#footer-phone-item'),phoneLink=document.querySelector('#footer-phone-link'),addressLine=document.querySelector('#footer-address-line'),addressText=document.querySelector('#footer-address-line .footer-info-text'),hoursLine=document.querySelector('#footer-hours-line'),hoursText=document.querySelector('#footer-hours-line .footer-info-text'),developedBy=document.querySelector('#footer-developed-by'),social=document.querySelector('#footer-social');
     if(emailItem&&emailLink){if(s.support_email){emailLink.href=`mailto:${s.support_email}`;emailLink.textContent=s.support_email;emailItem.hidden=false}else emailItem.hidden=true}
     if(phoneItem&&phoneLink){if(s.phone){phoneLink.href=`tel:${s.phone.replace(/\D/g,'')}`;phoneLink.textContent=s.phone;phoneItem.hidden=false}else phoneItem.hidden=true}
     if(addressLine&&addressText){const parts=[s.address_street&&(s.address_number?`${s.address_street}, ${s.address_number}`:s.address_street),s.address_district,s.address_city&&s.address_state?`${s.address_city} - ${s.address_state}`:(s.address_city||s.address_state||''),s.address_zip].filter(Boolean);if(parts.length){addressText.textContent=parts.join(' - ');addressLine.hidden=false}else addressLine.hidden=true}
     if(hoursLine&&hoursText){if(s.business_hours){hoursText.textContent=s.business_hours;hoursLine.hidden=false}else hoursLine.hidden=true}
     if(developedBy)developedBy.textContent=s.developed_by||'';
-    if(social){const links=SOCIAL_NETWORKS.filter(([key])=>s[key]).map(([key,label,letter])=>`<a href="${escapeFooter(s[key])}" target="_blank" rel="noopener noreferrer" aria-label="${label}" title="${label}">${letter}</a>`);social.innerHTML=links.join('');social.hidden=!links.length}
+    if(social){const links=SOCIAL_NETWORKS.filter(([key])=>s[key]).map(([key,label,slug])=>`<a href="${escapeFooter(s[key])}" target="_blank" rel="noopener noreferrer" aria-label="${label}" title="${label}"><img src="assets/images/social/${slug}-${socialTheme}-512.png" alt="${label}" width="16" height="16"></a>`);social.innerHTML=links.join('');social.hidden=!links.length}
   }catch(error){console.warn('Não foi possível aplicar as informações do rodapé.',error)}
 };
 window.applySspFooter();

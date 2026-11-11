@@ -54,7 +54,14 @@ Atualizado em: 11/11/2026.
 - O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé e aos detalhes do site.
 - A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
 - Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
-- Perfis podem ser criados, editados, ativados e excluídos pelo Master.
+- Perfis podem ser criados, editados, ativados e excluídos pelo Master, com aplicação imediata.
+- Um Administrador do Site também pode acessar "Cabeçalho e Rodapé" e solicitar criação, edição,
+  exclusão ou ativação de perfil, mas a ação **nunca** é aplicada diretamente: entra sempre na fila
+  de aprovação do Master, **mesmo com o bloqueio geral de alterações desligado** (diferente das
+  demais entidades administrativas, cuja fila só existe com o bloqueio ativo). Ao confirmar, o
+  Administrador do Site recebe uma mensagem orientando a entrar em contato com um Administrador
+  Master para solicitar a aprovação; a mudança só passa a valer no site depois que um Master
+  aprovar a solicitação pendente.
 - Um perfil pode ser marcado como **protegido**: não pode ser editado nem excluído por ninguém,
   nem mesmo pelo Administrador Master (continua podendo ser ativado normalmente). O perfil
   `Período Eleitoral` é semeado como protegido nesta demonstração; os demais perfis (inclusive a
@@ -109,6 +116,10 @@ Atualizado em: 11/11/2026.
   com URL vazia tem seu ícone ocultado no rodapé público; URLs informadas devem começar com
   `http://` ou `https://`. Facebook, Instagram e YouTube já vêm semeados com os perfis oficiais
   reais da SSP-SP (mock fornecido pelo usuário); WhatsApp permanece vazio/oculto até ser definido.
+- O ícone de cada rede social é a logomarca real (`assets/images/social/`), não um badge de letra.
+  A variante clara/escura é escolhida automaticamente pelo contraste do fundo do rodapé (cor
+  primária do perfil visual ativo): fundo escuro usa a logo "tema-escuro" (clara, legível sobre
+  fundo escuro); fundo claro usa a logo "tema-claro".
 - No rodapé público, e-mail e telefone ficam lado a lado na mesma linha (não mais em linhas
   separadas); endereço, e-mail/telefone e horário de atendimento exibem um pequeno ícone (pino,
   envelope, telefone e relógio) ao lado do texto.
@@ -303,3 +314,10 @@ Atualizado em: 11/11/2026.
   passou a exibir apenas a regra principal (validação obrigatória do Master para alterações de
   Administradores do Site), a pedido do usuário, em vez da lista completa de consequências. O
   comportamento de fato (avisos/carrossel desativados ao bloquear) não mudou, só o texto exibido.
+- 11/11/2026: a pedido do usuário, criação/edição/exclusão/ativação de perfil por um Administrador
+  do Site passou a exigir aprovação do Master sempre (não mais só quando o bloqueio geral de
+  alterações está ligado). Ao confirmar a ação, o Administrador do Site recebe uma mensagem
+  orientando a contatar um Administrador Master para solicitar a aprovação.
+- 11/11/2026: ícones de redes sociais do rodapé trocados de badge de letra única para a logomarca
+  real (`assets/images/social/`), com escolha automática entre tema claro/escuro conforme o
+  contraste do fundo do rodapé (cor primária do perfil visual ativo).

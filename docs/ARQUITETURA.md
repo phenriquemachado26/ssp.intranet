@@ -158,3 +158,17 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   restaurar `change_control.notices_page_blocked=false`/`carousel_enabled=true`, agora também
   reativa todos os avisos em massa (`active=true`, `active_carousel=true`), a pedido do usuário.
   Substitui o comportamento anterior (flags individuais preservadas, exigindo reativação manual).
+- 11/11/2026: nova função `queueProfileChange(db, session, action, entityId, payload)` substitui
+  `queueIfRequired` nos 3 pontos de escrita de perfis (POST/PUT/DELETE `/api/profiles`): enfileira
+  SEMPRE para Administrador do Site (ignora `change_control.locked`), diferente de todas as outras
+  entidades administrativas. Mensagens de retorno (202) customizadas por ação, orientando contato
+  com um Master. Validação de payload (`profileValues`, limite de 5, nome duplicado) movida para
+  ANTES do enfileiramento nos endpoints de criação/edição, para rejeitar dados inválidos
+  imediatamente em vez de só falhar na aprovação; `applyPendingChange` ganhou a mesma checagem de
+  nome duplicado nos branches `create`/`update` de perfil, que não existia antes.
+- 11/11/2026: `applySspFooter()` passou a buscar também `/api/theme` (além de `/api/footer-settings`)
+  para calcular a luminância da cor primária do perfil ativo (`themeLum`, já existente no arquivo)
+  e escolher a variante `tema-claro`/`tema-escuro` de cada logomarca em `assets/images/social/`.
+  `SOCIAL_NETWORKS` trocou a 3ª coluna de letra (`f`/`I`/`Y`/`W`) para slug de arquivo
+  (`facebook`/`instagram`/`youtube`/`whatsapp`); o `<a>` do rodapé agora contém um `<img>` em vez
+  de texto puro.
