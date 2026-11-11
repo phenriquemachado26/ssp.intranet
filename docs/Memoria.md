@@ -40,13 +40,25 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
-- **Os 4 itens "Polícia Civil/Militar/Científica/Conseg" existem em DOIS lugares com URLs
-  DIFERENTES de propósito — isso é intencional, não inconsistência.** Em `quick_access`
-  (cabeçalho) apontam para os sites oficiais reais, abrindo em nova aba. Em `menu_items`
-  ("Instituições e serviços") continuam com âncora interna (`#civil` etc.), porque o usuário só
-  pediu para trocar os do cabeçalho — o destino real desses 4 em "Instituições e serviços" segue
-  em aberto (ver `docs/REGRAS-DE-NEGOCIO.md` → "Dados institucionais pendentes"). Não "corrigir"
-  um para bater com o outro sem confirmar com o usuário.
+- **Bug visual: borda do campo ficava branca/invisível ao focar, dependendo do perfil ativo.**
+  `.auth-card input:focus`, `dialog input:focus/select:focus`, `dialog textarea:focus` e
+  `.footer-form input:focus` usavam `border-color:var(--blue-2)` direto — `--blue-2` é a cor
+  secundária do perfil visual ATIVO, sem garantia de contraste contra o fundo branco do próprio
+  campo. Como o perfil "Governo Tarcísio" (ativo por padrão) tem `color_secondary:#FFFFFF`, a
+  borda em foco ficava branca sobre fundo branco, efetivamente invisível — foi assim que o usuário
+  percebeu o bug no formulário de rodapé. Corrigido trocando para `var(--secondary-on-light)`, a
+  variável que `theme.js` já calcula especificamente para ter contraste garantido contra fundo
+  claro (`themeVisibleOn(color_secondary,'#FFFFFF')`, com fallback automático para uma cor escura
+  quando a cor do perfil não tem contraste suficiente). Ao adicionar qualquer novo estilo de foco/
+  destaque sobre fundo claro, usar `--secondary-on-light` (ou `--primary-on-light`/
+  `--detail-on-light`, conforme a cor), nunca `--blue-2`/`--navy`/`--gold` crus.
+- **Os 4 itens "Polícia Civil/Militar/Científica/Conseg" só existem em `quick_access`
+  (Acessos Rápidos do cabeçalho) — não existem mais em `menu_items` ("Instituições e
+  serviços").** Eles chegaram a existir nos dois lugares (histórico: primeiro só em `menu_items`,
+  depois adicionados também a `quick_access` com link real; por fim, removidos de `menu_items` a
+  pedido do usuário). `reconcileSeed` tem um passo explícito de remoção por título
+  (`REMOVED_MENU_TITLES`) para quem já tinha os 4 em `menu_items` de uma versão anterior. Não
+  reintroduzir esses 4 em `DEFAULT_MENU_ITEMS` sem confirmar com o usuário.
 - **Upgrade de URL "por valor antigo conhecido", não só por padrão (`#`).** Quando o link de
   "Polícia Civil" em `quick_access` foi simplificado (de uma URL longa com parâmetros ADF para
   `https://www.policiacivil.sp.gov.br/`), a heurística de upgrade existente (só trocava URLs que

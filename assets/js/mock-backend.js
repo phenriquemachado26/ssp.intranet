@@ -46,14 +46,11 @@
     { title: 'Conseg', url: 'https://www.ssp.sp.gov.br/conseg/' },
   ];
 
-  // Itens semeados de "Instituições e serviços" (Cadastro Menu). Os 4 primeiros são os acessos
-  // institucionais originais; os demais são sistemas internos reais da SSP-SP, fornecidos como
-  // mock pelo usuário — todos abrem em nova aba (ver renderização em assets/js/main.js).
+  // Itens semeados de "Instituições e serviços" (Cadastro Menu): sistemas internos reais da
+  // SSP-SP, fornecidos como mock pelo usuário — todos abrem em nova aba (ver renderização em
+  // assets/js/main.js). Os 4 acessos institucionais (Polícia Civil/Militar/Científica/Conseg)
+  // não ficam mais aqui — permanecem apenas nos Acessos Rápidos do cabeçalho (`quick_access`).
   const DEFAULT_MENU_ITEMS = [
-    { title: 'Polícia Civil', description: 'Investigação, polícia judiciária e atendimento ao cidadão.', url: '#civil' },
-    { title: 'Polícia Militar', description: 'Policiamento ostensivo e preservação da ordem pública.', url: '#militar' },
-    { title: 'Polícia Científica', description: 'Perícia oficial e produção de conhecimento técnico-científico.', url: '#cientifica' },
-    { title: 'Conseg', description: 'Participação comunitária e integração com a segurança pública.', url: '#conseg' },
     { title: 'Lista Ramais', description: 'Consulta de ramais telefônicos dos setores e unidades da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/listaramais/pages/home' },
     { title: 'Infocrim', description: 'Consulta e registro de informações criminais da Secretaria de Segurança Pública.', url: 'https://www.infocrim.ssp.sp.gov.br/login' },
     { title: 'Expedição de Documentos', description: 'Emissão e acompanhamento da expedição de documentos oficiais.', url: 'https://www.intranet.ssp.sp.gov.br/expDocumentos/' },
@@ -78,7 +75,10 @@
     phone: '(11) 3291-6500', support_email: 'contato@ssp.gov.br',
     business_hours: 'Horário de atendimento (Setor de Protocolo - Térreo): de segunda a sexta-feira, das 9h00 às 17h00',
     developed_by: 'Desenvolvido pelo GTI',
-    social_facebook: '', social_instagram: '', social_youtube: '', social_whatsapp: '',
+    social_facebook: 'https://www.facebook.com/segurancapublicasp/?locale=pt_BR',
+    social_instagram: 'https://www.instagram.com/seguranca_ssp/',
+    social_youtube: 'https://www.youtube.com/@governosp/live',
+    social_whatsapp: '',
   };
 
   // Perfis visuais extras de demonstração (além da Paleta Padrão, sempre semeada à parte).
@@ -93,7 +93,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 8;
+  const SEED_VERSION = 10;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -270,10 +270,11 @@
       });
       existingMenuTitles.add(item.title);
     }
-    for (const item of db.menu_items) {
-      const def = DEFAULT_MENU_ITEMS.find((d) => d.title === item.title);
-      if (def && item.url.startsWith('#') && item.url !== def.url) item.url = def.url;
-    }
+    // Os 4 acessos institucionais (Polícia Civil/Militar/Científica/Conseg) saíram de
+    // "Instituições e serviços" a pedido do usuário — removidos de quem ainda os tinha.
+    // Continuam existindo normalmente em quick_access (Acessos Rápidos do cabeçalho).
+    const REMOVED_MENU_TITLES = new Set(['Polícia Civil', 'Polícia Militar', 'Polícia Científica', 'Conseg']);
+    db.menu_items = db.menu_items.filter((i) => !REMOVED_MENU_TITLES.has(i.title));
     if (!db.footer_settings) {
       db.footer_settings = { ...FOOTER_DEFAULTS, updated_at: nowStamp() };
     } else {
@@ -287,6 +288,11 @@
       } else if (db.footer_settings.business_hours === undefined) {
         db.footer_settings.business_hours = FOOTER_DEFAULTS.business_hours;
       }
+      // Backfill individual: preenche só as redes sociais ainda vazias (nunca preenchidas pelo
+      // Master), mesmo em rodapés já customizados em outros campos.
+      ['social_facebook', 'social_instagram', 'social_youtube', 'social_whatsapp'].forEach((key) => {
+        if (!db.footer_settings[key] && FOOTER_DEFAULTS[key]) db.footer_settings[key] = FOOTER_DEFAULTS[key];
+      });
     }
     db.seedVersion = SEED_VERSION;
     saveDb(db);

@@ -101,3 +101,7 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 - 11/11/2026: `menu_items` ("Instituições e serviços") ganhou `DEFAULT_MENU_ITEMS` com 15 itens
   extras de demonstração (sistemas internos reais da SSP-SP); link de "Polícia Civil" nos
   acessos rápidos simplificado. SEED_VERSION 7->8.
+- 11/11/2026: os 4 acessos institucionais removidos de `menu_items` (seguem só em `quick_access`),
+  SEED_VERSION 8->9. Rodapé: Facebook/Instagram/YouTube semeados com perfis oficiais reais,
+  SEED_VERSION 9->10. Corrigido bug de contraste (borda de campo em foco usando `--blue-2` cru em
+  vez de `--secondary-on-light`) que ficava invisível com perfis de cor secundária clara.
