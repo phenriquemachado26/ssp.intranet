@@ -24,7 +24,9 @@ para o modelo de sessão e suas limitações de segurança.
   `pending_changes`, `menu_items`, `notices` — mesmo modelo de dados do antigo SQLite, agora em JSON.
 - `localStorage["sspIntranetSession"]`: sessão ativa (token conceitual embutido no próprio objeto,
   já que não há servidor para emitir cookie), expira em oito horas.
-- Reordenação de menu e avisos impede posições duplicadas (equivalente aos antigos índices únicos).
+- Tanto a reordenação por arraste quanto a edição manual da ordem de um item (menu e avisos)
+  impedem posições duplicadas — checagem replicada em todos os pontos de escrita, inclusive na
+  aprovação de alterações pendentes (equivalente aos antigos índices únicos do SQLite).
 - `change_control.carousel_enabled` / `notices_page_blocked`: mesmas regras de antes.
 - Senhas: PBKDF2-HMAC-SHA256 (Web Crypto `crypto.subtle`), salt individual, 210 mil iterações —
   mantido por fidelidade ao desenho original, mas **sem valor de segurança real**: qualquer

@@ -452,8 +452,10 @@
       if (!title || !description) return [400, { error: 'Título e descrição são obrigatórios.' }];
       if (buttonName && !safeUrl(buttonUrl)) return [400, { error: 'Informe uma URL válida quando houver nome do botão.' }];
       if (queueIfRequired(db, session, 'update', 'notice', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      const order = Number(data.display_order ?? 1);
+      if (db.notices.some((n) => n.id !== id && n.display_order === order)) return [409, { error: 'Já existe um aviso nesta ordem. Use a ordenação por arrastar.' }];
       const notice = db.notices.find((n) => n.id === id);
-      if (notice) Object.assign(notice, { title, description, banner_file: String(data.banner_file || '').trim(), button_name: buttonName, button_url: buttonUrl, active: !!data.active, active_carousel: !!data.active_carousel, display_order: Number(data.display_order ?? notice.display_order) });
+      if (notice) Object.assign(notice, { title, description, banner_file: String(data.banner_file || '').trim(), button_name: buttonName, button_url: buttonUrl, active: !!data.active, active_carousel: !!data.active_carousel, display_order: order });
       return [200, { message: 'Aviso atualizado.' }];
     }
 
@@ -558,14 +560,22 @@
       else if (row.action === 'create') insertNoticeFirst(db, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: String(payload.banner_file || '').trim(), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: payload.active, active_carousel: payload.active_carousel });
       else if (row.action === 'update') {
         const notice = db.notices.find((n) => n.id === pid);
-        if (notice) Object.assign(notice, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: String(payload.banner_file || '').trim(), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: !!payload.active, active_carousel: !!payload.active_carousel, display_order: Number(payload.display_order ?? notice.display_order) });
+        if (notice) {
+          const order = Number(payload.display_order ?? 1);
+          if (db.notices.some((n) => n.id !== pid && n.display_order === order)) throw new Error('Ordem de aviso duplicada.');
+          Object.assign(notice, { title: String(payload.title).trim(), description: String(payload.description).trim(), banner_file: String(payload.banner_file || '').trim(), button_name: String(payload.button_name || '').trim(), button_url: String(payload.button_url || '').trim(), active: !!payload.active, active_carousel: !!payload.active_carousel, display_order: order });
+        }
       } else if (row.action === 'delete') db.notices = db.notices.filter((n) => n.id !== pid);
     } else if (row.entity === 'menu_item') {
       if (row.action === 'reorder') reorder(db.menu_items, payload.ids || []);
       else if (row.action === 'create') db.menu_items.push({ id: nextId(db, 'menu_items'), title: String(payload.title).trim(), description: String(payload.description || '').trim(), url: payload.url.trim(), active: true, display_order: Number(payload.display_order ?? 1), created_at: nowStamp() });
       else if (row.action === 'update') {
         const item = db.menu_items.find((i) => i.id === pid);
-        if (item) Object.assign(item, { title: String(payload.title).trim(), description: String(payload.description || '').trim(), url: payload.url.trim(), display_order: Number(payload.display_order ?? item.display_order) });
+        if (item) {
+          const order = Number(payload.display_order ?? 1);
+          if (db.menu_items.some((i) => i.id !== pid && i.display_order === order)) throw new Error('Ordem de menu duplicada.');
+          Object.assign(item, { title: String(payload.title).trim(), description: String(payload.description || '').trim(), url: payload.url.trim(), display_order: order });
+        }
       } else if (row.action === 'status') {
         const item = db.menu_items.find((i) => i.id === pid);
         if (item) item.active = !!payload.active;

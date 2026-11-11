@@ -100,7 +100,12 @@ Atualizado em: 11/11/2026.
 - A página segue o perfil visual ativo e lista todos os avisos ativos.
 - Cada item mostra inicialmente apenas título e resumo; “Ver mais” revela o texto completo e o banner, fechando qualquer outro item aberto.
 - O Master pode bloquear a página pelo seletor na Visão Geral.
-- O bloqueio é validado no servidor: acesso direto à URL retorna HTTP 403.
+- O bloqueio é verificado no próprio navegador: `avisos.html` carrega normalmente e, assim que o
+  JavaScript consulta `/api/site-settings`, redireciona para `index.html` se a página estiver
+  bloqueada. **Sem valor de controle de acesso real** — não existe mais um servidor para recusar a
+  requisição com HTTP 403 antes de entregar a página; quem desabilitar JavaScript ou inspecionar a
+  resposta simulada da API ainda vê o HTML. Ver `docs/Auth.md` para o mesmo caveat aplicado à
+  autenticação.
 - Quando a página estiver bloqueada, o botão “Avisos” também permanece oculto no cabeçalho público.
 
 ## Bloqueio e validação de alterações
@@ -153,3 +158,5 @@ Atualizado em: 11/11/2026.
 
 - 11/11/2026: seção Autenticação atualizada para refletir a migração para protótipo estático
   (sem servidor); demais regras de negócio permanecem válidas, apenas a camada de persistência mudou.
+- 11/11/2026: seção "Página de avisos" corrigida — o bloqueio deixou de retornar HTTP 403 real
+  (não há mais servidor) e passou a ser um redirecionamento client-side sem valor de segurança real.
