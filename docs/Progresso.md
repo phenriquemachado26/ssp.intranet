@@ -150,3 +150,13 @@ branca. Trocado pela variável de contraste garantido que `theme.js` já calcula
 lógica validados via harness Node (88 anteriores + 8 novos). Revisão completa de
 Validator/Security Specialist segue acumulada, cada vez maior — recomendo fazer essa rodada em
 breve para não acumular risco.
+
+## 11/11/2026 — Dropzone moderna para upload de logomarca
+
+A pedido do usuário ("deixe mais moderno e profissional"), o campo de logomarca em "Novo perfil"
+deixou de ser um `<input type=file>` nativo e virou uma área de arrastar-e-soltar: ícone de
+upload com "Clique para enviar"/"ou arraste a imagem aqui" quando vazia, e preview + link
+"Remover logomarca" quando há uma imagem selecionada. Mesma validação de tipo/tamanho de antes,
+agora reaproveitada tanto pelo clique quanto pelo arrastar. Testado visualmente com Playwright
+(desktop e mobile), sem overflow. Revisão completa de Validator/Security Specialist segue
+acumulada.
