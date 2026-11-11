@@ -183,3 +183,26 @@ aponta para o documento da Controladoria Geral; "São Paulo por Todas" aponta pa
 https://www.spportodas.sp.gov.br/sp-por-todas. Demais avisos de demonstração continuam com o
 link genérico da SSP. 115 cenários de lógica validados via harness Node (111 anteriores + 4
 novos). Revisão completa de Validator/Security Specialist segue acumulada.
+
+## 11/11/2026 — Reordenação/ampliação de avisos e novo aviso "Conselho de Usuários"
+
+Atendidas duas rodadas de pedidos sobre a seção de avisos: (1) descrição de "Campanha de
+Arrecadação de Prendas" e "São Paulo por Todas" ampliadas, botão removido de Arrecadação, ordem
+invertida (São Paulo por Todas primeiro, Arrecadação por último); (2) novo aviso de demonstração
+"Consulta ao Conselho de Usuários – Avalie os Serviços de Segurança Pública" adicionado como o
+primeiro de todos (à frente de São Paulo por Todas), com banner próprio, descrição fornecida pelo
+usuário e botão "Participe" — por ser o primeiro com banner, passa a aparecer também no pop-up de
+destaque da página inicial. SEED_VERSION 12→13→14.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório): 157 cenários
+  de lógica validados via harness Node.js (reconciliação de seed, upgrade de botão/descrição a
+  partir de versões antigas, preservação de customização manual do Master, inclusive ordem
+  manualmente alterada). Todos passando.
+- Corrigido ao longo do caminho: bug real de inversão de ordem no loop de "adicionar item semeado
+  faltante" (inserção sempre na posição 1 em vez de anexar no fim), que teria invertido a ordem
+  dos avisos ao adicionar múltiplos itens de uma só vez.
+- Também recuperado com segurança (sem commitar a exclusão) um arquivo `images_banner/AcessoRapido.png`
+  que havia desaparecido do disco por motivo não identificado, via `git restore`.
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado de
+  mudanças de dados mock desta sessão) ainda não executados — segue como item de housekeeping em
+  aberto.
