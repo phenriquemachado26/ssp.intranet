@@ -77,3 +77,19 @@ Reconciliação de seed estendida (agora também cobre perfis visuais, SEED_VERS
 cenários de lógica validados via harness Node (40 anteriores + 9 novos). Revisão completa de
 Validator/Security Specialist segue acumulada, pendente para quando o usuário fechar o lote de
 mocks.
+
+## 11/11/2026 — Acessos Rápidos editáveis no cabeçalho + perfil padrão ativo
+
+A pedido do usuário: os 4 links fixos do cabeçalho público (Polícia Civil/Militar/Científica/
+Conseg) viraram uma entidade própria `quick_access` (até 5 itens, título+URL+ordem+ativo/oculto),
+gerenciável em Gestão do Cabeçalho — independente do Cadastro Menu, mesmo tendo conteúdo inicial
+igual. `index.html` passou a renderizar esses links dinamicamente via `/api/quick-access`
+(`main.js`), preservando a CSS existente ao inserir os `<a>` como filhos diretos de `.main-nav`.
+Também, a pedido do usuário: o perfil visual ativo por padrão no seed (incluindo "Restaurar dados
+de demonstração") passou de "Paleta Padrão" para "Governo Tarcísio". 62 cenários de lógica
+validados via harness Node (49 anteriores + 13 novos). Também investigado um relato do usuário de
+que a logo do "Período Eleitoral" não aparecia: confirmado byte a byte que o arquivo publicado no
+GitHub Pages está correto; diagnóstico aponta para resíduo de `localStorage` de uma tentativa
+anterior — usuário orientado a usar "Restaurar dados de demonstração"; confirmação ainda
+pendente. Revisão completa de Validator/Security Specialist segue acumulada, pendente para
+quando o usuário fechar o lote de mocks.
