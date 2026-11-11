@@ -136,10 +136,12 @@ Atualizado em: 11/11/2026.
 - Ao desativar o bloqueio, as flags não são alteradas: permanecem ativos somente os avisos que já estavam ativos.
 - A página inicial exibe somente os cinco primeiros avisos ativos na ordem; os demais ficam disponíveis na página `avisos.html`.
 - Ao expandir um aviso, qualquer outro aviso aberto é recolhido automaticamente.
-- São semeados 4 avisos de demonstração, nesta ordem: São Paulo por Todas, Programa Casa
-  Paulista, O que é uma Hospitalidade no Serviço Público e Campanha de Arrecadação de Prendas
-  (por último). Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já
-  ativos e no carrossel. Os três primeiros têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
+- São semeados 5 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
+  também é o que aparece no pop-up de destaque), São Paulo por Todas, Programa Casa Paulista, O
+  que é uma Hospitalidade no Serviço Público e Campanha de Arrecadação de Prendas (por último).
+  Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já ativos e no
+  carrossel. O Conselho de Usuários tem botão "Participe"; São Paulo por Todas, Casa Paulista e
+  Hospitalidade têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
 
 ## Carrossel de imagens
 
@@ -251,3 +253,8 @@ Atualizado em: 11/11/2026.
   ampliadas com mais detalhes; botão "Acesse Aqui" removido do aviso de Arrecadação; ordem dos 4
   avisos de demonstração invertida (São Paulo por Todas passou a ser o primeiro, Arrecadação o
   último).
+- 11/11/2026: novo aviso de demonstração "Consulta ao Conselho de Usuários – Avalie os Serviços de
+  Segurança Pública" adicionado como o primeiro da ordem (à frente de São Paulo por Todas), para
+  também aparecer no pop-up de destaque da página inicial (primeiro aviso ativo com banner).
+  Banner próprio (`banner_ConselhoUsuarios.png`), descrição baseada em conteúdo fornecido pelo
+  usuário e botão "Participe" com link para o Portal Fala.SP.

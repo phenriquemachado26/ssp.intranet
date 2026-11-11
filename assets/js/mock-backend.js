@@ -15,7 +15,7 @@
   const BANNER_FILES = [
     'SPTodas.gif', 'Arrecadacao.png', 'banner_periodoeleitoral.png',
     'Hospitalidades.png', 'Teste.png', 'AcessoRapido.png',
-    'CasaPaulista.png', 'MuralhaPaulista.png',
+    'CasaPaulista.png', 'MuralhaPaulista.png', 'banner_ConselhoUsuarios.png',
   ];
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
@@ -72,6 +72,13 @@
   // em images_banner/, não enviados por upload). Ativos e no carrossel desde o início.
   const DEMO_NOTICES = [
     {
+      title: 'Consulta ao Conselho de Usuários – Avalie os Serviços de Segurança Pública',
+      description: 'A Secretaria da Segurança Pública do Estado de São Paulo (SSP) convida os cidadãos a participarem da consulta ao Conselho de Usuários de Serviços Públicos, iniciativa que acompanha e avalia a qualidade, a efetividade e a satisfação dos usuários em relação aos serviços públicos prestados, em cumprimento ao Decreto Estadual nº 68.156, de 9 de dezembro de 2023 (artigos 29 a 33). Nesta etapa serão avaliados a emissão da Carteira de Identidade Nacional (CIN/RG), prestada pela Polícia Civil; o Programa Vizinhança Solidária, da Polícia Militar; e o Disque Denúncia/Web Denúncia, da Secretaria da Segurança Pública. Para participar, acesse o Portal Fala.SP em fala.sp.gov.br/dashboardconselho, faça login com sua conta Gov.br, selecione a opção "Conselho de Usuários" e realize o cadastro exclusivamente no órgão "Secretaria da Segurança Pública", que reúne as avaliações referentes aos serviços prestados pelos órgãos policiais vinculados à Pasta. Os questionários ficam disponíveis até 11 de dezembro de 2026. Sua participação ajuda a identificar oportunidades de melhoria no atendimento à população.',
+      banner_file: 'banner_ConselhoUsuarios',
+      button_name: 'Participe',
+      button_url: 'https://fala.sp.gov.br/dashboardconselho',
+    },
+    {
       title: 'São Paulo por Todas — Dando Voz às Mulheres',
       description: 'O programa São Paulo por Todas reúne iniciativas do Governo do Estado de São Paulo voltadas a dar voz, acolhimento e proteção às mulheres em todo o território paulista. Uma das principais ferramentas da iniciativa é o aplicativo Mulher Segura, um canal direto de apoio, orientação e acionamento de ajuda em situações de violência, disponível gratuitamente para qualquer mulher no estado. A campanha reforça o compromisso do governo com a construção de uma rede de proteção mais ampla, integrada e acessível, sob o lema: São Paulo são todos, São Paulo por todas.',
       banner_file: 'SPTodas',
@@ -122,7 +129,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 13;
+  const SEED_VERSION = 14;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -353,8 +360,11 @@
         notice.description = def.description;
       }
     }
-    // Upgrade: se os 4 avisos de demonstração ainda estão exatamente na ordem antiga (ninguém
-    // reordenou manualmente), reordena para a nova sequência pedida pelo usuário.
+    // Upgrade: se os 4 avisos de demonstração originais ainda estão exatamente na ordem antiga
+    // (ninguém reordenou manualmente), reordena todos os avisos (inclusive avisos novos recém
+    // adicionados pelo loop acima, como "Consulta ao Conselho de Usuários") para a sequência
+    // atual de DEMO_NOTICES — que hoje começa pelo Conselho de Usuários, a pedido do usuário,
+    // para que ele apareça também no pop-up de destaque (primeiro aviso ativo com banner).
     const OLD_NOTICE_ORDER = ['Campanha de Arrecadação de Prendas — Festa Junina do CCI', 'Programa Casa Paulista', 'O que é uma Hospitalidade no Serviço Público?', 'São Paulo por Todas — Dando Voz às Mulheres'];
     const stillInOldOrder = OLD_NOTICE_ORDER.every((title, index) => db.notices.find((n) => n.title === title)?.display_order === index + 1);
     if (stillInOldOrder) {

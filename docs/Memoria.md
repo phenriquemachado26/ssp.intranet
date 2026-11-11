@@ -155,3 +155,13 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   excluído. Ao adicionar um novo item em `DEMO_ACCOUNTS`/`DEMO_ACCESS_REQUESTS` em
   `assets/js/mock-backend.js`, é obrigatório incrementar `SEED_VERSION` no mesmo arquivo —
   senão o item novo nunca chega a quem já visitou o site antes.
+- **Reaproveitar a reordenação condicional existente evita escrever lógica nova de "inserir no
+  topo" na reconciliação.** Ao adicionar o aviso "Consulta ao Conselho de Usuários" como o
+  primeiro (para também aparecer no pop-up de destaque), bastou: 1) colocá-lo como primeiro item
+  de `DEMO_NOTICES`; 2) deixar o loop genérico de "adicionar item semeado faltante" anexá-lo no
+  fim (`display_order` = máximo atual + 1), como qualquer outro item novo; 3) o bloco já existente
+  que reordena todos os avisos por `DEMO_NOTICES` (quando os 4 avisos originais ainda estão na
+  ordem antiga intocada) naturalmente o reposiciona para o lugar certo, porque itera sobre
+  `DEMO_NOTICES` — que já tem o novo item na frente — e não sobre uma lista fixa de 4 títulos.
+  Nenhuma lógica nova de inserção foi necessária; só a condição de guarda (4 títulos antigos
+  intocados) precisa continuar valendo para o reposicionamento acontecer.

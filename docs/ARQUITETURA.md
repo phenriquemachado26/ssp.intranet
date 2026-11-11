@@ -121,3 +121,9 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   estiverem exatamente na sequência antiga, preservando qualquer reordenação manual do Master.
   Loop de "adicionar item semeado faltante" passou de inserir-no-topo-e-empurrar para anexar no
   fim, evitando inversão de ordem ao adicionar múltiplos itens de uma vez. SEED_VERSION 12->13.
+- 11/11/2026: novo aviso de demonstração "Consulta ao Conselho de Usuários" semeado como primeiro
+  da ordem (`images_banner/banner_ConselhoUsuarios.png`), para também aparecer no pop-up de
+  destaque da página inicial. Reaproveitada a reordenação condicional já existente (reassinala
+  `display_order` de todos os avisos pela ordem atual de `DEMO_NOTICES` quando os 4 avisos
+  originais ainda estão intocados) para posicioná-lo em primeiro sem precisar de lógica nova de
+  "inserir no topo" na reconciliação. SEED_VERSION 13->14.
