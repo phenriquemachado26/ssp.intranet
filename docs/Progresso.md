@@ -103,3 +103,12 @@ conjunto fixo escolhido pelo usuário). Nova entidade singleton `footer_settings
 rodapé público via `window.applySspFooter()` em `theme.js`. 74 cenários de lógica validados via
 harness Node (62 anteriores + 12 novos). Revisão completa de Validator/Security Specialist segue
 acumulada, pendente para quando o usuário fechar o lote de mocks.
+
+## 11/11/2026 — Dados mocados de endereço, telefone e horário no rodapé
+
+Usuário forneceu dados reais (porém explicitamente como mock) para pré-preencher o rodapé: Rua
+Líbero Badaró 39, Centro, São Paulo-SP, CEP 01009-000; telefone (11) 3291-6500; novo campo
+"Horário de atendimento". Implementada lógica de "upgrade" na reconciliação de seed para que
+quem já tinha visitado o site (com os placeholders antigos) recebesse os novos dados sem perder
+eventual customização já feita pelo Master. 78 cenários de lógica validados via harness Node (74
+anteriores + 4 novos). Revisão completa de Validator/Security Specialist segue acumulada.
