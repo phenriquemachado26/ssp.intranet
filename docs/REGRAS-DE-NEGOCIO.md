@@ -58,6 +58,22 @@ Atualizado em: 11/11/2026.
 - Um perfil pode ser marcado como **protegido**: não pode ser editado nem excluído por ninguém,
   nem mesmo pelo Administrador Master (continua podendo ser ativado normalmente). O perfil
   `Período Eleitoral` é semeado como protegido nesta demonstração.
+- Ao semear os dados de demonstração (primeira visita ou "Restaurar dados de demonstração"), o
+  perfil ativo por padrão é `Governo Tarcísio`, não a Paleta Padrão.
+
+### Acessos Rápidos
+
+- No máximo cinco acessos rápidos podem existir, exibidos no cabeçalho público antes do botão
+  "Avisos". Cada um tem título, URL e ordem de exibição.
+- Administradores Master e Administradores do Site podem incluir, editar, excluir e reordenar
+  (arrastar e soltar) os acessos rápidos — mesma regra de acesso do Cadastro Menu.
+- Cada acesso rápido pode ser **ocultado** do cabeçalho público sem ser excluído (flag `Ativo`).
+- URLs aceitas seguem a mesma regra do Cadastro Menu: `https://`, `http://`, `/` ou `#`.
+- Não pode haver dois acessos rápidos com a mesma ordem de exibição.
+- Com o bloqueio de alterações ativo, mudanças feitas por um Administrador do Site entram na fila
+  de validação do Master, como nas demais funcionalidades administrativas.
+- Esta é uma entidade própria (`quick_access`), independente do Cadastro Menu/"Instituições e
+  serviços": editar um não afeta o outro, mesmo que os 4 itens semeados tenham os mesmos títulos.
 
 ## Cadastro Menu
 
@@ -175,3 +191,6 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: adicionada a regra de perfil protegido (sem edição/exclusão por ninguém); semeados
   2 perfis visuais extras de demonstração: `Período Eleitoral` (protegido) e `Governo Tarcísio`
   (não protegido, pode ser editado/excluído pelo Master normalmente).
+- 11/11/2026: perfil ativo por padrão no seed passou de `Paleta Padrão` para `Governo Tarcísio`.
+- 11/11/2026: nova seção "Acessos Rápidos" — os 4 links fixos do cabeçalho público viraram uma
+  entidade editável (até 5, com ocultar/exibir), gerenciada em Gestão do Cabeçalho.

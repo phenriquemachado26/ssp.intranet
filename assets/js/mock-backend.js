@@ -37,6 +37,15 @@
     { name: 'Marcos Vinícius Oliveira', cpf: '55555555555', email: 'marcos.oliveira@ssp.gov.br', unit: 'Delegacia Seccional de Campinas' },
   ];
 
+  // Acessos rápidos padrão do cabeçalho público (os 4 links que hoje existem fixos no HTML).
+  // Usado tanto no seed inicial quanto na reconciliação de bancos já existentes no navegador.
+  const DEFAULT_QUICK_ACCESS = [
+    { title: 'Polícia Civil', url: '#civil' },
+    { title: 'Polícia Militar', url: '#militar' },
+    { title: 'Polícia Científica', url: '#cientifica' },
+    { title: 'Conseg', url: '#conseg' },
+  ];
+
   // Perfis visuais extras de demonstração (além da Paleta Padrão, sempre semeada à parte).
   // "Período Eleitoral" é protegido: `locked:true` impede edição e exclusão por qualquer perfil,
   // inclusive Master (ver checagens em PUT/DELETE /api/profiles/<id>).
@@ -49,7 +58,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 3;
+  const SEED_VERSION = 4;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -178,6 +187,17 @@
       });
       existingProfileNames.add(profile.name);
     }
+    if (!db.quick_access) db.quick_access = [];
+    if (!db.seq.quick_access) db.seq.quick_access = db.quick_access.reduce((max, i) => Math.max(max, i.id), 0);
+    const existingQuickAccessTitles = new Set(db.quick_access.map((i) => i.title));
+    for (const item of DEFAULT_QUICK_ACCESS) {
+      if (existingQuickAccessTitles.has(item.title) || db.quick_access.length >= 5) continue;
+      db.quick_access.push({
+        id: nextId(db, 'quick_access'), title: item.title, url: item.url,
+        active: true, display_order: db.quick_access.length + 1, created_at: nowStamp(),
+      });
+      existingQuickAccessTitles.add(item.title);
+    }
     db.seedVersion = SEED_VERSION;
     saveDb(db);
     return db;
@@ -186,7 +206,7 @@
   async function seedDb() {
     const db = {
       seedVersion: SEED_VERSION,
-      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: 4, notices: 0, pending_changes: 0 },
+      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: 4, quick_access: DEFAULT_QUICK_ACCESS.length, notices: 0, pending_changes: 0 },
       users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
         id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
         password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
@@ -199,12 +219,12 @@
         {
           id: 1, name: 'Paleta Padrão', logo: 'logo-ssp.svg', page_title: 'Intranet SSP',
           color_primary: '#0B2D48', color_secondary: '#19577F', color_detail: '#D7A62A',
-          font_family: 'Padrão institucional', active: true, locked: false, created_at: nowStamp(),
+          font_family: 'Padrão institucional', active: false, locked: false, created_at: nowStamp(),
         },
         ...DEMO_EXTRA_PROFILES.map((profile, index) => ({
           id: index + 2, name: profile.name, logo: profile.logo, page_title: 'Intranet SSP',
           color_primary: profile.color_primary, color_secondary: profile.color_secondary, color_detail: profile.color_detail,
-          font_family: 'Padrão institucional', active: false, locked: profile.locked, created_at: nowStamp(),
+          font_family: 'Padrão institucional', active: profile.name === 'Governo Tarcísio', locked: profile.locked, created_at: nowStamp(),
         })),
       ],
       change_control: { locked: false, note: '', carousel_enabled: true, notices_page_blocked: false, updated_at: nowStamp() },
@@ -215,6 +235,9 @@
         { id: 3, title: 'Polícia Científica', description: 'Perícia oficial e produção de conhecimento técnico-científico.', url: '#cientifica', active: true, display_order: 3, created_at: nowStamp() },
         { id: 4, title: 'Conseg', description: 'Participação comunitária e integração com a segurança pública.', url: '#conseg', active: true, display_order: 4, created_at: nowStamp() },
       ],
+      quick_access: DEFAULT_QUICK_ACCESS.map((item, index) => ({
+        id: index + 1, title: item.title, url: item.url, active: true, display_order: index + 1, created_at: nowStamp(),
+      })),
       notices: [],
     };
     saveDb(db);
@@ -338,6 +361,15 @@
       return [200, { items }];
     }
 
+    if (method === 'GET' && path === '/api/quick-access') {
+      const authenticated = !!getSession();
+      const items = (db.quick_access || [])
+        .filter((i) => authenticated || i.active)
+        .slice()
+        .sort((a, b) => a.display_order - b.display_order || a.id - b.id);
+      return [200, { items }];
+    }
+
     if (method === 'GET' && path === '/api/notices') {
       const authenticated = !!getSession();
       const notices = db.notices
@@ -438,6 +470,20 @@
       return [201, { message: 'Item de menu incluído.' }];
     }
 
+    if (method === 'POST' && path === '/api/quick-access') {
+      const session = requireAuth();
+      if (!safeUrl(data.url)) return [400, { error: 'Use uma URL iniciada por https://, http://, / ou #.' }];
+      if (queueIfRequired(db, session, 'create', 'quick_access', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      if (db.quick_access.length >= 5) return [409, { error: 'O limite de 5 acessos rápidos foi atingido.' }];
+      const order = Number(data.display_order ?? 1);
+      if (db.quick_access.some((i) => i.display_order === order)) return [409, { error: 'Já existe um acesso rápido nesta ordem. Escolha outra posição ou use a ordenação por arrastar.' }];
+      db.quick_access.push({
+        id: nextId(db, 'quick_access'), title: String(data.title || '').trim(),
+        url: data.url.trim(), active: true, display_order: order, created_at: nowStamp(),
+      });
+      return [201, { message: 'Acesso rápido incluído.' }];
+    }
+
     if (method === 'POST' && path === '/api/notices') {
       const session = requireAuth();
       const title = String(data.title || '').trim(), description = String(data.description || '').trim();
@@ -512,6 +558,35 @@
       const item = db.menu_items.find((i) => i.id === id);
       if (item) Object.assign(item, { title: String(data.title || '').trim(), description: String(data.description || '').trim(), url: data.url.trim(), display_order: order });
       return [200, { message: 'Item de menu atualizado.' }];
+    }
+
+    if (method === 'PUT' && path === '/api/quick-access/reorder') {
+      const session = requireAuth();
+      if (queueIfRequired(db, session, 'reorder', 'quick_access', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      reorder(db.quick_access, data.ids || []);
+      return [200, { message: 'Ordem dos acessos rápidos atualizada.' }];
+    }
+
+    if (method === 'PUT' && path.startsWith('/api/quick-access/') && 'active' in data && !('title' in data)) {
+      const session = requireAuth();
+      const id = parseId(path);
+      const payload = { active: !!data.active };
+      if (queueIfRequired(db, session, 'status', 'quick_access', id, payload)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      const item = db.quick_access.find((i) => i.id === id);
+      if (item) item.active = payload.active;
+      return [200, { message: payload.active ? 'Acesso rápido exibido no cabeçalho.' : 'Acesso rápido ocultado do cabeçalho.' }];
+    }
+
+    if (method === 'PUT' && path.startsWith('/api/quick-access/')) {
+      const session = requireAuth();
+      if (!safeUrl(data.url)) return [400, { error: 'Use uma URL iniciada por https://, http://, / ou #.' }];
+      const id = parseId(path);
+      if (queueIfRequired(db, session, 'update', 'quick_access', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      const order = Number(data.display_order ?? 1);
+      if (db.quick_access.some((i) => i.id !== id && i.display_order === order)) return [409, { error: 'Já existe um acesso rápido nesta ordem. Escolha outra posição ou use a ordenação por arrastar.' }];
+      const item = db.quick_access.find((i) => i.id === id);
+      if (item) Object.assign(item, { title: String(data.title || '').trim(), url: data.url.trim(), display_order: order });
+      return [200, { message: 'Acesso rápido atualizado.' }];
     }
 
     if (method === 'PUT' && path === '/api/notices/bulk-status') {
@@ -620,6 +695,7 @@
       }
       if (path.startsWith('/api/profiles/') && queueIfRequired(db, session, 'delete', 'header_profile', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (path.startsWith('/api/menu/') && queueIfRequired(db, session, 'delete', 'menu_item', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
+      if (path.startsWith('/api/quick-access/') && queueIfRequired(db, session, 'delete', 'quick_access', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (path.startsWith('/api/notices/') && queueIfRequired(db, session, 'delete', 'notice', id, {})) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
 
       if (path.startsWith('/api/users/')) {
@@ -633,6 +709,8 @@
         db.header_profiles = db.header_profiles.filter((p) => p.id !== id);
       } else if (path.startsWith('/api/menu/')) {
         db.menu_items = db.menu_items.filter((i) => i.id !== id);
+      } else if (path.startsWith('/api/quick-access/')) {
+        db.quick_access = db.quick_access.filter((i) => i.id !== id);
       } else if (path.startsWith('/api/notices/')) {
         db.notices = db.notices.filter((n) => n.id !== id);
       } else {
@@ -680,6 +758,22 @@
         const item = db.menu_items.find((i) => i.id === pid);
         if (item) item.active = !!payload.active;
       } else if (row.action === 'delete') db.menu_items = db.menu_items.filter((i) => i.id !== pid);
+    } else if (row.entity === 'quick_access') {
+      if (row.action === 'reorder') reorder(db.quick_access, payload.ids || []);
+      else if (row.action === 'create') {
+        if (db.quick_access.length >= 5) throw new Error('Limite de acessos rápidos atingido.');
+        db.quick_access.push({ id: nextId(db, 'quick_access'), title: String(payload.title).trim(), url: payload.url.trim(), active: true, display_order: Number(payload.display_order ?? 1), created_at: nowStamp() });
+      } else if (row.action === 'update') {
+        const item = db.quick_access.find((i) => i.id === pid);
+        if (item) {
+          const order = Number(payload.display_order ?? 1);
+          if (db.quick_access.some((i) => i.id !== pid && i.display_order === order)) throw new Error('Ordem de acesso rápido duplicada.');
+          Object.assign(item, { title: String(payload.title).trim(), url: payload.url.trim(), display_order: order });
+        }
+      } else if (row.action === 'status') {
+        const item = db.quick_access.find((i) => i.id === pid);
+        if (item) item.active = !!payload.active;
+      } else if (row.action === 'delete') db.quick_access = db.quick_access.filter((i) => i.id !== pid);
     } else if (row.action === 'create') {
       if (db.header_profiles.length >= 5) throw new Error('Limite de perfis atingido.');
       const values = profileValues(payload);

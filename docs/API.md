@@ -20,6 +20,7 @@ backend Python, para que o frontend (`main.js`, `admin.js`, `painel.js`, `avisos
 - `GET /api/theme` → `200 {profile}` (perfil visual ativo).
 - `GET /api/site-settings` → `200 {settings:{carousel_enabled, notices_page_blocked}}`.
 - `GET /api/menu` → `200 {items}` (somente ativos se não autenticado).
+- `GET /api/quick-access` → `200 {items}` (acessos rápidos do cabeçalho; somente ativos se não autenticado).
 - `GET /api/notices` → `200 {notices}` (somente ativos se não autenticado; inclui `banner_resolved`).
 - `POST /api/access-requests` — `{name, cpf, email, unit}` → `201 {message}` ou `400 {error}`.
 
@@ -31,6 +32,8 @@ backend Python, para que o frontend (`main.js`, `admin.js`, `painel.js`, `avisos
 - `POST/PUT/DELETE /api/profiles/<id>` — qualquer administrador autenticado; fica pendente de
   validação quando `change_control.locked=true` e o solicitante não é Master.
 - `POST/PUT/DELETE /api/menu/<id>`, `PUT /api/menu/reorder` — mesma regra de fila acima.
+- `POST/PUT/DELETE /api/quick-access/<id>`, `PUT /api/quick-access/reorder` — mesma regra de fila
+  acima; limite de 5 itens.
 - `POST/PUT/DELETE /api/notices/<id>`, `PUT /api/notices/reorder`,
   `PUT /api/notices/bulk-status`, `PUT /api/notices/bulk-carousel` — mesma regra de fila acima.
 - `PUT /api/change-control`, `PUT /api/site-settings` — exclusivo Master.

@@ -40,6 +40,18 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   colado à mão. Por isso o arquivo `mock-backend.js` ficou com ~400 KB: é esperado, não é bug.
   Se precisar trocar essas imagens no futuro, repita o mesmo processo (ler o PNG, gerar
   `data:image/png;base64,...`, substituir a string no arquivo) em vez de editar o base64 à mão.
+- **`quick_access` é uma entidade própria, não reaproveita `menu_items`.** Os 4 links do
+  cabeçalho público tinham o mesmo título dos itens semeados em "Cadastro Menu" (Polícia Civil,
+  Militar, etc.), mas sempre foram HTML fixo, nunca ligados a `menu_items` de fato. Em vez de
+  conectar o cabeçalho a `menu_items` (o que mudaria o comportamento do "Instituições e
+  serviços"), foi criada uma entidade nova e independente — editar um acesso rápido nunca deve
+  afetar o Cadastro Menu, e vice-versa, mesmo que o conteúdo inicial coincida.
+- **Renderização do cabeçalho é via âncora, não wrapper `<div>`.** `index.html` tem um
+  `<span id="quick-access-anchor" hidden>` dentro de `.main-nav`; `main.js` insere os `<a>` de
+  acesso rápido com `insertAdjacentHTML('beforebegin', ...)` para que fiquem como filhos diretos
+  de `.main-nav` (a CSS `.main-nav>a` depende disso). Um `<div>` teria quebrado o estilo. O bind
+  do clique em links `#` (que abre a seção "Instituições e serviços") também precisou ser movido
+  para dentro do `.then()` do fetch, já que os links não existem no DOM até a resposta chegar.
 - **Dados de demonstração (`DEMO_ACCOUNTS`/`DEMO_ACCESS_REQUESTS`) usam reconciliação por
   `SEED_VERSION`, não resseed total**: navegadores que já tinham `localStorage` salvo de uma
   versão anterior do protótipo recebem automaticamente as contas/solicitações novas que ainda não

@@ -37,6 +37,9 @@ para o modelo de sessão e suas limitações de segurança.
   imagem, validado tanto no navegador quanto em `profileValues`). `window.sspResolveImageSrc`
   resolve o valor correto tanto para perfis com logo enviada (data URL) quanto para perfis
   semeados com arquivo estático (ex.: `logo-ssp.svg`).
+- `quick_access`: entidade própria para os acessos rápidos do cabeçalho público (título, URL,
+  `active`, `display_order`), independente de `menu_items`. Mesmas regras de ordenação única e
+  fila de validação das demais entidades administrativas; limite de 5 itens.
 - Resolução de banner (`resolveBanner`) usa um manifesto estático de nomes de arquivo
   (`BANNER_FILES` em `mock-backend.js`), já que não existe mais servidor para listar o diretório
   `images_banner/` dinamicamente — precisa ser atualizado manualmente a cada novo arquivo.
@@ -76,4 +79,7 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
   exclusão por ninguém) e semeados 2 perfis extras (`Período Eleitoral`, protegido; `Governo
   Tarcísio`, não protegido), com logos embutidas como data URL diretamente em
   `assets/js/mock-backend.js` a partir de `assets/images/BrasaoEstadoSP.png` e
-  `assets/images/GovTarcisio.png`.
+  `assets/images/GovTarcisio.png`. Perfil ativo por padrão no seed passou a ser `Governo Tarcísio`.
+- 11/11/2026: nova entidade `quick_access` (acessos rápidos do cabeçalho, até 5, com
+  ocultar/exibir); os 4 links antes fixos no HTML de `index.html` viraram renderização dinâmica
+  via `GET /api/quick-access`, inseridos em `#quick-access-anchor` por `assets/js/main.js`.
