@@ -66,6 +66,8 @@
     { title: 'WIKI', description: 'Documentação colaborativa com procedimentos e orientações da Secretaria.', url: 'https://wiki.ssp.sp.gov.br/doku.php?id=start' },
     { title: 'Informativos', description: 'Comunicados e informativos internos da Secretaria de Segurança Pública.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/informativossp/' },
     { title: 'Sala de Reuniões', description: 'Agendamento de salas de reunião da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/salareunioes/' },
+    { title: 'Resoluções SSP', description: 'Consulta às resoluções publicadas pela Secretaria de Segurança Pública.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/resolucoes/' },
+    { title: 'Almoxarifado', description: 'Solicitação e controle de materiais do almoxarifado da Secretaria.', url: 'https://www.intranet.ssp.sp.gov.br/intranetV3/assets/almoxarifado/' },
   ];
 
   // Avisos de demonstração, com banner resolvido pelo manifesto estático (arquivos já existentes
@@ -135,7 +137,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 19;
+  const SEED_VERSION = 21;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');

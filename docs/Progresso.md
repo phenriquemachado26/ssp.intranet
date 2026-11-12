@@ -369,3 +369,22 @@ consolidado de volta no aviso original, evitando duplicidade.
   em todos os avisos, parece design já existente, não investigado a fundo.
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 12/11/2026 — Dois novos itens em "Instituições e serviços": Resoluções SSP e Almoxarifado
+
+A pedido do usuário, adicionados ao final de `DEFAULT_MENU_ITEMS` (`assets/js/mock-backend.js`)
+os itens "Resoluções SSP" (`.../intranetV3/assets/resolucoes/`) e "Almoxarifado"
+(`.../intranetV3/assets/almoxarifado/`), cada um em um pedido separado dentro da mesma tarefa.
+SEED_VERSION 19->21 (um incremento por item), para que o item apareça também em navegadores que já
+tinham `localStorage` salvo. Total de itens semeados passou de 15 para 17.
+
+- **Tester** (eu mesmo, Coder — sem suíte automatizada pré-existente no repositório, harness Node
+  de regras de negócio não versionado neste checkout): validação sintática (`node -c
+  assets/js/mock-backend.js`), extração isolada de `DEFAULT_MENU_ITEMS` via Node confirmando 17
+  itens, os 2 novos como últimos, títulos únicos e sem URL duplicada introduzida pela mudança (a
+  única URL duplicada da lista — FISP/Placas Reservadas — é pré-existente, não relacionada a esta
+  tarefa). `main.js` renderiza `menu_items` sem limite de quantidade (`items.map(...)`), então o
+  grid "Instituições e serviços" comporta os novos itens sem alteração de código adicional. Não foi
+  possível verificar visualmente no navegador nesta sessão (sem acesso a ferramenta de browser).
+- Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
+  sessão) ainda não executados — segue como item de housekeeping em aberto.

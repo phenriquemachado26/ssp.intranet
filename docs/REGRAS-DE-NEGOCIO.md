@@ -1,6 +1,6 @@
 # Regras de Negócio
 
-Atualizado em: 11/11/2026.
+Atualizado em: 12/11/2026.
 
 > Protótipo 100% estático, sem servidor nem banco de dados real: todas as regras abaixo são
 > simuladas no navegador (`assets/js/mock-backend.js`) e persistidas em `localStorage`, por
@@ -144,11 +144,12 @@ Atualizado em: 11/11/2026.
 - Na página inicial, “Instituições e serviços” permanece recolhido e só exibe os itens após um clique.
 - Todos os cartões de “Instituições e serviços” abrem em nova aba, independentemente do destino.
 - Com o bloqueio ativo, alterações feitas por Administradores do Site entram na fila de validação do Master.
-- São semeados 15 sistemas internos reais da SSP-SP como demonstração (Lista Ramais, Infocrim,
+- São semeados 17 sistemas internos reais da SSP-SP como demonstração (Lista Ramais, Infocrim,
   Expedição de Documentos, RH, FISP, Placas Reservadas, SICON, Consulta Jurídica, CLC, Protocolo,
-  Infoseg, RDO, WIKI, Informativos, Sala de Reuniões), cada um com URL e breve descrição. Os 4
-  acessos institucionais (Polícia Civil/Militar/Científica/Conseg) **não fazem mais parte** de
-  "Instituições e serviços" — continuam existindo apenas nos Acessos Rápidos do cabeçalho.
+  Infoseg, RDO, WIKI, Informativos, Sala de Reuniões, Resoluções SSP, Almoxarifado), cada um com
+  URL e breve descrição. Os 4 acessos institucionais (Polícia Civil/Militar/Científica/Conseg)
+  **não fazem mais parte** de "Instituições e serviços" — continuam existindo apenas nos Acessos
+  Rápidos do cabeçalho.
 
 ## Cadastro de Avisos
 
@@ -339,6 +340,12 @@ Atualizado em: 11/11/2026.
 - 11/11/2026: ícones de redes sociais do rodapé trocados de badge de letra única para a logomarca
   real (`assets/images/social/`), com escolha automática entre tema claro/escuro conforme o
   contraste do fundo do rodapé (cor primária do perfil visual ativo).
+- 12/11/2026: novo item "Resoluções SSP" adicionado como último de "Instituições e serviços"
+  (`https://www.intranet.ssp.sp.gov.br/intranetV3/assets/resolucoes/`), a pedido do usuário.
+  SEED_VERSION 19->20.
+- 12/11/2026: novo item "Almoxarifado" adicionado como último de "Instituições e serviços"
+  (`https://www.intranet.ssp.sp.gov.br/intranetV3/assets/almoxarifado/`), a pedido do usuário.
+  SEED_VERSION 20->21.
 - 11/11/2026: a pedido do usuário, o favicon do site passou a acompanhar a logomarca do perfil
   visual ativo — troca automaticamente junto com a troca de perfil.
 - 11/11/2026: a pedido do usuário, adicionado indicador numérico destacado (badge vermelho,
