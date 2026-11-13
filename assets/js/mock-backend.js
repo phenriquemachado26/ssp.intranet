@@ -30,6 +30,10 @@
     { name: 'Juliana Pereira Santos', cpf: '33333333333', email: 'juliana.santos@ssp.gov.br', role: 'site', password: 'Site2@123' },
   ];
 
+  // Cadastro Master principal da demonstração: não pode ser excluído por ninguém (nem por outro
+  // Master), diferente dos demais administradores, que só não podem excluir a si mesmos.
+  const MASTER_PRINCIPAL_CPF = DEMO_ACCOUNTS[0].cpf;
+
   window.sspDemoAccounts = () => DEMO_ACCOUNTS.map(({ name, cpf, role, password }) => ({ name, cpf, role, password }));
 
   // Exemplo de solicitação de acesso pendente, para a aba "Solicitações" de Cadastro de Usuários.
@@ -985,6 +989,10 @@
 
       if (path.startsWith('/api/users/')) {
         if (id === session.id) return [409, { error: 'Você não pode excluir o próprio usuário.' }];
+        const target = db.users.find((u) => u.id === id);
+        if (target && target.cpf === MASTER_PRINCIPAL_CPF) {
+          return [409, { error: 'O cadastro do Administrador Master principal da demonstração não pode ser excluído.' }];
+        }
         db.users = db.users.filter((u) => u.id !== id);
       } else if (path.startsWith('/api/profiles/')) {
         const profile = db.header_profiles.find((p) => p.id === id);
@@ -1076,8 +1084,13 @@
       if (profile) profile.active = true;
       applyElectoralCascade(db, profile, wasElectoralActive);
     } else if (row.action === 'delete') {
-      const wouldBreakMinimum = db.header_profiles.length <= 2;
-      db.header_profiles = db.header_profiles.filter((p) => !(p.id === pid && !p.active && p.name !== 'Paleta Padrão' && !wouldBreakMinimum));
+      const profile = db.header_profiles.find((p) => p.id === pid);
+      if (profile) {
+        if (profile.active) throw new Error('O perfil em uso não pode ser excluído.');
+        if (profile.name === 'Paleta Padrão') throw new Error('A Paleta Padrão não pode ser excluída.');
+        if (db.header_profiles.length <= 2) throw new Error('É necessário manter ao menos 2 perfis cadastrados, além do Período Eleitoral.');
+        db.header_profiles = db.header_profiles.filter((p) => p.id !== pid);
+      }
     }
   }
 

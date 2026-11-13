@@ -388,3 +388,104 @@ tinham `localStorage` salvo. Total de itens semeados passou de 15 para 17.
   possível verificar visualmente no navegador nesta sessão (sem acesso a ferramenta de browser).
 - Pendência: Validator e Security Specialist completos (revisão consolidada do acumulado desta
   sessão) ainda não executados — segue como item de housekeeping em aberto.
+
+## 13/11/2026 — Reescrita completa de docs/REGRAS-DE-NEGOCIO.md (telas, entidades, ID e status)
+
+A pedido do usuário, `docs/REGRAS-DE-NEGOCIO.md` foi reescrito do zero a partir da leitura integral
+do código-fonte atual (`assets/js/mock-backend.js` — 1107 linhas, `main.js`, `avisos.js`,
+`theme.js`, `admin.js`, `painel.js`, as 4 páginas HTML). Passou de prosa solta por seção para uma
+estrutura por tela (`T-01`…`T-09`) e por entidade (`E-USUARIO`, `E-SOLICITACAO`, `E-PERFIL`,
+`E-ACESSO`, `E-MENU`, `E-AVISO`, `E-RODAPE`, `E-CONTROLE`, `E-PENDENCIA`), com ID estável
+`RN-<DOMÍNIO>-NNN` e status (`confirmada`/`⚠ inferida`) em cada regra — resolvendo a lacuna de
+convenção já registrada como pendência pelo Validator na entrada de 11/11/2026 (migração para
+protótipo estático). Adicionada uma matriz de permissões por entidade e uma tabela de mapeamento
+tela↔entidade.
+
+Nenhuma regra de negócio foi alterada de fato (tarefa puramente documental). Corrigidas duas
+referências desatualizadas a um antigo backend SQLite nas seções "Cadastro Menu" e "Visão Geral
+administrativa" (a migração para `localStorage`/mock já estava registrada em `docs/ARQUITETURA.md`
+desde 11/11/2026, mas não havia sido propagada a essas duas frases do documento de regras).
+
+Três comportamentos implementados no código, sem registro de decisão explícita anterior, foram
+documentados como `⚠ inferida` para confirmação do usuário (ver seção "Observações técnicas a
+confirmar" do documento reescrito):
+
+- Exclusão de administrador hoje só bloqueia auto-exclusão (`id === session.id`); não há proteção
+  específica ao cadastro Master principal da demonstração, diferente do que uma frase do documento
+  anterior sugeria.
+- Itens de "Cadastro Menu" têm uma flag de status individual (ativo/inativo) com botão dedicado no
+  painel, não documentada antes.
+- Aprovação de uma pendência de exclusão de perfil visual que violaria a quantidade mínima de
+  perfis (ou a Paleta Padrão, ou o perfil ativo) é silenciosamente ignorada pelo mock — a resposta
+  ao Master ainda diz "aplicada", mesmo sem efeito real.
+
+- **Tester**: n/a — tarefa puramente documental, sem alteração de código/comportamento; nenhum
+  cenário de regressão aplicável. Autovalidação feita linha a linha contra o código-fonte lido
+  nesta sessão (ver plano em `.claude/plans/`).
+- **Validator**: autovalidação (sessão única, sem harness multiagente configurado neste
+  repositório — `docs/Harness.md` = n/a): estrutura por tela/entidade conferida contra o código;
+  cada regra do documento anterior foi localizada e preservada ou explicitamente marcada como
+  divergente; tabela de sincronização de documentação do plano conferida contra o diff real
+  (somente `docs/REGRAS-DE-NEGOCIO.md` e este arquivo mudaram).
+- **Security Specialist**: n/a para revisão de código (nenhum código alterado); nenhum segredo novo
+  incluído — as senhas de demonstração já eram públicas em `docs/Auth.md` e no próprio
+  `mock-backend.js` (exposição intencional e documentada).
+- Pendências: as três divergências `⚠ inferida` acima aguardam confirmação do usuário — podem ser
+  bugs a corrigir no código ou apenas lacunas de documentação a aceitar como estão.
+
+## 13/11/2026 — Resolvidas as 3 pendências `⚠ inferida` de docs/REGRAS-DE-NEGOCIO.md
+
+Usuário revisou, uma a uma, as três divergências levantadas na reescrita do documento de regras
+(tarefa anterior, mesma data) e decidiu:
+
+1. **Exclusão do Master principal** (`RN-USR-005b`): restaurar a proteção. Implementado
+   `MASTER_PRINCIPAL_CPF` em `assets/js/mock-backend.js` — `DELETE /api/users/<id>` agora rejeita
+   com 409 a exclusão do cadastro Master principal da demonstração (CPF `000.000.000-00`) por
+   qualquer administrador, além da proteção já existente contra auto-exclusão.
+2. **Status individual de itens de menu** (`RN-MENU-006`): manter como está, recurso intencional —
+   só documentação, sem alteração de código.
+3. **Aprovação silenciosa de exclusão de perfil inválida** (`RN-PERFIL-014`): corrigir. O branch
+   `delete` de perfil em `applyPendingChange` (`assets/js/mock-backend.js`) agora lança erro quando
+   a exclusão violaria perfil ativo/Paleta Padrão/quantidade mínima, em vez de ignorar
+   silenciosamente — a aprovação falha com a mesma mensagem genérica das demais entidades e a
+   solicitação permanece pendente.
+
+`docs/REGRAS-DE-NEGOCIO.md` atualizado: as três regras promovidas de `⚠ inferida` para
+`confirmada` (nova regra `RN-USR-005b`); seção "Observações técnicas a confirmar" removida (sem
+pendências restantes); resolução registrada no "Histórico" do documento. `docs/ARQUITETURA.md`
+ganhou entrada de histórico para as duas mudanças de código.
+
+- **Tester** (eu mesmo, sem suíte automatizada pré-existente): `node -c assets/js/mock-backend.js`
+  (sintaxe OK) e harness Node isolado ad hoc (stub de `localStorage`/`window`, descartado após o
+  teste) cobrindo os 2 cenários corrigidos — Master principal protegido contra exclusão por outro
+  Master (409), auto-exclusão continua bloqueada (409), exclusão de um terceiro administrador
+  continua funcionando (200); aprovação de exclusão pendente da Paleta Padrão agora falha com 409
+  e a Paleta Padrão permanece no banco (antes: sucesso silencioso, sem efeito).
+- **Validator**: autovalidação (sessão única, `docs/Harness.md` = n/a neste repositório) —
+  mudanças mínimas e localizadas, consistentes com os demais branches de cada endpoint; mensagens
+  de erro seguem o padrão já usado nas demais entidades.
+- **Security Specialist**: n/a — ajuste de validação de autorização que **restringe** uma ação
+  (menos permissiva, não mais), sem novo dado sensível exposto.
+
+## 13/11/2026 — Ícones de redes sociais ocultos no rodapé durante Período Eleitoral
+
+Nova regra de negócio (`RN-PORTAL-015`, `docs/REGRAS-DE-NEGOCIO.md`): enquanto o perfil visual
+"Período Eleitoral" está ativo, os ícones de redes sociais do rodapé público (`index.html`,
+`avisos.html`) ficam completamente ocultos, independente de haver URL cadastrada. Ao ativar
+qualquer outro perfil, os ícones voltam a ser exibidos, seguindo a regra individual já existente de
+ocultação por URL vazia (RN-PORTAL-012).
+
+Implementado em `window.applySspFooter` (`assets/js/theme.js`): o bloco `#footer-social` agora
+força a lista de links para vazia (`social.hidden=true`) quando o perfil retornado por
+`GET /api/theme` tem `name === 'Período Eleitoral'`; caso contrário, mantém o comportamento
+anterior (filtro por URL preenchida).
+
+- **Tester** (eu mesmo, sem suíte automatizada pré-existente): inspeção manual do código alterado
+  e leitura cruzada com `profile?.name==='Período Eleitoral'`, já usado em `mock-backend.js` para a
+  mesma verificação (bloqueio da página de avisos) — mesmo critério reaproveitado, sem novo campo
+  de dado. Servidor local não pôde ser iniciado nesta sessão (bloqueio do classificador de ações);
+  validação funcional em navegador fica pendente para o usuário.
+- **Validator**: autovalidação (sessão única, `docs/Harness.md` = n/a neste repositório) — mudança
+  mínima e localizada em uma única linha de `theme.js`, sem alterar as demais seções do rodapé.
+- **Security Specialist**: n/a — alteração puramente de exibição condicional de ícones já públicos,
+  sem novo dado sensível, autenticação ou autorização envolvida.

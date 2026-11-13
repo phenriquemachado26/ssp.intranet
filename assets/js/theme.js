@@ -44,7 +44,7 @@ window.applySspFooter=async()=>{
     if(addressLine&&addressText){const parts=[s.address_street&&(s.address_number?`${s.address_street}, ${s.address_number}`:s.address_street),s.address_district,s.address_city&&s.address_state?`${s.address_city} - ${s.address_state}`:(s.address_city||s.address_state||''),s.address_zip].filter(Boolean);if(parts.length){addressText.textContent=parts.join(' - ');addressLine.hidden=false}else addressLine.hidden=true}
     if(hoursLine&&hoursText){if(s.business_hours){hoursText.textContent=s.business_hours;hoursLine.hidden=false}else hoursLine.hidden=true}
     if(developedBy)developedBy.textContent=s.developed_by||'';
-    if(social){const links=SOCIAL_NETWORKS.filter(([key])=>s[key]).map(([key,label,slug])=>`<a href="${escapeFooter(s[key])}" target="_blank" rel="noopener noreferrer" aria-label="${label}" title="${label}"><img src="assets/images/social/${slug}-${socialTheme}-512.png" alt="${label}" width="16" height="16"></a>`);social.innerHTML=links.join('');social.hidden=!links.length}
+    if(social){const electoralActive=p?.name==='Período Eleitoral';const links=electoralActive?[]:SOCIAL_NETWORKS.filter(([key])=>s[key]).map(([key,label,slug])=>`<a href="${escapeFooter(s[key])}" target="_blank" rel="noopener noreferrer" aria-label="${label}" title="${label}"><img src="assets/images/social/${slug}-${socialTheme}-512.png" alt="${label}" width="16" height="16"></a>`);social.innerHTML=links.join('');social.hidden=!links.length}
   }catch(error){console.warn('Não foi possível aplicar as informações do rodapé.',error)}
 };
 window.applySspFooter();

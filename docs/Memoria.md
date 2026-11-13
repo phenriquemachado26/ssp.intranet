@@ -258,3 +258,9 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   preciso um upgrade que faz `db.notices = db.notices.filter(...)` para remover o duplicado — guarda
   pela condição "banner ainda é o default", mesmo padrão de "só mexe se ainda não foi customizado"
   usado em todos os outros upgrades, mas aplicado a uma remoção em vez de uma atualização de campo.
+- **Subir `python -m http.server`/`npx serve` em background (`&` ou `run_in_background`) junto com
+  um `curl` de verificação na mesma sessão foi bloqueado pelo classificador de auto mode** ("Undermining
+  Oversight"), mesmo sendo só para testar um protótipo estático local. Nessa sessão não insisti de
+  novo (regra: não repetir a mesma chamada negada); a verificação funcional em navegador ficou como
+  pendência para o usuário. Se precisar validar visualmente de novo, considerar pedir para o próprio
+  usuário rodar o servidor e descrever o resultado, em vez de tentar automatizar.

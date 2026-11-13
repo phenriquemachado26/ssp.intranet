@@ -1,278 +1,546 @@
-# Regras de Negócio
+# Regras de Negócio — Intranet SSP (protótipo)
 
-Atualizado em: 12/11/2026.
+Atualizado em: 13/11/2026. Reescrita completa, organizada por tela e por entidade, a partir da
+leitura integral do código-fonte atual (`assets/js/mock-backend.js`, `main.js`, `avisos.js`,
+`theme.js`, `admin.js`, `painel.js`, `index.html`, `avisos.html`, `admin.html`, `painel.html`).
 
 > Protótipo 100% estático, sem servidor nem banco de dados real: todas as regras abaixo são
 > simuladas no navegador (`assets/js/mock-backend.js`) e persistidas em `localStorage`, por
-> navegador/aba — sem compartilhamento entre visitantes. Ver `docs/Auth.md`.
+> navegador/aba — sem compartilhamento entre visitantes. Ver `docs/Auth.md` e `docs/ARQUITETURA.md`.
+
+## Como ler este documento
+
+- Cada regra tem um ID estável `RN-<DOMÍNIO>-NNN` e um status entre parênteses:
+  `confirmada` (já validada pelo usuário, em uso), `⚠ inferida` (extraída só do código, ainda sem
+  confirmação explícita do usuário — pode ser bug, não regra), `a definir` ou `revogada`.
+- Telas usam `T-NN`; entidades de dados (tabelas do `localStorage["sspIntranetDb"]`) usam `E-NOME`.
+- Este documento descreve o **comportamento real implementado hoje**, não um desenho ideal. Onde o
+  comportamento divergia do que um documento anterior já havia descrito, a divergência foi
+  resolvida com o usuário e registrada no "Histórico", em vez de silenciada.
+
+## Mapa de telas e entidades
+
+| Tela   | Nome                                   | Arquivo(s)                              |
+| ------ | --------------------------------------- | ---------------------------------------- |
+| `T-01` | Portal público                          | `index.html`, `assets/js/main.js`       |
+| `T-02` | Página de avisos                        | `avisos.html`, `assets/js/avisos.js`    |
+| `T-03` | Login e solicitação de acesso           | `admin.html`, `assets/js/admin.js`      |
+| `T-04` | Painel — Visão Geral                    | `painel.html` (`#overview-view`)        |
+| `T-05` | Painel — Cadastro de Usuários           | `painel.html` (`#users-view`)           |
+| `T-06` | Painel — Cabeçalho e Rodapé             | `painel.html` (`#headers-view`)         |
+| `T-07` | Painel — Cadastro Menu                  | `painel.html` (`#menu-view`)            |
+| `T-08` | Painel — Cadastro de Avisos             | `painel.html` (`#notices-view`)         |
+| `T-09` | Painel — Validações pendentes           | `painel.html` (`#approvals-view`)       |
+
+| Entidade        | Nome                         | Tabela em `localStorage["sspIntranetDb"]` |
+| ---------------- | ----------------------------- | -------------------------------------------- |
+| `E-USUARIO`      | Administrador                | `users`                                      |
+| `E-SOLICITACAO`  | Solicitação de acesso        | `access_requests`                            |
+| `E-PERFIL`       | Perfil visual                 | `header_profiles`                            |
+| `E-ACESSO`       | Acesso rápido                 | `quick_access`                               |
+| `E-MENU`         | Item de menu                  | `menu_items`                                 |
+| `E-AVISO`        | Aviso                         | `notices`                                    |
+| `E-RODAPE`       | Configurações do rodapé (singleton) | `footer_settings`                      |
+| `E-CONTROLE`     | Controle de alterações (singleton)  | `change_control`                       |
+| `E-PENDENCIA`    | Alteração pendente            | `pending_changes`                            |
 
 ## Perfis administrativos
 
-### Administrador Master
+- **RN-PERM-001** `confirmada`: Existem dois perfis de administrador: **Administrador Master**
+  (`role: "master"`) e **Administrador do Site** (`role: "site"`). Não há outros papéis.
+- **RN-PERM-002** `confirmada`: Administrador Master tem acesso completo: cadastra administradores,
+  aprova/recusa solicitações de acesso, gerencia perfis visuais/rodapé/acessos
+  rápidos/menu/avisos diretamente (sem fila) e é o único que aprova a fila de validação.
+- **RN-PERM-003** `confirmada`: Administrador do Site autentica e acessa a Visão Geral, Cabeçalho e
+  Rodapé (exceto a parte de Rodapé em si), Cadastro Menu e Cadastro de Avisos. Não acessa Cadastro
+  de Usuários nem Validações Pendentes (itens ficam ocultos no menu lateral).
+- **RN-PERM-004** `confirmada`: Toda ação administrativa do Administrador do Site sobre perfis
+  visuais, itens de menu, acessos rápidos e avisos passa pelas regras de fila descritas em
+  **T-09**; o Administrador do Site nunca aplica essas mudanças diretamente no site público.
 
-- Possui acesso completo ao painel.
-- Pode cadastrar Administradores do Site e outros Administradores Master.
-- É o único perfil autorizado a aprovar ou recusar solicitações de acesso.
-- Pode remover administradores, exceto o cadastro Master principal da demonstração.
-- Pode editar nome, CPF, e-mail, perfil, status e senha dos administradores.
+## T-01 — Portal Público (`index.html`)
 
-### Administrador do Site
+### Cabeçalho e navegação
 
-- Perfil destinado à manutenção futura de conteúdo do portal.
-- Pode autenticar e acessar a visão geral do painel.
-- Não pode conceder acesso, cadastrar administradores nem analisar solicitações.
-- Não visualiza nem acessa o módulo Cadastro de Usuários.
-- Pode acessar a Gestão do Cabeçalho e solicitar alterações.
-- As permissões de conteúdo serão detalhadas quando os respectivos módulos forem criados.
+- **RN-PORTAL-001** `confirmada`: O cabeçalho exibe marca (logomarca + "Intranet SSP"), menu
+  responsivo (`menu-toggle`), acessos rápidos, botão "Avisos" (oculto quando a página de avisos
+  está bloqueada — ver `RN-BLOQ-006`) e o link "Adm" para `admin.html`.
+- **RN-PORTAL-002** `E-ACESSO` `confirmada`: Os acessos rápidos são carregados de `GET
+  /api/quick-access` e inseridos antes do botão "Avisos". Links internos (`#` ou `/`) abrem na
+  mesma aba; demais URLs abrem em nova aba (`target="_blank" rel="noopener noreferrer"`).
+- **RN-PORTAL-003** `confirmada`: "Instituições e serviços" inicia recolhida; um clique expande o
+  conteúdo e rola suavemente até a seção.
+- **RN-PORTAL-004** `E-MENU` `confirmada`: Os itens de "Instituições e serviços" vêm de `GET
+  /api/menu` (somente itens ativos para quem não está autenticado) e são renderizados como cartões
+  que **sempre** abrem em nova aba, independentemente do destino da URL.
 
-## Solicitação de acesso
+### Carrossel de imagens
 
-1. O solicitante informa nome, CPF, e-mail institucional e unidade/setor.
-2. A solicitação é criada com status `Pendente`.
-3. Um Administrador Master pode aprovar ou recusar.
-4. Ao aprovar, o sistema cria um usuário com perfil `Administrador do Site`.
-5. A promoção para Master deve ocorrer por uma ação explícita de um Master.
+- **RN-PORTAL-005** `E-AVISO` `confirmada`: O carrossel só é exibido quando
+  `change_control.carousel_enabled = true` **e** existe ao menos um aviso ativo (`active`),
+  marcado para carrossel (`active_carousel`) e com banner resolvido. Sem slides elegíveis, o
+  carrossel permanece oculto mesmo com a configuração geral em "Sim".
+- **RN-PORTAL-006** `confirmada`: O carrossel ocupa toda a largura da página; quando visível, a
+  área institucional superior reduz de altura (classe `carousel-enabled` no `body`). Possui
+  setas anterior/próximo e indicadores (dots); com apenas 1 slide, setas e dots ficam ocultos;
+  com 2 ou mais, avança automaticamente a cada 6 segundos.
 
-## Cadastro direto
+### Avisos na página inicial
 
-- Apenas Master pode usar “Novo administrador”.
-- Nome, CPF, e-mail institucional, perfil e senha temporária são obrigatórios.
-- A senha temporária deve possuir no mínimo oito caracteres nesta demonstração.
-- Em produção, CPF e e-mail devem ser únicos e validados no servidor.
+- **RN-PORTAL-007** `E-AVISO` `confirmada`: Até 5 avisos ativos (ordenados por `display_order`) são
+  exibidos como cartões ("destaque") na home. O 6º aviso ativo em diante não aparece como cartão na
+  home, mas continua elegível para o carrossel (que considera todos os avisos ativos com
+  `active_carousel` e banner, não só os 5 primeiros) e para a listagem completa em `avisos.html`.
+- **RN-PORTAL-008** `confirmada`: Sem nenhum aviso ativo, a seção inteira de avisos da home fica
+  oculta (`hidden`).
+- **RN-PORTAL-009** `confirmada`: Textos longos de aviso mostram "Ver mais"/"Ver menos" (calculado
+  comparando a altura do texto renderizado); ao expandir um cartão, qualquer outro cartão expandido
+  na mesma página é recolhido automaticamente. O botão de link (quando houver) fica à esquerda; o
+  controle de expansão, à direita.
+- **RN-PORTAL-010** `confirmada`: Quebras de linha digitadas na descrição (`\n`) são preservadas
+  visualmente como linhas/parágrafos distintos (`white-space: pre-line` em `.notice-description`).
 
-## Cabeçalho e Rodapé
+### Pop-up de destaque
 
-- Podem existir no máximo cinco perfis visuais.
-- Apenas um perfil pode ficar em uso por vez.
-- Cada perfil contém nome, logomarca e três cores. O título da página é fixo
-  (“Intranet SSP”) em todos os perfis, para preservar a identidade institucional, e não é
-  editável no cadastro.
-- A logomarca é enviada por upload de imagem (PNG, JPG, SVG, WebP ou AVIF, até 300 KB); não é
-  mais um campo de texto com o nome de um arquivo em `assets/images`. A imagem enviada fica salva
-  somente no navegador de quem a cadastrou (ver `docs/Auth.md`/`docs/ARQUITETURA.md`); perfis
-  semeados (como a Paleta Padrão) continuam usando o arquivo estático `logo-ssp.svg`.
-- O perfil ativo é aplicado à marca, ao cabeçalho, ao rodapé, aos detalhes do site e ao favicon
-  (ícone da aba do navegador) — a troca de perfil também troca o favicon para a mesma logomarca.
-- ⚠ `revogada` (11/11/2026): o favicon exibia a logo sobre um fundo preto composto via canvas
-  quando a cor primária do perfil era preto puro/quase puro (Governo Tarcísio, Período Eleitoral).
-  O usuário não gostou do resultado; revertido. O favicon volta a exibir a logo diretamente em
-  todos os perfis, como antes dessa tentativa.
-- A `Paleta Padrão` é criada automaticamente e não pode ser excluída.
-- Um perfil em uso não pode ser excluído; primeiro deve-se ativar outro.
-- Perfis podem ser criados, editados, ativados e excluídos pelo Master, com aplicação imediata.
-- Um Administrador do Site também pode acessar "Cabeçalho e Rodapé" e solicitar criação, edição,
-  exclusão ou ativação de perfil, mas a ação **nunca** é aplicada diretamente: entra sempre na fila
-  de aprovação do Master, **mesmo com o bloqueio geral de alterações desligado** (diferente das
-  demais entidades administrativas, cuja fila só existe com o bloqueio ativo). Ao confirmar, o
-  Administrador do Site recebe uma mensagem orientando a entrar em contato com um Administrador
-  Master para solicitar a aprovação; a mudança só passa a valer no site depois que um Master
-  aprovar a solicitação pendente.
-- Um perfil pode ser marcado como **protegido**: não pode ser editado nem excluído por ninguém,
-  nem mesmo pelo Administrador Master (continua podendo ser ativado normalmente). O perfil
-  `Período Eleitoral` é semeado como protegido nesta demonstração; os demais perfis (inclusive a
-  Paleta Padrão e o Governo Tarcísio) podem ser editados e excluídos normalmente pelo Master,
-  respeitada a regra de quantidade mínima abaixo.
-- Ao semear os dados de demonstração (primeira visita ou "Restaurar dados de demonstração"), o
-  perfil ativo por padrão é `Governo Tarcísio`, não a Paleta Padrão.
-- **Quantidade mínima de perfis**: além do `Período Eleitoral`, é obrigatório manter ao menos mais
-  um perfil cadastrado (mínimo de 2 perfis no total). Uma exclusão que deixaria menos de 2 perfis
-  é rejeitada. Na prática esse piso já é garantido pela própria Paleta Padrão (que também nunca
-  pode ser excluída), mas a regra vale de forma genérica para qualquer combinação de perfis.
-- **Cascata do período eleitoral**: ao ativar o perfil `Período Eleitoral`, automaticamente (a)
-  a página de avisos é bloqueada (mesmo efeito do bloqueio manual em "Visão Geral": nav oculto e
-  acesso direto a `avisos.html` redireciona para a página inicial); (b) o pop-up de destaque da
-  página inicial deixa de aparecer; (c) o carrossel de imagens é desativado; (d) todos os avisos
-  são inativados (removidos também do carrossel individualmente). Nenhum aviso, destaque ou
-  carrossel fica visível ao público enquanto esse perfil estiver ativo, mesmo que um Administrador
-  tenha ativado algum item individualmente antes. Ao sair do perfil `Período Eleitoral` (ativar
-  qualquer outro perfil), a página de avisos, o carrossel e os avisos da página inicial **voltam a
-  ser exibidos automaticamente**: todos os avisos são reativados em massa (`active` e
-  `active_carousel` voltam a `true`) e as duas flags globais são restauradas. A partir daí, cada
-  aviso volta a poder ser ativado/desativado individualmente pelo Master normalmente, como em
-  qualquer outro momento.
+- **RN-PORTAL-011** `E-AVISO` `confirmada`: A cada carregamento da home, abre um pop-up modal
+  (`#highlight-dialog`) com o **primeiro** aviso, na ordem de `display_order`, que possua banner
+  resolvido, entre os avisos retornados por `GET /api/notices` (que já filtra só ativos para quem
+  não está autenticado). Avisos sem banner são ignorados nessa escolha; sem nenhum aviso com
+  banner, o pop-up não aparece. Fecha por botão dedicado.
 
-### Acessos Rápidos
+### Rodapé público
 
-- No máximo cinco acessos rápidos podem existir, exibidos no cabeçalho público antes do botão
-  "Avisos". Cada um tem título, URL e ordem de exibição.
-- Administradores Master e Administradores do Site podem incluir, editar, excluir e reordenar
-  (arrastar e soltar) os acessos rápidos — mesma regra de acesso do Cadastro Menu.
-- Cada acesso rápido pode ser **ocultado** do cabeçalho público sem ser excluído (flag `Ativo`).
-- URLs aceitas seguem a mesma regra do Cadastro Menu: `https://`, `http://`, `/` ou `#`.
-- Não pode haver dois acessos rápidos com a mesma ordem de exibição.
-- Com o bloqueio de alterações ativo, mudanças feitas por um Administrador do Site entram na fila
-  de validação do Master, como nas demais funcionalidades administrativas.
-- Esta é uma entidade própria (`quick_access`), independente do Cadastro Menu/"Instituições e
-  serviços": editar um não afeta o outro, mesmo que os 4 itens semeados tenham os mesmos títulos.
-- Os 4 acessos rápidos semeados apontam para os sites oficiais reais (Polícia Civil, Polícia
-  Militar, Polícia Científica, Conseg) e abrem em nova aba (`target="_blank"`) — URLs internas
-  (`#`, usadas para rolar até "Instituições e serviços") continuam abrindo na mesma aba.
+- **RN-PORTAL-012** `E-RODAPE` `confirmada`: O rodapé é exibido em todas as páginas públicas
+  (`index.html`, `avisos.html`) com: marca + nome da intranet; linha de endereço (só aparece se ao
+  menos um campo de endereço estiver preenchido); e-mail e telefone lado a lado na mesma linha
+  (cada um some individualmente se vazio); horário de atendimento; ícones de redes sociais (ocultos
+  individualmente quando a URL está vazia); texto "Desenvolvido por".
+- **RN-PORTAL-013** `confirmada`: O ícone de cada rede social é a logomarca real
+  (`assets/images/social/<rede>-tema-<claro|escuro>-512.png`), escolhida automaticamente pelo
+  contraste da cor primária do perfil visual ativo (fundo escuro → variante "tema-escuro"; fundo
+  claro → "tema-claro").
+- **RN-PORTAL-015** `E-RODAPE` `E-PERFIL` `confirmada`: Enquanto o perfil visual "Período Eleitoral"
+  está ativo, os ícones de redes sociais do rodapé ficam completamente ocultos (bloco
+  `#footer-social` com `hidden=true`), independente de haver URL cadastrada para cada rede. Ao
+  ativar qualquer outro perfil, os ícones voltam a ser exibidos normalmente, seguindo a regra
+  individual de ocultação por URL vazia (RN-PORTAL-012).
 
-### Rodapé
+### Perfil visual aplicado (tema)
 
-- Exclusivo do Administrador Master: Administrador do Site não acessa nem altera estas
-  configurações (sem fila de validação — a alteração é direta e imediata, como em "Visão Geral").
-- Campos de endereço: logradouro, número, bairro, cidade, estado e CEP. Todos opcionais; a linha
-  de endereço só aparece no rodapé público quando pelo menos um campo estiver preenchido.
-- Campos de contato: telefone, e-mail de suporte, horário de atendimento e "Desenvolvido por"
-  (todos texto livre).
-- E-mail de suporte é validado no formato `usuario@dominio`.
-- Redes sociais: Facebook, Instagram, YouTube e WhatsApp, cada uma com um campo de URL. Uma rede
-  com URL vazia tem seu ícone ocultado no rodapé público; URLs informadas devem começar com
-  `http://` ou `https://`. Facebook, Instagram e YouTube já vêm semeados com os perfis oficiais
-  reais da SSP-SP (mock fornecido pelo usuário); WhatsApp permanece vazio/oculto até ser definido.
-- O ícone de cada rede social é a logomarca real (`assets/images/social/`), não um badge de letra.
-  A variante clara/escura é escolhida automaticamente pelo contraste do fundo do rodapé (cor
-  primária do perfil visual ativo): fundo escuro usa a logo "tema-escuro" (clara, legível sobre
-  fundo escuro); fundo claro usa a logo "tema-claro".
-- No rodapé público, e-mail e telefone ficam lado a lado na mesma linha (não mais em linhas
-  separadas); endereço, e-mail/telefone e horário de atendimento exibem um pequeno ícone (pino,
-  envelope, telefone e relógio) ao lado do texto.
-- "Desenvolvido por" vem semeado com `CGI - Coordenadoria de Gestão da Informação`.
-- As informações são exibidas no rodapé de todas as páginas públicas (`index.html`, `avisos.html`).
+- **RN-PORTAL-014** `E-PERFIL` `confirmada`: O perfil visual ativo (`GET /api/theme`) define, em
+  toda página pública e administrativa: cores primária/secundária/detalhe (com variações de hover e
+  contraste calculadas em tempo real), fonte (se diferente de "Padrão institucional"), logomarca
+  (todo elemento marcado `data-theme-logo` ou cujo `src` termine em `logo-ssp.svg`), o texto da
+  marca (título fixo "Intranet SSP") e o favicon — a mesma imagem da logomarca, com tipo MIME
+  deduzido do prefixo `data:` (upload) ou da extensão do arquivo estático.
 
-## Cadastro Menu
+## T-02 — Página de Avisos (`avisos.html`)
 
-- Administradores Master e Administradores do Site podem acessar a funcionalidade.
-- Cada item possui título, URL e ordem de exibição; a descrição é opcional.
-- É possível incluir, editar, excluir e alterar a ordem numérica dos itens.
-- A tabela administrativa permite arrastar e soltar os itens para reordená-los.
-- Após a confirmação da ordenação, as posições são renumeradas sequencialmente.
-- Não podem existir dois itens com a mesma ordem; a regra é garantida também por índice único no SQLite.
-- URLs aceitas devem iniciar com `https://`, `http://`, `/` ou `#`.
-- Os quatro acessos institucionais originais permanecem no cabeçalho.
-- Na página inicial, “Instituições e serviços” permanece recolhido e só exibe os itens após um clique.
-- Todos os cartões de “Instituições e serviços” abrem em nova aba, independentemente do destino.
-- Com o bloqueio ativo, alterações feitas por Administradores do Site entram na fila de validação do Master.
-- São semeados 17 sistemas internos reais da SSP-SP como demonstração (Lista Ramais, Infocrim,
-  Expedição de Documentos, RH, FISP, Placas Reservadas, SICON, Consulta Jurídica, CLC, Protocolo,
-  Infoseg, RDO, WIKI, Informativos, Sala de Reuniões, Resoluções SSP, Almoxarifado), cada um com
-  URL e breve descrição. Os 4 acessos institucionais (Polícia Civil/Militar/Científica/Conseg)
-  **não fazem mais parte** de "Instituições e serviços" — continuam existindo apenas nos Acessos
-  Rápidos do cabeçalho.
+- **RN-AVISO-001** `confirmada`: Lista todos os avisos ativos (`GET /api/notices`), cada um com
+  banner (se houver), título, descrição completa e "Ver mais"/"Ver menos" (mesma lógica de
+  expansão única do T-01, incluindo o caso de aviso sem banner mas com texto longo).
+- **RN-AVISO-002** `E-CONTROLE` `confirmada`: A verificação de bloqueio é **inteiramente
+  client-side**: a página carrega normalmente e, assim que o JavaScript consulta `GET
+  /api/site-settings`, redireciona para `index.html` se `notices_page_blocked = true`. **Não há
+  valor de controle de acesso real** — sem servidor para recusar a entrega do HTML com um 403 real;
+  quem desabilitar JavaScript ou inspecionar a resposta simulada ainda vê a página. Ver `docs/Auth.md`.
+- **RN-AVISO-003** `confirmada`: Sem nenhum aviso ativo, exibe o estado vazio "Nenhum aviso ativo no
+  momento."
 
-## Cadastro de Avisos
+## T-03 — Login e Solicitação de Acesso (`admin.html`)
 
-- Master e Administrador do Site podem incluir, editar, excluir e ordenar avisos por arraste.
-- Avisos podem ser ativados ou inativados individualmente, por seleção múltipla ou por seleção de todos.
-- A participação no carrossel também pode ser ativada ou desativada individualmente, por seleção múltipla ou por seleção de todos.
-- Alterações de status em lote feitas por Administradores do Site seguem o fluxo de validação quando o bloqueio estiver ativo.
-- Título e descrição são obrigatórios; a descrição aceita texto longo.
-- Banner é enviado por upload de imagem (PNG, JPG, WebP, GIF, SVG ou AVIF, até 800 KB), no mesmo
-  padrão de arrastar-e-soltar usado na logomarca dos perfis visuais; fica salvo somente no
-  navegador de quem o cadastrou. Avisos semeados com banner por nome-base (arquivo já existente em
-  `images_banner`, sem upload) continuam funcionando normalmente — o sistema resolve os dois casos.
-- Extensões aceitas para banners: PNG, JPG/JPEG, WebP, GIF, SVG e AVIF.
-- Nome e URL do botão são opcionais, mas a URL torna-se obrigatória quando houver nome de botão.
-- As flags controlam se o aviso está ativo e se participa da área de banners.
-- Na página pública, até cinco avisos ativos para carrossel são exibidos primeiro, respeitando a ordem cadastrada.
-- Demais avisos ativos são exibidos em lista abaixo.
-- Textos longos oferecem “Ver mais” e “Ver menos”; botão de link fica à esquerda e expansão à direita.
-- Quebras de linha na descrição são preservadas visualmente no site (`.notice-description` usa
-  `white-space: pre-line`): parágrafos e itens de lista digitados com `\n` no texto aparecem como
-  linhas separadas de verdade, não como um bloco único.
-- A cada carregamento da página pública, o primeiro aviso ativo da ordenação que possua um arquivo de banner localizado é exibido em um pop-up de destaque com botão para fechar; avisos sem banner são ignorados nessa escolha.
-- Com bloqueio ativo, ações do Administrador do Site aguardam validação do Master.
-- Ao ativar o bloqueio, o servidor desativa `Aviso Ativo` e `Aviso Ativo no Carrossel` de todos os avisos, ocultando-os imediatamente.
-- Ao ativar o bloqueio, todos os avisos são inicialmente ocultados; depois disso, um Master pode reativar ou aprovar avisos, que voltam a ser exibidos mesmo com o bloqueio ligado.
-- Ao desativar o bloqueio, as flags não são alteradas: permanecem ativos somente os avisos que já estavam ativos.
-- A página inicial exibe somente os cinco primeiros avisos ativos na ordem; os demais ficam disponíveis na página `avisos.html`.
-- Ao expandir um aviso, qualquer outro aviso aberto é recolhido automaticamente.
-- São semeados 6 avisos de demonstração, nesta ordem: Consulta ao Conselho de Usuários (primeiro,
-  também é o que aparece no pop-up de destaque), São Paulo por Todas, Programa Casa Paulista, O
-  que é uma Hospitalidade no Serviço Público, Campanha de Arrecadação de Prendas e Agência SP (por
-  último). Todos com banner e descrição longa o bastante para exibir "Ver mais"; todos já ativos e
-  no carrossel. O Conselho de Usuários tem botão "Participe"; São Paulo por Todas, Casa Paulista,
-  Hospitalidade e Agência SP têm botão "Acesse Aqui"; o de Arrecadação não tem botão.
-- Com 6 avisos ativos, o Agência SP (último na ordem) fica de fora dos "cinco primeiros avisos"
-  exibidos como cards na página inicial (regra já existente acima), mas continua aparecendo no
-  carrossel (que considera todos os avisos ativos com banner, não só os cinco primeiros) e na
-  listagem completa de `avisos.html` — na prática, "ativo só no carrossel" a pedido do usuário.
-- Os banners do Conselho de Usuários e de Hospitalidade usam imagens largas (2560x397,
-  `avaliacao-seguranca-publica-banner-2560x397.png` e `hospitalidade-banner-2560x397.png`),
-  formato pensado para o carrossel.
+### Autenticação
 
-## Carrossel de imagens
+- **RN-LOGIN-001** `confirmada`: O login (`POST /api/login`) busca um usuário **ativo** cujo CPF
+  bata com o informado e valida a senha com PBKDF2-HMAC-SHA256 (salt próprio, 210 mil iterações,
+  Web Crypto API). CPF/senha inválidos ou usuário inativo retornam sempre a mesma mensagem genérica
+  "CPF ou senha inválidos." (sem indicar qual campo errou).
+- **RN-LOGIN-002** `confirmada`: Sessão válida por 8 horas, salva em
+  `localStorage["sspIntranetSession"]` como `{ id, name, cpf, email, role, active, created_at,
+  expires }`. Sem cookie `HttpOnly` real (não há servidor para emiti-lo). Ver `docs/Auth.md`.
+- **RN-LOGIN-003** `confirmada`: Login bem-sucedido redireciona para `painel.html`. Qualquer chamada
+  autenticada que receba `401` do mock redireciona de volta para `admin.html` (sessão expirada).
+- **RN-LOGIN-004** `confirmada`: O campo CPF oferece um seletor com as contas de demonstração
+  (`window.sspDemoAccounts()`); escolher uma preenche CPF e senha automaticamente. Exposição
+  intencional da senha em texto puro, documentada em `docs/Auth.md` — sem valor de segurança real.
+- **RN-LOGIN-005** `confirmada`: Botão "Restaurar dados de demonstração" apaga todo o
+  `localStorage` do navegador e recarrega a página, resemeando os dados iniciais. Usa o `confirm()`
+  nativo do navegador (não o diálogo estilizado `#confirm-dialog` usado no restante do protótipo).
 
-- O Master controla a exibição pelo seletor “Não / Sim” na Visão Geral.
-- O carrossel usa somente avisos ativos, marcados para carrossel e com banner localizado.
-- Sem banners elegíveis, o carrossel permanece oculto mesmo quando a configuração global estiver em “Sim”.
-- O carrossel ocupa toda a largura da página, respeita a proporção dos banners e aparece acima do menu.
-- Com carrossel visível, a área superior institucional tem altura reduzida.
-- Ao bloquear alterações, o carrossel global muda automaticamente para “Não”; ao desbloquear, muda para “Sim”, respeitando as flags individuais dos avisos.
+### Solicitação de acesso (`E-SOLICITACAO`)
 
-## Página de avisos
+- **RN-SOLIC-001** `confirmada`: O solicitante informa nome, CPF, e-mail institucional e
+  unidade/setor; todos obrigatórios (`POST /api/access-requests`), sem validação de formato de CPF
+  ou e-mail além da obrigatoriedade (ver "Restrições conhecidas").
+- **RN-SOLIC-002** `confirmada`: A solicitação é criada com status `pending`. Não há limite de
+  solicitações por CPF nem checagem de duplicidade na criação.
+- **RN-SOLIC-003** `confirmada`: Somente um Administrador Master pode aprovar (`approved`) ou
+  recusar (`rejected`) uma solicitação (`PUT /api/requests/<id>`, `requireMaster()`).
+- **RN-SOLIC-004** `E-USUARIO` `confirmada`: Ao aprovar, se ainda não existir um usuário com aquele
+  CPF, o sistema cria um usuário **ativo** com perfil `Administrador do Site` e uma senha temporária
+  aleatória (18 caracteres hexadecimais), devolvida uma única vez na mensagem de sucesso para o
+  Master repassar ao solicitante. Se já existir um usuário com aquele CPF, a solicitação só muda de
+  status — nenhum usuário duplicado é criado nem senha é gerada.
+- **RN-SOLIC-005** `confirmada`: A promoção de um Administrador do Site para Master não acontece
+  automaticamente pela aprovação da solicitação; exige uma ação explícita e posterior de edição do
+  usuário por um Master (ver `RN-USR-004`).
 
-- O cabeçalho público possui o botão “Avisos”, que abre `avisos.html`.
-- A página segue o perfil visual ativo e lista todos os avisos ativos.
-- Cada item mostra inicialmente apenas título e resumo; “Ver mais” revela o texto completo e o banner, fechando qualquer outro item aberto.
-- O Master pode bloquear a página pelo seletor na Visão Geral.
-- O bloqueio é verificado no próprio navegador: `avisos.html` carrega normalmente e, assim que o
-  JavaScript consulta `/api/site-settings`, redireciona para `index.html` se a página estiver
-  bloqueada. **Sem valor de controle de acesso real** — não existe mais um servidor para recusar a
-  requisição com HTTP 403 antes de entregar a página; quem desabilitar JavaScript ou inspecionar a
-  resposta simulada da API ainda vê o HTML. Ver `docs/Auth.md` para o mesmo caveat aplicado à
-  autenticação.
-- Quando a página estiver bloqueada, o botão “Avisos” também permanece oculto no cabeçalho público.
+## T-04 — Painel: Visão Geral
 
-## Bloqueio e validação de alterações
+- **RN-OVERVIEW-001** `confirmada`: Mostra nome, perfil (Master/Administrador do Site) e iniciais
+  do administrador logado.
+- **RN-OVERVIEW-002** `confirmada`: Indicadores "Usuários cadastrados" e "Solicitações pendentes"
+  ficam como "Restrito" para Administrador do Site (ele não tem acesso a `GET /api/users` nem `GET
+  /api/requests`); no primeiro login da sessão, recebe um aviso informando que o Cadastro de
+  Usuários permanece restrito ao Master.
+- **RN-OVERVIEW-003** `confirmada`: Indicadores de conteúdo (itens de menu, avisos cadastrados e
+  ativos, perfis visuais e limite de 5, tema ativo com suas 3 cores, situação de publicação —
+  direta ou com validação — e total de alterações pendentes) são visíveis para **ambos** os
+  perfis, lidos diretamente do `localStorage` via as rotas GET públicas/autenticadas.
+- **RN-OVERVIEW-004** `E-CONTROLE` `confirmada`: Três controles exclusivos do Master, cada um
+  apresentado como seletor "Não/Sim" com confirmação antes de aplicar (cancelar restaura o estado
+  anterior): "Exigir validação do Master" (ver **T-09**), "Exibir carrossel" e "Bloquear página de
+  avisos". Os dois últimos também podem ser alterados automaticamente por outras regras (cascata do
+  bloqueio geral e cascata do Período Eleitoral — ver `RN-BLOQ-008` e `RN-BLOQ-012`), mas continuam
+  editáveis manualmente pelo Master a qualquer momento.
+- **RN-OVERVIEW-005** `confirmada`: Ao marcar "Sim" em "Exigir validação do Master", um pop-up
+  mostra apenas a regra principal ("Todas as alterações feitas por Administradores do Site
+  precisarão da validação de um Administrador Master.") seguida de "Deseja continuar?" — as demais
+  consequências de fato ocorrem (ver `RN-BLOQ-008`), só não são mais detalhadas no texto do pop-up.
 
-- O Administrador Master pode ativar a flag “Exigir validação do Master”.
-- O controle é apresentado como seletor “Não / Sim”, sem campo de observação ou botão para salvar.
-- Ao alterar o seletor, o sistema pede confirmação e aplica a mudança imediatamente; cancelamentos restauram o estado anterior.
-- Ao selecionar “Sim”, o pop-up "Regras do bloqueio de alterações" exibe apenas a regra principal
-  ("Ao ativar o bloqueio: Todas as alterações feitas por Administradores do Site precisarão da
-  validação de um Administrador Master.") seguida de "Deseja continuar?". As demais consequências
-  (ocultação/desativação dos avisos, desativação do carrossel, ausência do destaque, exigência de
-  resolver pendências antes do desbloqueio) continuam ocorrendo de fato, apenas não são mais
-  detalhadas no texto do pop-up.
-- Com o bloqueio ativo, ações do Administrador do Site são registradas como pendentes e não alteram o site imediatamente.
-- Um Master pode aprovar, aplicando a alteração, ou recusar a solicitação.
-- Alterações feitas diretamente por um Master continuam sendo aplicadas imediatamente.
-- O item "Validações pendentes" do menu do Master exibe um indicador numérico (badge vermelho,
-  com destaque visual) com a quantidade de solicitações pendentes; fica oculto quando não há
+## T-05 — Painel: Cadastro de Usuários (`E-USUARIO`, `E-SOLICITACAO`)
+
+Exclusivo do Administrador Master — item oculto no menu lateral e view inacessível para
+Administrador do Site.
+
+### Cadastro e edição
+
+- **RN-USR-001** `confirmada`: Somente Master pode usar "Novo administrador" (`POST /api/users`,
+  `requireMaster()`).
+- **RN-USR-002** `confirmada`: Nome, CPF, e-mail institucional, perfil de acesso e senha temporária
+  são obrigatórios na criação; a senha deve ter ao menos 8 caracteres.
+- **RN-USR-003** `confirmada`: CPF e e-mail devem ser únicos entre os administradores cadastrados
+  **no mock daquele navegador** (checado tanto na criação quanto na edição, excluindo o próprio
+  registro) — sem equivalente real entre navegadores/visitantes diferentes, já que não há banco
+  compartilhado.
+- **RN-USR-004** `confirmada`: Master pode editar nome, CPF, e-mail, perfil de acesso
+  (`site`/`master` — é assim que a promoção para Master acontece, ver `RN-SOLIC-005`), status
+  (ativo/inativo) e senha (campo de senha em branco na edição mantém a senha atual).
+- **RN-USR-005** `confirmada`: Um administrador **não pode excluir a própria conta**
+  (`DELETE /api/users/<id>` rejeita com 409 quando `id === session.id`).
+- **RN-USR-005b** `confirmada`: O cadastro "Administrador Master" principal da demonstração (CPF
+  `000.000.000-00`) **não pode ser excluído por ninguém**, nem mesmo por outro Master logado (ex.:
+  a conta "Camila Rodrigues Alves") — checagem por CPF (`MASTER_PRINCIPAL_CPF`), independente do
+  `id` do registro.
+
+### Aba Solicitações
+
+- **RN-USR-006** `confirmada`: Lista todas as solicitações de acesso (`E-SOLICITACAO`), mais
+  recentes primeiro, com contador de pendentes na aba. Ver regras completas em **T-03** →
+  "Solicitação de acesso".
+
+## T-06 — Painel: Cabeçalho e Rodapé
+
+### Perfis visuais (`E-PERFIL`)
+
+- **RN-PERFIL-001** `confirmada`: No máximo 5 perfis visuais podem existir simultaneamente.
+- **RN-PERFIL-002** `confirmada`: Apenas um perfil pode estar em uso (`active = true`) por vez.
+- **RN-PERFIL-003** `confirmada`: Cada perfil contém nome, logomarca, 3 cores
+  (primária/secundária/detalhe, hexadecimais `#RRGGBB`) e fonte (uma de 8 opções fixas, incluindo
+  "Padrão institucional"). O título da página é fixo ("Intranet SSP") em todos os perfis, somente
+  leitura no formulário, para preservar a identidade institucional.
+- **RN-PERFIL-004** `confirmada`: A logomarca é enviada por upload de imagem (PNG, JPG, SVG, WebP
+  ou AVIF, até ~300 KB já em base64) e fica salva como *data URL* somente no navegador de quem a
+  cadastrou; perfis semeados (Paleta Padrão, Período Eleitoral, Governo Tarcísio) continuam
+  referenciando arquivos estáticos (`logo-ssp.svg` ou imagem embutida como *data URL* no próprio
+  `mock-backend.js`).
+- **RN-PERFIL-005** `confirmada`: O perfil ativo é aplicado à marca, cabeçalho, rodapé, detalhes do
+  site e favicon (ver `RN-PORTAL-014`).
+- **RN-PERFIL-006** `confirmada`: A `Paleta Padrão` é criada automaticamente no seed e nunca pode
+  ser excluída (checagem por nome).
+- **RN-PERFIL-007** `confirmada`: Um perfil em uso não pode ser excluído; é preciso ativar outro
+  primeiro.
+- **RN-PERFIL-008** `confirmada`: Perfis podem ser criados, editados, ativados e excluídos pelo
+  Master, com aplicação imediata.
+- **RN-PERFIL-009** `confirmada`: **Regra própria, independente do bloqueio geral**: toda
+  criação/edição/exclusão/ativação de perfil feita por um Administrador do Site entra **sempre** na
+  fila de aprovação do Master, mesmo com "Exigir validação do Master" desligado — diferente de
+  todas as outras entidades administrativas, cuja fila só existe com o bloqueio geral ativo. Ao
+  confirmar a ação, o Administrador do Site recebe uma mensagem orientando a contatar um Master para
+  solicitar a aprovação; a mudança só vale no site depois que um Master aprovar.
+- **RN-PERFIL-010** `confirmada`: Um perfil pode ser marcado como **protegido** (`locked: true`):
+  não pode ser editado nem excluído por ninguém, nem mesmo pelo Master (continua podendo ser
+  ativado normalmente por qualquer administrador autenticado, sujeito à regra de fila acima). O
+  perfil `Período Eleitoral` é semeado como protegido; os demais (inclusive Paleta Padrão e Governo
+  Tarcísio) podem ser editados/excluídos normalmente pelo Master, respeitada a quantidade mínima.
+- **RN-PERFIL-011** `confirmada`: Ao semear os dados de demonstração (primeira visita ou "Restaurar
+  dados de demonstração"), o perfil ativo por padrão é `Governo Tarcísio`, não a Paleta Padrão.
+- **RN-PERFIL-012** `confirmada`: **Quantidade mínima de perfis**: uma exclusão é rejeitada se o
+  total de perfis já estiver em 2 ou menos. Como o `Período Eleitoral` é protegido e nunca pode ser
+  excluído, e a Paleta Padrão também não, essa checagem garante na prática "além do Período
+  Eleitoral, ao menos mais um perfil cadastrado".
+- **RN-PERFIL-013** `confirmada`: **Cascata do Período Eleitoral**: ao ativar esse perfil,
+  automaticamente (a) a página de avisos é bloqueada; (b) o pop-up de destaque deixa de aparecer
+  (consequência de (d)); (c) o carrossel é desativado; (d) todos os avisos são inativados
+  (`active = false`) e removidos do carrossel (`active_carousel = false`) individualmente. Nenhum
+  aviso, destaque ou carrossel fica visível ao público enquanto esse perfil estiver ativo. Ao sair
+  dele (ativar qualquer outro perfil), a página de avisos, o carrossel e os avisos da home voltam a
+  ser exibidos **automaticamente**: todos os avisos são reativados em massa (`active` e
+  `active_carousel` voltam a `true`) e as duas flags globais (`notices_page_blocked`,
+  `carousel_enabled`) são restauradas. A partir daí, cada aviso volta a poder ser
+  ativado/desativado individualmente pelo Master, como em qualquer outro momento. Esta cascata roda
+  tanto na ativação direta quanto na aprovação de uma ativação de perfil enfileirada.
+- **RN-PERFIL-014** `confirmada`: Quando um Master aprova (`decision: "approved"`) uma alteração
+  pendente de **exclusão de perfil** que, no momento da aprovação, deixaria de respeitar alguma das
+  invariantes acima (perfil ativo, Paleta Padrão, quantidade mínima), a aprovação **falha** com o
+  mesmo erro genérico usado para as demais entidades ("A alteração não pode mais ser aplicada;
+  atualize a fila e verifique ordens ou dados duplicados.") e a solicitação **permanece pendente**
+  — mesmo comportamento de uma exclusão direta que violaria essas invariantes, em vez de um
+  sucesso silencioso sem efeito real.
+
+### Acessos Rápidos (`E-ACESSO`)
+
+- **RN-ACESSO-001** `confirmada`: No máximo 5 acessos rápidos podem existir, exibidos no cabeçalho
+  público antes do botão "Avisos". Cada um tem título, URL e ordem de exibição.
+- **RN-ACESSO-002** `confirmada`: Master e Administrador do Site podem incluir, editar, excluir e
+  reordenar (arrastar e soltar) os acessos rápidos.
+- **RN-ACESSO-003** `confirmada`: Cada acesso rápido pode ser **ocultado** do cabeçalho público sem
+  ser excluído (flag `active`, alternada por um botão dedicado "Exibir/Ocultar" — não há campo de
+  status no formulário de edição).
+- **RN-ACESSO-004** `confirmada`: URLs aceitas seguem a mesma regra do Cadastro Menu: devem começar
+  com `https://`, `http://`, `/` ou `#`.
+- **RN-ACESSO-005** `confirmada`: Não pode haver dois acessos rápidos com a mesma ordem de exibição
+  (checado em memória a cada escrita, inclusive na aprovação de alterações pendentes).
+- **RN-ACESSO-006** `E-CONTROLE` `confirmada`: Com "Exigir validação do Master" ativo, mudanças
+  feitas por um Administrador do Site entram na fila de validação (regra padrão — diferente da
+  regra sempre-em-fila dos perfis visuais).
+- **RN-ACESSO-007** `confirmada`: Entidade própria (`quick_access`), independente do Cadastro
+  Menu/"Instituições e serviços": editar um não afeta o outro.
+- **RN-ACESSO-008** `confirmada`: Os 4 acessos rápidos semeados apontam para os sites oficiais reais
+  (Polícia Civil, Polícia Militar, Polícia Científica, Conseg) e abrem em nova aba; URLs internas
+  (`#`) continuam abrindo na mesma aba.
+
+### Rodapé (`E-RODAPE`)
+
+- **RN-RODAPE-001** `confirmada`: Exclusivo do Administrador Master — Administrador do Site não
+  acessa nem altera estas configurações; sem fila de validação, a alteração é sempre direta e
+  imediata (`requireMaster()` em `PUT /api/footer-settings`, sem passar por `queueIfRequired`).
+- **RN-RODAPE-002** `confirmada`: Campos de endereço (logradouro, número, bairro, cidade, estado,
+  CEP) são todos opcionais; a linha de endereço só aparece no rodapé público quando pelo menos um
+  campo estiver preenchido.
+- **RN-RODAPE-003** `confirmada`: Campos de contato: telefone, e-mail de suporte, horário de
+  atendimento e "Desenvolvido por" — todos texto livre, exceto o e-mail.
+- **RN-RODAPE-004** `confirmada`: E-mail de suporte é validado no formato `usuario@dominio`
+  (`EMAIL_FORMAT`); é o único campo de texto do rodapé com validação de formato.
+- **RN-RODAPE-005** `confirmada`: Redes sociais (Facebook, Instagram, YouTube, WhatsApp), cada uma
+  com um campo de URL opcional. URL vazia oculta o ícone daquela rede no rodapé público; URL
+  informada deve começar com `http://` ou `https://`.
+- **RN-RODAPE-006** `confirmada`: Facebook, Instagram e YouTube já vêm semeados com os perfis
+  oficiais reais da SSP-SP; WhatsApp permanece vazio/oculto até ser definido.
+- **RN-RODAPE-007** `confirmada`: "Desenvolvido por" vem semeado com "CGI - Coordenadoria de Gestão
+  da Informação".
+
+## T-07 — Painel: Cadastro Menu (`E-MENU`)
+
+- **RN-MENU-001** `confirmada`: Administradores Master e do Site podem acessar a funcionalidade.
+- **RN-MENU-002** `confirmada`: Cada item possui título, URL e ordem de exibição; a descrição é
+  opcional.
+- **RN-MENU-003** `confirmada`: É possível incluir, editar, excluir e alterar a ordem numérica dos
+  itens; a tabela também permite arrastar e soltar para reordenar (após confirmação, as posições
+  são renumeradas sequencialmente).
+- **RN-MENU-004** `confirmada`: Não podem existir dois itens com a mesma ordem de exibição —
+  checado em memória pelo mock a cada escrita (criação, edição e aprovação de pendência); **não há
+  mais SQLite nem índice único de banco** desde a migração para protótipo estático (ver
+  `docs/ARQUITETURA.md`).
+- **RN-MENU-005** `confirmada`: URLs aceitas devem iniciar com `https://`, `http://`, `/` ou `#`.
+- **RN-MENU-006** `confirmada`: Cada item de menu também possui uma flag de status (`active`),
+  alternável individualmente por um botão dedicado "Ativar/Inativar" na tabela — não há essa opção
+  no formulário de criação/edição. Todo item novo é criado **ativo** por padrão. A home (`GET
+  /api/menu`, para visitante não autenticado) só lista itens ativos; administradores autenticados
+  veem todos, ativos e inativos.
+- **RN-MENU-007** `confirmada`: Na página inicial, "Instituições e serviços" permanece recolhido e
+  só exibe os itens após um clique (ver `RN-PORTAL-003`).
+- **RN-MENU-008** `confirmada`: Todos os cartões de "Instituições e serviços" abrem em nova aba,
+  independentemente do destino.
+- **RN-MENU-009** `E-CONTROLE` `confirmada`: Com o bloqueio ativo, alterações feitas por
+  Administradores do Site entram na fila de validação do Master.
+- **RN-MENU-010** `confirmada`: São semeados 17 sistemas internos reais da SSP-SP como demonstração
+  (Lista Ramais, Infocrim, Expedição de Documentos, RH, FISP, Placas Reservadas, SICON, Consulta
+  Jurídica, CLC, Protocolo, Infoseg, RDO, WIKI, Informativos, Sala de Reuniões, Resoluções SSP,
+  Almoxarifado), cada um com URL e breve descrição. Os 4 acessos institucionais
+  (Polícia Civil/Militar/Científica/Conseg) **não fazem parte** deste menu — existem apenas em
+  Acessos Rápidos (`E-ACESSO`).
+
+## T-08 — Painel: Cadastro de Avisos (`E-AVISO`)
+
+- **RN-AVISO-004** `confirmada`: Master e Administrador do Site podem incluir, editar, excluir e
+  ordenar avisos por arraste.
+- **RN-AVISO-005** `confirmada`: Avisos podem ser ativados ou inativados individualmente, por
+  seleção múltipla ou por seleção de todos (checkbox por linha + "selecionar todos", com contador
+  de selecionados). O mesmo vale para a participação no carrossel.
+- **RN-AVISO-006** `E-CONTROLE` `confirmada`: Alterações de status em lote feitas por
+  Administradores do Site seguem o fluxo de validação quando o bloqueio estiver ativo (mesma regra
+  padrão de fila usada para criação/edição/exclusão/reordenação).
+- **RN-AVISO-007** `confirmada`: Título e descrição são obrigatórios; a descrição aceita texto
+  longo, com quebras de linha preservadas na exibição pública (`RN-PORTAL-010`).
+- **RN-AVISO-008** `confirmada`: Banner é enviado por upload de imagem (PNG, JPG, WebP, GIF, SVG ou
+  AVIF, até ~800 KB já em base64), mesmo padrão de arrastar-e-soltar da logomarca dos perfis; fica
+  salvo somente no navegador de quem o cadastrou. Avisos semeados com banner por nome-base (arquivo
+  já existente em `images_banner/`, listado no manifesto `BANNER_FILES`) continuam funcionando
+  normalmente — o sistema resolve os dois casos (`resolveBanner`).
+- **RN-AVISO-009** `confirmada`: Nome e URL do botão são opcionais, mas a URL torna-se obrigatória
+  quando houver nome de botão.
+- **RN-AVISO-010** `confirmada`: As flags `active` e `active_carousel` controlam, respectivamente,
+  se o aviso está ativo e se participa da área de banners/carrossel; ambas ficam disponíveis
+  diretamente no formulário de criação/edição (diferente de Menu e Acessos Rápidos, cujo status só
+  é alternado por botão dedicado).
+- **RN-AVISO-011** `confirmada`: Não pode haver dois avisos com a mesma ordem de exibição
+  (checado em memória, inclusive na aprovação de pendências).
+- **RN-AVISO-012** `E-CONTROLE` `confirmada`: Ao ativar o bloqueio geral de alterações, o mock
+  desativa `active` e `active_carousel` de **todos** os avisos, ocultando-os imediatamente; a partir
+  daí, um Master pode reativar/aprovar avisos individualmente mesmo com o bloqueio ligado. Ao
+  desativar o bloqueio, as flags não são alteradas — permanecem ativos somente os avisos que já
+  estavam ativos.
+- **RN-AVISO-013** `confirmada`: São semeados 6 avisos de demonstração, nesta ordem: Consulta ao
+  Conselho de Usuários (primeiro — também o escolhido para o pop-up de destaque), São Paulo por
+  Todas, Programa Casa Paulista, O que é uma Hospitalidade no Serviço Público, Campanha de
+  Arrecadação de Prendas e Agência SP (por último). Todos com banner; todos ativos e no carrossel.
+  Com 6 avisos ativos, o Agência SP fica de fora dos "5 primeiros" da home (`RN-PORTAL-007`), mas
+  continua no carrossel e na listagem completa de `avisos.html`.
+- **RN-AVISO-014** `confirmada`: Os banners do Conselho de Usuários e de Hospitalidade usam imagens
+  largas (2560×397), formato pensado para o carrossel.
+
+## T-09 — Painel: Validações Pendentes (`E-PENDENCIA`, `E-CONTROLE`)
+
+Item e view ocultos para Administrador do Site — exclusivo do Master.
+
+### Bloqueio geral de alterações
+
+- **RN-BLOQ-001** `confirmada`: O Administrador Master pode ativar a flag "Exigir validação do
+  Master" (`change_control.locked`), apresentada como seletor "Não/Sim", sem campo de observação.
+- **RN-BLOQ-002** `confirmada`: Ao alterar o seletor, o sistema pede confirmação (ver
+  `RN-OVERVIEW-005`) e aplica a mudança imediatamente; cancelar restaura o estado anterior do
+  seletor.
+- **RN-BLOQ-003** `confirmada`: Com o bloqueio ativo, ações do Administrador do Site sobre
+  **menu, acessos rápidos e avisos** são registradas como pendentes e não alteram o site
+  imediatamente (`queueIfRequired`). Perfis visuais seguem a regra própria e sempre-em-fila
+  descrita em `RN-PERFIL-009`, independente deste bloqueio.
+- **RN-BLOQ-004** `confirmada`: Alterações feitas diretamente por um Master continuam sendo
+  aplicadas imediatamente, bloqueio ativo ou não.
+- **RN-BLOQ-005** `confirmada`: Um Master pode aprovar (aplicando a alteração) ou recusar cada
+  solicitação pendente (`PUT /api/pending-changes/<id>`).
+- **RN-BLOQ-006** `confirmada`: O item "Validações pendentes" do menu do Master exibe um indicador
+  numérico (badge vermelho) com a quantidade de solicitações pendentes; fica oculto quando não há
   nenhuma pendente.
-- O bloqueio não pode ser desativado enquanto existir qualquer alteração pendente; o sistema informa isso em pop-up.
-- Com o bloqueio desativado, alterações autorizadas do Administrador do Site são aplicadas imediatamente.
+- **RN-BLOQ-007** `confirmada`: O bloqueio **não pode ser desativado** enquanto existir qualquer
+  alteração pendente; o sistema informa isso em pop-up com a contagem de pendências.
+- **RN-BLOQ-008** `E-AVISO` `confirmada`: Ao **ativar** o bloqueio, o carrossel global muda
+  automaticamente para "Não" e todos os avisos são desativados (ver `RN-AVISO-012`). Ao
+  **desativar** o bloqueio (só possível sem pendências), o carrossel global volta para "Sim",
+  respeitando as flags individuais dos avisos (que não foram alteradas na desativação).
 
-## Confirmações e avisos
+### Fila de aprovação
 
-- Exclusões, aprovações, recusas, troca de perfil e encerramento de sessão exigem confirmação com “Sim” e “Não”.
-- Toda conclusão ou falha administrativa apresenta pop-up informativo.
-- Após a confirmação, listas, indicadores, estados e o perfil visual são atualizados imediatamente, sem recarregar a página.
+- **RN-BLOQ-009** `confirmada`: Cada item pendente registra: solicitante, ação (`create`, `update`,
+  `delete`, `reorder`, `status`, `activate`, `bulk_status`, `bulk_carousel`), entidade afetada,
+  payload da alteração, data e, após decisão, quem revisou e quando.
+- **RN-BLOQ-010** `confirmada`: Ao aprovar, o mock tenta reaplicar a alteração original; se os dados
+  não forem mais válidos (ex.: ordem já ocupada por outro item criado nesse meio-tempo), a
+  aprovação falha com uma mensagem orientando a conferir a fila e os dados duplicados — a
+  solicitação pendente **permanece pendente** nesse caso (não é marcada como aprovada nem recusada
+  automaticamente).
+- **RN-BLOQ-011** `confirmada`: Ao recusar, a solicitação só muda de status; nenhuma alteração é
+  aplicada ao site.
 
-## Visão Geral administrativa
+### Cascata do Período Eleitoral
 
-- Exibe indicadores de usuários e solicitações conforme a permissão do administrador.
-- Exibe quantidade de itens do menu, quantidade de perfis visuais, tema ativo e suas cores.
-- Informa se as alterações estão em publicação direta ou sob validação, incluindo o total pendente.
-- Os indicadores são carregados diretamente do SQLite e atualizados após as ações administrativas.
+- **RN-BLOQ-012**: ver `RN-PERFIL-013` (regra central documentada na seção de Perfis Visuais, por
+  ser disparada pela ativação de um perfil específico, não pelo bloqueio geral).
 
-## Autenticação
+## Matriz de permissões (resumo)
 
-- O login consulta usuários ativos na base simulada em `localStorage` (sem servidor).
-- Senhas nunca são enviadas de volta à interface; apenas hashes com salt ficam armazenados.
-- O encerramento invalida a sessão local e retorna ao login.
-- **Aviso de protótipo**: como toda a lógica roda no navegador do próprio visitante, esta
-  autenticação não tem valor de segurança real — qualquer pessoa com acesso ao código-fonte
-  (sempre visível no navegador) pode inspecionar ou contornar a verificação. Não usar senhas
-  reais nem tratar este login como controle de acesso de produção. Detalhes em `docs/Auth.md`.
+| Entidade / Ação                         | Master                | Administrador do Site                                  |
+| ----------------------------------------- | ---------------------- | ---------------------------------------------------------- |
+| Usuários (`E-USUARIO`)                   | CRUD completo, direto  | Sem acesso                                                  |
+| Solicitações de acesso (`E-SOLICITACAO`) | Aprova/recusa          | Sem acesso (só cria a própria, antes de ter login)         |
+| Perfis visuais (`E-PERFIL`)               | CRUD + ativar, direto  | CRUD + ativar, **sempre** em fila (`RN-PERFIL-009`)        |
+| Acessos rápidos (`E-ACESSO`)              | CRUD + reordenar, direto | CRUD + reordenar; em fila só com bloqueio ativo          |
+| Itens de menu (`E-MENU`)                  | CRUD + reordenar + status, direto | CRUD + reordenar + status; em fila só com bloqueio ativo |
+| Avisos (`E-AVISO`)                        | CRUD + reordenar + status em lote, direto | idem; em fila só com bloqueio ativo       |
+| Rodapé (`E-RODAPE`)                       | Edita, direto          | Sem acesso                                                  |
+| Bloqueio/configurações gerais (`E-CONTROLE`) | Único que altera    | Somente visualiza (read-only)                               |
+| Fila de validação (`E-PENDENCIA`)         | Único que aprova/recusa | Só gera itens na fila; não visualiza a lista               |
 
-## Estados
+## Estados e enumerações
 
-- Usuário: `Ativo` ou `Inativo` (a interface atual cria usuários ativos).
-- Solicitação: `Pendente`, `Aprovado` ou `Recusado`.
+- `E-USUARIO.active`: `Ativo` ou `Inativo` (a interface atual cria usuários sempre ativos).
+- `E-SOLICITACAO.status`: `pending` (Pendente), `approved` (Aprovado) ou `rejected` (Recusado).
+- `E-PENDENCIA.status`: `pending`, `approved` ou `rejected`.
+- `E-PERFIL.active` / `.locked`: perfil em uso / perfil protegido (independentes entre si).
+- `E-AVISO.active` / `.active_carousel`: ativo na listagem pública / ativo no carrossel
+  (independentes entre si).
+- `E-MENU.active`, `E-ACESSO.active`: ativo/oculto no portal público.
+- `E-CONTROLE.locked`, `.carousel_enabled`, `.notices_page_blocked`: as três flags globais do
+  bloqueio/validação e das áreas de destaque.
+
+## Confirmações e feedback ao usuário
+
+- **RN-UX-001** `confirmada`: Exclusões, aprovações, recusas, troca de perfil visual e encerramento
+  de sessão exigem confirmação pelo diálogo estilizado `#confirm-dialog` ("Sim"/"Não"). A única
+  exceção observada é "Restaurar dados de demonstração" em `admin.html`, que usa o `confirm()`
+  nativo do navegador (ver `RN-LOGIN-005`).
+- **RN-UX-002** `confirmada`: Toda conclusão ou falha administrativa mostra um pop-up informativo
+  (`#notice-dialog`).
+- **RN-UX-003** `confirmada`: Após a confirmação, listas, indicadores, estados e o perfil visual são
+  atualizados imediatamente no painel, sem recarregar a página (`refreshData()`/`loadAll()`).
+
+## Restrições e validações conhecidas
+
+- Sem persistência compartilhada entre visitantes — cada navegador/aba tem sua própria cópia dos
+  dados (ver `docs/ARQUITETURA.md`).
+- Sem segurança real na autenticação — ver `docs/Auth.md`.
+- CPF e e-mail não têm validação de **formato** em nenhum formulário (nem cadastro de
+  administrador, nem solicitação de acesso) — só a obrigatoriedade de preenchimento, e, para
+  administradores, a unicidade dentro do mock. O único campo de e-mail com validação de formato é o
+  e-mail de suporte do rodapé (`RN-RODAPE-004`).
+- Banner precisa estar listado manualmente em `BANNER_FILES`
+  (`assets/js/mock-backend.js`) quando **não** for enviado por upload — arquivo "por nome-base"
+  sem entrada no manifesto não é resolvido.
 
 ## Dados institucionais pendentes
 
 - Confirmar e substituir o logotipo provisório pela marca oficial.
-- Confirmar e-mail, telefone, endereço e horário de atendimento oficiais exibidos no rodapé —
-  os valores atuais (endereço da sede da SSP-SP) são dados de demonstração fornecidos pelo
-  usuário como mock, não confirmados como definitivos.
+- Confirmar e-mail, telefone, endereço e horário de atendimento oficiais exibidos no rodapé — os
+  valores atuais (endereço da sede da SSP-SP) são dados de demonstração fornecidos pelo usuário como
+  mock, não confirmados como definitivos.
 - Definir destinos reais dos acessos Polícia Civil, Polícia Militar, Polícia Científica e Conseg.
 
 ## Histórico
 
+- 13/11/2026: nova regra **`RN-PORTAL-015`** — ícones de redes sociais do rodapé público agora
+  ficam ocultos enquanto o perfil "Período Eleitoral" está ativo, voltando a ser exibidos ao ativar
+  qualquer outro perfil (`window.applySspFooter` em `assets/js/theme.js`).
+- 13/11/2026: reescrita completa do documento a pedido do usuário — reorganizado por tela (`T-NN`)
+  e entidade (`E-NOME`), com ID estável e status (`confirmada`/`⚠ inferida`) em cada regra. Nenhuma
+  regra de negócio de fato mudou nesta tarefa (documentação apenas); foram corrigidas duas
+  referências desatualizadas a um antigo backend SQLite (seção "Cadastro Menu" e "Visão Geral
+  administrativa", migração já registrada em `docs/ARQUITETURA.md` desde 11/11/2026) e adicionadas
+  três regras implementadas no código, mas não documentadas antes. Todo o histórico de decisões
+  anterior a esta data foi preservado abaixo.
+- 13/11/2026: resolvidas com o usuário, uma a uma, as três divergências levantadas na reescrita
+  acima (`RN-USR-005`, `RN-MENU-006`, `RN-PERFIL-014`), todas promovidas de `⚠ inferida` para
+  `confirmada`:
+  - **`RN-USR-005b`** (nova): restaurada em código a proteção ao cadastro "Administrador Master"
+    principal da demonstração (CPF `000.000.000-00`) — não pode mais ser excluído por nenhum
+    administrador, nem mesmo por outro Master (`MASTER_PRINCIPAL_CPF` em
+    `assets/js/mock-backend.js`, checado em `DELETE /api/users/<id>`).
+  - **`RN-MENU-006`**: confirmado como recurso intencional, sem alteração de código — itens de
+    menu continuam com flag de status individual e botão dedicado no painel.
+  - **`RN-PERFIL-014`**: corrigido em código — o branch `delete` de perfil em `applyPendingChange`
+    (`assets/js/mock-backend.js`) deixou de ignorar silenciosamente a exclusão quando violaria uma
+    invariante (perfil ativo, Paleta Padrão, quantidade mínima) e passou a lançar erro, fazendo a
+    aprovação falhar com a mesma mensagem genérica das demais entidades e mantendo a solicitação
+    pendente, em vez de reportar sucesso sem efeito real.
 - 11/11/2026: seção Autenticação atualizada para refletir a migração para protótipo estático
   (sem servidor); demais regras de negócio permanecem válidas, apenas a camada de persistência mudou.
 - 11/11/2026: seção "Página de avisos" corrigida — o bloqueio deixou de retornar HTTP 403 real

@@ -73,6 +73,14 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
 ## Histórico
 
+- 13/11/2026: dois ajustes de validação em `assets/js/mock-backend.js`, decididos com o usuário
+  durante a revisão de `docs/REGRAS-DE-NEGOCIO.md`: (1) `DELETE /api/users/<id>` passou a proteger
+  também o cadastro "Administrador Master" principal da demonstração (`MASTER_PRINCIPAL_CPF`,
+  checado por CPF) contra exclusão por qualquer administrador, além da proteção já existente contra
+  auto-exclusão; (2) o branch `delete` de perfil visual em `applyPendingChange` deixou de
+  ignorar silenciosamente uma aprovação que violaria perfil ativo/Paleta Padrão/quantidade mínima —
+  agora lança erro, fazendo a aprovação falhar com a mesma mensagem genérica das demais entidades e
+  mantendo a solicitação pendente.
 - 11/11/2026: removido o backend Python (`app.py`) e o SQLite (`data/intranet.db`); toda a
   persistência passou a ser simulada em `localStorage` via `assets/js/mock-backend.js`. Projeto
   publicado como protótipo estático no GitHub Pages, sem banco de dados real.
