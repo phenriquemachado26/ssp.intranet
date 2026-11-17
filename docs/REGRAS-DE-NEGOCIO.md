@@ -524,7 +524,17 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
   (`RN-PERM-005`) — diferente de Usuários/Validações Pendentes/Perfis e Permissões, que são sempre
   Master-exclusivo (`RN-PERM-006`).
 - **RN-AUDIT-003** `confirmada`: Cada registro guarda data/hora, usuário (nome e papel), área
-  administrativa, ação, entidade/id afetado, detalhe textual e resultado (`sucesso`/`negado`).
+  administrativa, ação, entidade/id afetado, um **detalhe textual breve e legível** (frase em PT
+  descrevendo o que foi feito, ex.: `Criou Cadastro de Menu "Item Teste".`) e resultado
+  (`sucesso`/`negado`). O detalhe nunca inclui senha ou hash, mesmo quando o payload original da
+  requisição os contém (ex.: cadastro/edição de usuário) — só campos seguros de exibir
+  (nome/título do registro afetado).
+- **RN-AUDIT-007** `confirmada`: Cada linha da tabela tem um ícone ("ℹ", "Ver detalhes") que abre
+  um pop-up com os dados estruturados completos do registro: id, data/hora, usuário, papel, área,
+  ação, entidade/id, resultado, o detalhe legível e os campos técnicos da chamada (método HTTP,
+  rota, status HTTP, mensagem de erro quando houver). Mesmo nesse pop-up, nunca são exibidos dados
+  de payload bruto da requisição (ver `RN-AUDIT-003`) — só os campos já armazenados na entrada do
+  log.
 - **RN-AUDIT-004** `confirmada`: São registrados: login bem-sucedido e malsucedido (identificando o
   CPF da tentativa quando malsucedido), logout, toda mutação administrativa
   (criar/editar/excluir/publicar/aprovar) e toda tentativa negada por falta de permissão (`403`).
@@ -604,6 +614,17 @@ não-Master, só para quem estiver vinculado a este perfil específico.
 
 ## Histórico
 
+- 17/11/2026: dois ajustes na tela de Logs de Auditoria (`T-11`), a pedido do usuário: (1) o campo
+  `detail` deixou de ser o trace técnico cru (`PUT /api/menu/3 -> 200`) e passou a ser uma frase
+  legível em PT descrevendo a ação (nova regra em `RN-AUDIT-003`, função `describeAudit` em
+  `assets/js/mock-backend.js`) — nunca inclui senha/hash, mesmo quando o payload original os
+  contém; (2) nova regra **`RN-AUDIT-007`**: cada linha ganhou um ícone que abre um pop-up com os
+  dados estruturados completos do registro, incluindo os campos técnicos (método/rota/status/
+  mensagem), agora guardados separadamente na entrada do log em vez de concatenados em uma string
+  só. Implementado em `assets/js/mock-backend.js`, `painel.html` (`#audit-detail-dialog`) e
+  `assets/js/painel.js`. Reorganização do menu lateral do painel em três grupos (Geral/Conteúdo/
+  Administração), também a pedido do usuário, sem mudança de regra de negócio — ver
+  `docs/DESIGN-SYSTEM.md`.
 - 17/11/2026: três funcionalidades novas na área administrativa, a pedido do usuário:
   1. **Identidade Visual**: renomeação de rótulo — "Cabeçalho e Rodapé" (menu lateral e título da
      tela, `T-06`) passa a se chamar "Identidade Visual". Nenhuma regra de comportamento mudou; o

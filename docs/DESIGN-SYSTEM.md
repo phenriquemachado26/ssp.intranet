@@ -62,6 +62,18 @@ Nos demais perfis visuais (Cabeçalho e Rodapé), a logomarca é enviada por upl
   (selects e dois campos de data) alinhados pela base, com botões "Filtrar"/"Limpar" ao final —
   mesmo padrão de altura (`40px`) e borda (`--line`) dos demais campos do painel.
 - Ambos reaproveitam os tokens de cor já definidos em `:root`; nenhuma cor nova foi introduzida.
+- Ação icon-only em linha de tabela (ex.: "ver detalhes" do Log de Auditoria) usa `.action-icon-btn`
+  (quadrado `30×30px`, borda `--line`, inverte para `--blue-2` sólido no hover) em vez do padrão
+  textual `.action-btn` — sempre com `aria-label`/`title` descritivo, nunca só o ícone sem texto
+  alternativo.
+
+## Menu lateral do painel
+
+O menu administrativo é agrupado em seções rotuladas (`<p>` maiúsculo, mesmo estilo de
+"eyebrow" das demais telas): **GERAL** (Visão Geral), **CONTEÚDO** (Identidade Visual, Cadastro de
+Menu, Cadastro de Avisos) e **ADMINISTRAÇÃO** (Cadastro de Usuários, Perfis e Permissões,
+Validações Pendentes, Logs de Auditoria). Novos itens de menu devem ser adicionados ao grupo
+correspondente, não ao final da lista.
 
 ## Acessibilidade
 

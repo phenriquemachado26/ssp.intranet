@@ -57,7 +57,10 @@ backend Python, para que o frontend (`main.js`, `admin.js`, `painel.js`, `avisos
 - `GET /api/audit-logs?user_id=&area=&action=&date_from=&date_to=` — requer permissão
   `audit_logs:view` (Master sempre tem; delegável a um perfil de acesso). Retorna
   `{logs: [{id, timestamp, user_id, user_name, role, area, action, entity, entity_id, detail,
-  result}]}`, mais recentes primeiro. Sem `PUT`/`DELETE` — registro imutável pela API.
+  result, method, path, status, message}]}`, mais recentes primeiro. `detail` é uma frase breve e
+  legível em PT (nunca inclui senha/hash); `method`/`path`/`status`/`message` são os campos
+  técnicos brutos da chamada, usados só no pop-up de detalhes da UI. Sem `PUT`/`DELETE` — registro
+  imutável pela API.
 
 ## Limitações do mock
 

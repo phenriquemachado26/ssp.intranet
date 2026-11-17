@@ -545,3 +545,37 @@ Arquivos alterados: `painel.html`, `assets/js/mock-backend.js`, `assets/js/paine
   vinculados é bloqueada; trava de último Master cobre exclusão, desativação e rebaixamento.
   Nenhuma senha, token ou segredo novo foi exposto em log, resposta de API ou documentação.
   **APPROVED**.
+
+## 17/11/2026 — Menu lateral agrupado e Logs de Auditoria com detalhe legível
+
+A pedido do usuário, dois ajustes de UI na área administrativa:
+
+1. **Menu lateral reagrupado**: a lista única sob "GESTÃO" virou três grupos — GERAL (Visão
+   Geral), CONTEÚDO (Identidade Visual, Cadastro de Menu, Cadastro de Avisos) e ADMINISTRAÇÃO
+   (Cadastro de Usuários, Perfis e Permissões, Validações Pendentes, Logs de Auditoria). Rótulos
+   "Cadastro Menu"→"Cadastro de Menu" e "Validações pendentes"→"Validações Pendentes" ajustados
+   para a grafia pedida. Puramente visual — `data-view`/ids internos e lógica de exibição por
+   permissão não mudaram. `painel.html`, `assets/css/styles.css`.
+2. **Logs de Auditoria — detalhe legível + pop-up estruturado**: o campo `detail` deixou de ser o
+   trace técnico cru (`PUT /api/menu/3 -> 200`) e passou a ser uma frase breve em PT
+   (`describeAudit()` em `assets/js/mock-backend.js`), nunca incluindo senha/hash mesmo quando o
+   payload original os contém. Cada linha da tabela ganhou um ícone ("ℹ") que abre um pop-up
+   (`#audit-detail-dialog`) com todos os campos estruturados do registro, incluindo os técnicos
+   (`method`/`path`/`status`/`message`), agora armazenados separados em vez de concatenados numa
+   string só. Novas regras: `RN-AUDIT-007`; `RN-AUDIT-003` ampliada.
+
+Arquivos alterados: `painel.html`, `assets/js/mock-backend.js`, `assets/js/painel.js`,
+`assets/css/styles.css`, `docs/REGRAS-DE-NEGOCIO.md`, `docs/ARQUITETURA.md`, `docs/API.md`.
+
+- **Tester** (eu mesmo): `node -c` nos dois JS (sintaxe OK); harness Node ad hoc (descartado após
+  a execução) cobrindo: detalhe de criação de item de menu cita o título cadastrado, detalhe de
+  criação de usuário cita o nome da pessoa **sem nunca conter a senha em texto puro** (checado
+  também em todo o array de logs serializado), detalhe de login malsucedido é frase legível. Todos
+  os cenários passaram. Verificação manual de balanceamento de tags (`<dialog>`/`<section>`) em
+  `painel.html`. Validação visual em navegador não foi feita (sessão não interativa).
+- **Validator**: autovalidação — mudança isolada à função de descrição do log e aos campos
+  estruturados da entrada; nenhum outro endpoint ou checagem de permissão foi tocado.
+- **Security Specialist**: ponto de atenção verificado explicitamente — `describeAudit()` só lê
+  `data.title`/`data.name`/`data.page_title`/`data.decision`/`data.status`/`data.ids`, nunca
+  `data.password`; teste automatizado confirma ausência de senha em qualquer log serializado.
+  **APPROVED**.

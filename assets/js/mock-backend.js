@@ -30,6 +30,15 @@
   const PERMISSION_AREAS = ['identity', 'menu', 'notices', 'quick_access', 'users', 'approvals', 'access_profiles', 'audit_logs'];
   const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete', 'publish'];
 
+  // Rótulos em PT usados só para compor o texto legível do Log de Auditoria (`detail`). Espelha
+  // AREA_LABELS/AUDIT_ACTION_LABELS de `assets/js/painel.js` — mantenha os dois em sincronia.
+  const AUDIT_AREA_LABELS = {
+    identity: 'Identidade Visual', menu: 'Cadastro de Menu', notices: 'Cadastro de Avisos',
+    quick_access: 'Acessos Rápidos', users: 'Cadastro de Usuários', approvals: 'Validações Pendentes',
+    access_profiles: 'Perfis e Permissões', audit_logs: 'Logs de Auditoria', overview: 'Visão Geral',
+  };
+  const AUDIT_ACTION_VERBS = { create: 'Criou', edit: 'Editou', delete: 'Excluiu', publish: 'Publicou/ativou' };
+
   function emptyPermissionMatrix() {
     const matrix = {};
     PERMISSION_AREAS.forEach((area) => { matrix[area] = { view: false, create: false, edit: false, delete: false, publish: false }; });
@@ -754,6 +763,35 @@
     if (db.audit_logs.length > 2000) db.audit_logs = db.audit_logs.slice(-2000);
   }
 
+  // Monta o texto breve de "o que foi feito" (coluna Detalhe do Log de Auditoria). Só usa campos
+  // seguros de exibir (nome/título do payload) — nunca senha/hash, mesmo que estejam no payload
+  // original (ex.: cadastro/edição de usuário).
+  function describeAudit({ path, data, status, message, action, area, entityId }) {
+    const areaLabel = AUDIT_AREA_LABELS[area] || area;
+    if (path === '/api/login') {
+      return status === 200 ? 'Login realizado com sucesso.' : `Tentativa de login malsucedida (CPF ${cleanCpf(data?.cpf || '')}).`;
+    }
+    if (path === '/api/logout') return 'Sessão encerrada.';
+    if (path.startsWith('/api/pending-changes/')) {
+      return `${data?.decision === 'approved' ? 'Aprovou' : 'Recusou'} a alteração pendente #${entityId}.`;
+    }
+    if (path.startsWith('/api/requests/')) {
+      return `${data?.status === 'approved' ? 'Aprovou' : 'Recusou'} a solicitação de acesso #${entityId}.`;
+    }
+    if (status >= 400) {
+      return `Tentativa negada em ${areaLabel}${message ? `: ${message}` : '.'}`;
+    }
+    if (path.endsWith('/reorder')) return `Reordenou itens em ${areaLabel}.`;
+    if (/\/bulk-/.test(path)) {
+      const count = Array.isArray(data?.ids) ? data.ids.length : null;
+      return `Alterou status em lote em ${areaLabel}${count ? ` (${count} item${count === 1 ? '' : 's'})` : ''}.`;
+    }
+    const name = data?.title || data?.name || data?.page_title;
+    const verb = AUDIT_ACTION_VERBS[action] || 'Executou ação em';
+    const target = name ? ` "${String(name).trim()}"` : entityId ? ` #${entityId}` : '';
+    return `${verb} ${areaLabel}${target}.`;
+  }
+
   function auditPath(method, path, data, status, message, actor) {
     const info = inferAuditInfo(method, path, data);
     let action = info.action;
@@ -761,11 +799,12 @@
     else if (path === '/api/logout') action = 'logout';
     let userName = actor?.name;
     if (!userName && path === '/api/login') userName = `CPF ${cleanCpf(data?.cpf || '')} (tentativa)`;
+    const detail = describeAudit({ path, data, status, message, action, area: info.area, entityId: info.entity_id });
     return {
       user_id: actor?.id ?? null, user_name: userName || 'Anônimo', role: actor?.role ?? null,
       area: info.area, action, entity: info.entity, entity_id: info.entity_id,
-      detail: `${method} ${path} -> ${status}${message ? ` (${message})` : ''}`,
-      result: status < 400 ? 'success' : 'denied',
+      detail, result: status < 400 ? 'success' : 'denied',
+      method, path, status, message: message || null,
     };
   }
 

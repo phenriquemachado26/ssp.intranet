@@ -60,6 +60,9 @@ para o modelo de sessão e suas limitações de segurança.
   permissão), alimentado por um wrapper central em `handleApi()` — não há `db.audit_logs.push`
   espalhado pelos handlers de rota. Sem endpoint de escrita exposto pela API simulada; mantém só as
   últimas 2000 entradas (limite de protótipo em `localStorage`). Chamadas `GET` não são logadas.
+  `describeAudit()` gera o campo `detail` (frase legível em PT, só a partir de nome/título do
+  payload — nunca senha/hash); os campos técnicos brutos (`method`, `path`, `status`, `message`)
+  ficam separados, usados pelo pop-up de detalhes da UI (`#audit-detail-dialog`).
 - `assertNotLastActiveMaster(db, userId)`: trava genérica que bloqueia excluir, desativar ou
   rebaixar a última conta de Administrador Master ativa — substitui a antiga checagem fixa por CPF
   (`MASTER_PRINCIPAL_CPF`, removida).
@@ -89,6 +92,10 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
 ## Histórico
 
+- 17/11/2026: Logs de Auditoria ganhou `describeAudit()` (detalhe legível em vez de trace técnico
+  cru) e campos técnicos estruturados separados (`method`/`path`/`status`/`message`), exibidos em
+  um novo pop-up por linha (`#audit-detail-dialog`). Menu lateral do painel reorganizado em 3 grupos
+  (Geral/Conteúdo/Administração), sem mudança de contrato de API ou de regra de negócio.
 - 17/11/2026: três funcionalidades novas na área administrativa (detalhes de regra em
   `docs/REGRAS-DE-NEGOCIO.md` → Histórico, 17/11/2026): renomeação "Cabeçalho e Rodapé" →
   "Identidade Visual" (só rótulo); novo módulo **Perfis e Permissões** (`access_profiles`,
