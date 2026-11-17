@@ -92,6 +92,9 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
 ## Histórico
 
+- 17/11/2026: `buildDemoAuditLogs()` semeia 10 registros de demonstração em `audit_logs`
+  (`SEED_VERSION` 22→23, com migração automática para quem já tinha a entidade vazia), para a tela
+  de Logs de Auditoria não aparecer vazia na primeira visita.
 - 17/11/2026: Logs de Auditoria ganhou `describeAudit()` (detalhe legível em vez de trace técnico
   cru) e campos técnicos estruturados separados (`method`/`path`/`status`/`message`), exibidos em
   um novo pop-up por linha (`#audit-detail-dialog`). Menu lateral do painel reorganizado em 3 grupos

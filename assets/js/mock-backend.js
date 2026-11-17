@@ -194,7 +194,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 22;
+  const SEED_VERSION = 23;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -504,17 +504,40 @@
       else if (!u.profile_id || !db.access_profiles.some((p) => p.id === u.profile_id)) { u.profile_id = siteAdminProfile.id; }
     });
     if (!db.audit_logs) db.audit_logs = [];
-    if (!db.seq.audit_logs) db.seq.audit_logs = 0;
+    // Upgrade: Log de Auditoria sem nenhum registro ainda (banco que só tinha a entidade vazia,
+    // de uma versão anterior) ganha os registros de demonstração, para a tela não aparecer vazia.
+    if (!db.audit_logs.length) db.audit_logs = buildDemoAuditLogs();
+    db.seq.audit_logs = db.audit_logs.reduce((max, l) => Math.max(max, l.id), db.seq.audit_logs || 0);
 
     db.seedVersion = SEED_VERSION;
     saveDb(db);
     return db;
   }
 
+  // Registros de demonstração do Log de Auditoria, só para a tela não começar vazia (protótipo).
+  // Datas relativas ao momento da semeadura, mais antigo primeiro (mesma ordem de id crescente
+  // usada pelos registros reais). Mesmo formato de `recordAuditEntry`/`auditPath`.
+  function buildDemoAuditLogs() {
+    const DAY = 86400000, HOUR = 3600000, MIN = 60000;
+    const ago = (ms) => new Date(Date.now() - ms).toISOString().slice(0, 19).replace('T', ' ');
+    return [
+      { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'login', action: 'login', entity: 'login', entity_id: null, detail: 'Login realizado com sucesso.', result: 'success', method: 'POST', path: '/api/login', status: 200, message: null, timestamp: ago(3 * DAY + 6 * HOUR) },
+      { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'menu', action: 'create', entity: 'menu', entity_id: 1, detail: 'Criou Cadastro de Menu "Lista Ramais".', result: 'success', method: 'POST', path: '/api/menu', status: 201, message: null, timestamp: ago(3 * DAY + 6 * HOUR - 3 * MIN) },
+      { user_id: 3, user_name: 'Rafael Souza Lima', role: 'site', area: 'notices', action: 'edit', entity: 'notices', entity_id: 2, detail: 'Editou Cadastro de Avisos "Consulta ao Veículo".', result: 'success', method: 'PUT', path: '/api/notices/2', status: 200, message: null, timestamp: ago(2 * DAY + 5 * HOUR) },
+      { user_id: null, user_name: 'CPF 33333333333 (tentativa)', role: null, area: 'login', action: 'login_failed', entity: 'login', entity_id: null, detail: 'Tentativa de login malsucedida (CPF 33333333333).', result: 'denied', method: 'POST', path: '/api/login', status: 401, message: 'CPF ou senha inválidos.', timestamp: ago(2 * DAY + 4 * HOUR) },
+      { user_id: 4, user_name: 'Juliana Pereira Santos', role: 'site', area: 'users', action: 'delete', entity: 'users', entity_id: 3, detail: 'Tentativa negada em Cadastro de Usuários: Ação exclusiva do Administrador Master.', result: 'denied', method: 'DELETE', path: '/api/users/3', status: 403, message: 'Ação exclusiva do Administrador Master.', timestamp: ago(DAY + 7 * HOUR) },
+      { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'approvals', action: 'approve', entity: 'pending-changes', entity_id: 5, detail: 'Aprovou a alteração pendente #5.', result: 'success', method: 'PUT', path: '/api/pending-changes/5', status: 200, message: null, timestamp: ago(DAY + 6 * HOUR) },
+      { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'access_profiles', action: 'create', entity: 'access-profiles', entity_id: 2, detail: 'Criou Perfis e Permissões "Atendimento ao Público".', result: 'success', method: 'POST', path: '/api/access-profiles', status: 201, message: null, timestamp: ago(DAY + 2 * HOUR) },
+      { user_id: 3, user_name: 'Rafael Souza Lima', role: 'site', area: 'menu', action: 'publish', entity: 'menu', entity_id: 4, detail: 'Publicou/ativou Cadastro de Menu #4.', result: 'success', method: 'PUT', path: '/api/menu/4', status: 200, message: null, timestamp: ago(18 * HOUR) },
+      { user_id: 2, user_name: 'Camila Rodrigues Alves', role: 'master', area: 'logout', action: 'logout', entity: 'logout', entity_id: null, detail: 'Sessão encerrada.', result: 'success', method: 'POST', path: '/api/logout', status: 200, message: null, timestamp: ago(10 * HOUR) },
+      { user_id: 4, user_name: 'Juliana Pereira Santos', role: 'site', area: 'login', action: 'login', entity: 'login', entity_id: null, detail: 'Login realizado com sucesso.', result: 'success', method: 'POST', path: '/api/login', status: 200, message: null, timestamp: ago(2 * HOUR) },
+    ].map((entry, index) => ({ id: index + 1, ...entry }));
+  }
+
   async function seedDb() {
     const db = {
       seedVersion: SEED_VERSION,
-      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: DEMO_NOTICES.length, pending_changes: 0, access_profiles: 1, audit_logs: 0 },
+      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: DEMO_NOTICES.length, pending_changes: 0, access_profiles: 1, audit_logs: 10 },
       users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
         id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
         profile_id: account.role === 'master' ? null : 1,
@@ -527,7 +550,7 @@
           permissions: siteAdminPermissions(), is_system: true, created_at: nowStamp(), updated_at: nowStamp(),
         },
       ],
-      audit_logs: [],
+      audit_logs: buildDemoAuditLogs(),
       access_requests: DEMO_ACCESS_REQUESTS.map((request, index) => ({
         id: index + 1, name: request.name, cpf: request.cpf, email: request.email,
         unit: request.unit, status: 'pending', created_at: nowStamp(),

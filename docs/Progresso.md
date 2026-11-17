@@ -579,3 +579,28 @@ Arquivos alterados: `painel.html`, `assets/js/mock-backend.js`, `assets/js/paine
   `data.title`/`data.name`/`data.page_title`/`data.decision`/`data.status`/`data.ids`, nunca
   `data.password`; teste automatizado confirma ausência de senha em qualquer log serializado.
   **APPROVED**.
+
+## 17/11/2026 — Logs de Auditoria mockados para visualização
+
+Usuário reportou que a frase legível e o ícone de detalhes não apareciam na tela de Logs de
+Auditoria — causa: a entidade `audit_logs` só existia vazia (feature nova, sem histórico anterior),
+então a tabela mostrava o estado vazio "Nenhum registro encontrado", sem nenhuma linha para exibir
+frase ou ícone. Pedido: semear alguns logs de demonstração.
+
+Adicionado `buildDemoAuditLogs()` em `assets/js/mock-backend.js`: 10 registros cobrindo login,
+login malsucedido, logout, criação/edição/publicação de conteúdo, uma ação negada (não-Master
+tentando excluir usuário) e uma aprovação de fila, com datas relativas ao momento da semeadura (3
+dias atrás até 2 horas atrás). `SEED_VERSION` 22→23: navegadores que já tinham migrado para a v22
+(com `audit_logs` vazio) recebem os mesmos 10 registros numa migração automática única, sem afetar
+nenhum outro dado já customizado (`RN-AUDIT-008`).
+
+- **Tester** (eu mesmo): harness Node ad hoc (descartado após a execução) cobrindo os dois
+  cenários — banco novo (seed direto) e banco já existente na v22 com `audit_logs` vazio
+  (migração) — confirmando 10 registros em ambos, nenhum com trace técnico cru no `detail`, todos
+  com `method`/`path`/`status` preenchidos, `seedVersion` e `seq.audit_logs` corretos após a
+  migração. Todos os cenários passaram.
+- **Validator**: autovalidação — mudança aditiva e idempotente (só preenche quando
+  `audit_logs.length === 0`), não sobrescreve logs reais que o usuário já tenha gerado.
+- **Security Specialist**: dados de demonstração não incluem senha nem dado sensível real; CPF
+  usado na tentativa de login malsucedida é um dos CPFs de demonstração já públicos em
+  `docs/Auth.md`. **APPROVED**.

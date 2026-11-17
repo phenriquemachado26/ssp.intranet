@@ -546,6 +546,12 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
 - **RN-AUDIT-006** `confirmada`: O mock mantém apenas os últimos 2000 registros
   (`localStorage`, por navegador/aba) — limitação de armazenamento do protótipo, sem equivalente a
   uma política de retenção real de banco de dados.
+- **RN-AUDIT-008** `confirmada`: São semeados 10 registros de demonstração (login/logout, criação e
+  edição de conteúdo, uma tentativa de login malsucedida, uma tentativa negada por ação exclusiva
+  do Master, uma aprovação de fila e a criação de um perfil de acesso), para a tela não aparecer
+  vazia na primeira visita. Navegadores com banco de uma versão anterior a esta regra (que já
+  tinham a entidade `audit_logs` criada, porém vazia) recebem os mesmos 10 registros numa migração
+  automática única.
 
 ## Matriz de permissões (resumo)
 
@@ -614,6 +620,12 @@ não-Master, só para quem estiver vinculado a este perfil específico.
 
 ## Histórico
 
+- 17/11/2026: nova regra **`RN-AUDIT-008`** — Log de Auditoria passou a vir com 10 registros de
+  demonstração semeados (`buildDemoAuditLogs()`), cobrindo login/logout, criação/edição de
+  conteúdo, login malsucedido, ação negada e aprovação de fila; navegadores que já tinham
+  `audit_logs` vazio (versão anterior) recebem os mesmos registros numa migração automática
+  (`SEED_VERSION` 22→23). Motivo: tela aparecia vazia para quem via o protótipo pela primeira vez
+  (nenhuma ação havia sido registrada ainda), a pedido do usuário.
 - 17/11/2026: dois ajustes na tela de Logs de Auditoria (`T-11`), a pedido do usuário: (1) o campo
   `detail` deixou de ser o trace técnico cru (`PUT /api/menu/3 -> 200`) e passou a ser uma frase
   legível em PT descrevendo a ação (nova regra em `RN-AUDIT-003`, função `describeAudit` em
