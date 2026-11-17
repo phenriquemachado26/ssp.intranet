@@ -1,6 +1,6 @@
 # Design System — Intranet SSP
 
-Atualizado em: 01/07/2026.
+Atualizado em: 17/11/2026.
 
 ## Direção visual
 
@@ -51,6 +51,17 @@ Visual institucional, sóbrio e contemporâneo. Azul representa segurança e con
 `assets/images/logo-ssp.svg` é um símbolo provisório criado para esta versão, usado pela Paleta Padrão. Deve ser substituído pelo arquivo oficial da Secretaria quando disponibilizado, preservando texto alternativo e proporções.
 
 Nos demais perfis visuais (Cabeçalho e Rodapé), a logomarca é enviada por upload (PNG, JPG, SVG, WebP ou AVIF, até 300 KB) em vez de referenciar um arquivo estático; fica salva como imagem embutida no navegador de quem a cadastrou. O campo de upload é uma área de arrastar-e-soltar (ícone + "Clique para enviar" / "ou arraste a imagem aqui"); com uma imagem selecionada, a área exibe a pré-visualização e um link "Remover logomarca" para limpar a seleção. O banner de avisos (Cadastro de Avisos) usa o mesmo componente de dropzone, com limite de 800 KB e formatos PNG/JPG/WebP/GIF/SVG/AVIF.
+
+## Grade de permissões e tabela de auditoria
+
+- A grade de permissões (Perfis e Permissões) é uma tabela com uma linha por área administrativa e
+  uma coluna por ação (Visualizar/Incluir/Editar/Excluir/Publicar-Aprovar), células com checkbox;
+  áreas de uso exclusivo do Master ganham uma nota discreta (`<small>`, cor `--muted`) ao lado do
+  nome, em vez de desabilitar a célula.
+- Os filtros de Logs de Auditoria usam uma barra horizontal (`flex-wrap`) de campos curtos
+  (selects e dois campos de data) alinhados pela base, com botões "Filtrar"/"Limpar" ao final —
+  mesmo padrão de altura (`40px`) e borda (`--line`) dos demais campos do painel.
+- Ambos reaproveitam os tokens de cor já definidos em `:root`; nenhuma cor nova foi introduzida.
 
 ## Acessibilidade
 

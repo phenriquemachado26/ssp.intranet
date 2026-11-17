@@ -489,3 +489,59 @@ anterior (filtro por URL preenchida).
   mínima e localizada em uma única linha de `theme.js`, sem alterar as demais seções do rodapé.
 - **Security Specialist**: n/a — alteração puramente de exibição condicional de ícones já públicos,
   sem novo dado sensível, autenticação ou autorização envolvida.
+
+## 17/11/2026 — Identidade Visual, Perfis e Permissões e Logs de Auditoria
+
+A pedido do usuário, três ajustes na área administrativa:
+
+1. **Identidade Visual**: menu "Cabeçalho e Rodapé" renomeado para "Identidade Visual"
+   (`painel.html`, `docs/REGRAS-DE-NEGOCIO.md` → T-06). Rótulo apenas; id interno (`headers-view`)
+   e regra de bloqueio do perfil "Período Eleitoral" (`RN-PERFIL-010`) não mudaram.
+2. **Perfis e Permissões** (nova tela `T-10`, `#access-profiles-view`): o antigo papel fixo único
+   "Administrador do Site" deu lugar a perfis de acesso configuráveis pelo Master
+   (`access_profiles`, `assets/js/mock-backend.js`), com matriz de permissões por área × ação
+   (visualizar/incluir/editar/excluir/publicar-aprovar) sobre 8 áreas administrativas. `RN-PERM-001`
+   foi revogada; `RN-PERM-005`–`RN-PERM-009` descrevem o novo modelo. Decisão de segurança tomada
+   nesta tarefa (sem pedido explícito do usuário sobre este detalhe): três áreas — Cadastro de
+   Usuários, Validações Pendentes, Perfis e Permissões — continuam exclusivas do Master no backend
+   mock, independentemente da matriz, para não permitir escalonamento de privilégio. Migração
+   automática e não destrutiva para navegadores com dados salvos antes desta mudança
+   (`SEED_VERSION` 21→22): cria o perfil seed "Administrador do Site" e vincula usuários
+   `role:'site'` já existentes a ele.
+3. **Trava de último Master generalizada** (`RN-USR-007`): `assertNotLastActiveMaster` substitui a
+   antiga proteção fixa por CPF (`MASTER_PRINCIPAL_CPF`, removida) — bloqueia excluir, desativar ou
+   rebaixar qualquer conta Master quando for a última ativa. `RN-USR-005b` revogada.
+4. **Logs de Auditoria** (nova tela `T-11`, `#audit-view`, somente leitura): nova entidade
+   `audit_logs`, alimentada por um wrapper central em `handleApi()` (login/logout, mutações
+   administrativas, negações de permissão); filtros por usuário, área, ação e período; sem endpoint
+   de edição/exclusão; mantém só os últimos 2000 registros (limite de `localStorage`). Decisão de
+   design: chamadas `GET` não são logadas, para não inundar o log com tráfego público do portal.
+
+Arquivos alterados: `painel.html`, `assets/js/mock-backend.js`, `assets/js/painel.js`,
+`assets/css/styles.css`, `docs/REGRAS-DE-NEGOCIO.md`, `docs/ARQUITETURA.md`, `docs/API.md`,
+`docs/Auth.md`, `docs/Organograma.md`, `docs/DESIGN-SYSTEM.md`.
+
+- **Tester** (eu mesmo, sem suíte automatizada pré-existente): `node -c` em
+  `assets/js/mock-backend.js` e `assets/js/painel.js` (sintaxe OK); harness Node ad hoc (stub de
+  `localStorage`/`window`/`crypto.subtle`, descartado após a execução) cobrindo: login master,
+  `effective_permissions` resolvido corretamente para perfil customizado, usuário sem permissão
+  recebe `403` em `menu` e isso gera log `result:'denied'`, usuário sem permissão em
+  `audit_logs` recebe `403`, login malsucedido gera `audit_logs` com `action:'login_failed'`,
+  desativar/excluir o último Master ativo é rejeitado com `409` (mas um segundo Master ativo pode),
+  perfil de acesso seed não pode ser excluído enquanto houver usuário vinculado. Todos os cenários
+  passaram. Validação em navegador real não foi realizada nesta sessão (ambiente não interativo,
+  sem servidor local) — fica pendente para o usuário conferir visualmente as duas telas novas e o
+  formulário de usuário atualizado.
+- **Validator**: autovalidação (sessão única, `docs/Harness.md` = n/a neste repositório) — diff
+  revisado linha a linha contra o plano (`.claude/plans/`); checagem adicional de que nenhum ponto
+  sensível ficou em `requireAuth()` genérico sem gate de permissão (`grep` de todos os call sites de
+  `requireAuth()`/`requireMaster()` no arquivo final); removida uma função morta (`roleLabel`) 
+  deixada pela implementação de UI, sem uso após a troca para `profileDisplay`.
+- **Security Specialist**: revisão focada em autorização (tarefa de autenticação/permissões) —
+  confirmado que Cadastro de Usuários, Validações Pendentes, Perfis e Permissões e Rodapé
+  permanecem `requireMaster()` hardcoded, não gatilháveis pela matriz de um perfil de acesso
+  (bloqueia o vetor óbvio de escalonamento de privilégio); `sanitizePermissionMatrix` descarta
+  qualquer área/ação desconhecida vinda do cliente; exclusão de perfil de acesso com usuários
+  vinculados é bloqueada; trava de último Master cobre exclusão, desativação e rebaixamento.
+  Nenhuma senha, token ou segredo novo foi exposto em log, resposta de API ou documentação.
+  **APPROVED**.

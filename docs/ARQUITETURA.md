@@ -47,6 +47,22 @@ para o modelo de sessão e suas limitações de segurança.
 - Resolução de banner (`resolveBanner`) usa um manifesto estático de nomes de arquivo
   (`BANNER_FILES` em `mock-backend.js`), já que não existe mais servidor para listar o diretório
   `images_banner/` dinamicamente — precisa ser atualizado manualmente a cada novo arquivo.
+- `access_profiles`: perfis de acesso configuráveis pelo Master (Perfis e Permissões, ver
+  `docs/REGRAS-DE-NEGOCIO.md` → T-10). Cada registro guarda uma matriz de permissões por área ×
+  ação (`view`/`create`/`edit`/`delete`/`publish`). `users.profile_id` referencia o perfil vinculado
+  a um administrador não-Master; `role:'master'` não usa perfil (acesso total fixo, resolvido em
+  `fullPermissionMatrix()`). `effectivePermissions(db, user)` resolve a matriz efetiva de um
+  usuário; `requirePermission(db, area, action)` é o portão central usado nos endpoints que hoje
+  dependem de permissão granular — substitui a antiga checagem binária `role !== 'site'`. As áreas
+  `users`, `approvals` e `access_profiles` continuam exigindo `requireMaster()` de forma fixa nos
+  respectivos endpoints, por decisão de segurança (evita escalonamento de privilégio via matriz).
+- `audit_logs`: registro imutável de auditoria (login/logout, mutações administrativas, negações de
+  permissão), alimentado por um wrapper central em `handleApi()` — não há `db.audit_logs.push`
+  espalhado pelos handlers de rota. Sem endpoint de escrita exposto pela API simulada; mantém só as
+  últimas 2000 entradas (limite de protótipo em `localStorage`). Chamadas `GET` não são logadas.
+- `assertNotLastActiveMaster(db, userId)`: trava genérica que bloqueia excluir, desativar ou
+  rebaixar a última conta de Administrador Master ativa — substitui a antiga checagem fixa por CPF
+  (`MASTER_PRINCIPAL_CPF`, removida).
 
 Reiniciar o navegador não apaga os dados (ficam em `localStorage`); o botão "Restaurar dados de
 demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
@@ -73,6 +89,14 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
 ## Histórico
 
+- 17/11/2026: três funcionalidades novas na área administrativa (detalhes de regra em
+  `docs/REGRAS-DE-NEGOCIO.md` → Histórico, 17/11/2026): renomeação "Cabeçalho e Rodapé" →
+  "Identidade Visual" (só rótulo); novo módulo **Perfis e Permissões** (`access_profiles`,
+  `users.profile_id`, `requirePermission()`, migração não destrutiva `SEED_VERSION` 21→22,
+  substituindo o antigo papel fixo único "Administrador do Site"); trava de último Master
+  generalizada (`assertNotLastActiveMaster`, substitui `MASTER_PRINCIPAL_CPF`); novo módulo **Logs
+  de Auditoria** (`audit_logs`, somente leitura, wrapper central em `handleApi()`). Implementado em
+  `assets/js/mock-backend.js`, `painel.html`, `assets/js/painel.js`, `assets/css/styles.css`.
 - 13/11/2026: dois ajustes de validação em `assets/js/mock-backend.js`, decididos com o usuário
   durante a revisão de `docs/REGRAS-DE-NEGOCIO.md`: (1) `DELETE /api/users/<id>` passou a proteger
   também o cadastro "Administrador Master" principal da demonstração (`MASTER_PRINCIPAL_CPF`,

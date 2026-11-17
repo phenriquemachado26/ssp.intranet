@@ -1,6 +1,6 @@
 # Organograma (fluxo de módulos)
 
-Atualizado em: 11/11/2026.
+Atualizado em: 17/11/2026.
 
 Protótipo estático: não há mais camada de servidor/banco de dados. O "backend" é simulado dentro
 do próprio navegador.
@@ -12,7 +12,7 @@ flowchart TD
     subgraph Navegador [Navegador do visitante]
         Paginas[Páginas HTML\nindex · admin · painel · avisos]
         Mock[assets/js/mock-backend.js\nintercepta fetch('/api/...')]
-        LS[(localStorage\nusuários · perfis · menu · avisos · fila)]
+        LS[(localStorage\nusuários · perfis · perfis de acesso · menu · avisos · fila · logs de auditoria)]
         Paginas -- fetch('/api/...') --> Mock
         Mock -- lê/grava --> LS
         Mock -- Response simulada --> Paginas

@@ -1,6 +1,6 @@
 # Autenticação (protótipo estático)
 
-Atualizado em: 11/11/2026.
+Atualizado em: 17/11/2026.
 
 ## Modelo
 
@@ -19,6 +19,29 @@ no navegador do próprio visitante:
   senha automaticamente ao escolher uma conta. Exposição intencional: como a "senha" não protege
   nada real neste protótipo, listá-la explicitamente para quem for testar é mais útil do que
   escondê-la atrás de uma falsa sensação de sigilo.
+
+## Autorização: Master × perfil de acesso
+
+- Dois valores de `role`: `"master"` (acesso total e fixo, não configurável) e qualquer outro valor
+  (tratado como administrador comum). Um usuário não-Master tem suas permissões definidas por um
+  **perfil de acesso** vinculado (`users.profile_id` → `access_profiles`), administrado pelo Master
+  em Perfis e Permissões — ver `docs/REGRAS-DE-NEGOCIO.md` → T-10.
+- Cada perfil de acesso é uma matriz `{área: {view,create,edit,delete,publish}}`. A sessão
+  (`GET /api/session`, `POST /api/login`) devolve essa matriz já resolvida em
+  `user.effective_permissions`, para o frontend decidir o que exibir sem reimplementar a lógica de
+  resolução.
+- `requirePermission(db, area, action)` é o portão central de autorização para as áreas
+  configuráveis (Identidade Visual, Cadastro Menu, Cadastro de Avisos, Acessos Rápidos). Três áreas
+  continuam **sempre** exigindo Master no backend, independentemente da matriz de qualquer perfil
+  de acesso: Cadastro de Usuários, Validações Pendentes e Perfis e Permissões — decisão de
+  segurança para impedir que um perfil de acesso seja configurado para criar/promover outros
+  Masters, aprovar a própria fila de validação ou alterar a própria matriz de permissões.
+- Somente o Master pode conceder ou retirar o papel de Master de um usuário.
+- Último Master ativo: o sistema rejeita (`409`) qualquer tentativa de excluir, desativar ou
+  rebaixar a última conta de Administrador Master ativa, mesmo quando executada por outro Master.
+- Logs de Auditoria (`audit_logs`) registram login/logout, toda mutação administrativa e toda
+  tentativa negada por falta de permissão — imutáveis pela interface administrativa, sem endpoint
+  de edição/exclusão na API simulada. Ver `docs/REGRAS-DE-NEGOCIO.md` → T-11.
 
 ## Por que isto NÃO é segurança real
 

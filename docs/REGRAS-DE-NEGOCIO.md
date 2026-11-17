@@ -27,36 +27,69 @@ leitura integral do código-fonte atual (`assets/js/mock-backend.js`, `main.js`,
 | `T-03` | Login e solicitação de acesso           | `admin.html`, `assets/js/admin.js`      |
 | `T-04` | Painel — Visão Geral                    | `painel.html` (`#overview-view`)        |
 | `T-05` | Painel — Cadastro de Usuários           | `painel.html` (`#users-view`)           |
-| `T-06` | Painel — Cabeçalho e Rodapé             | `painel.html` (`#headers-view`)         |
+| `T-06` | Painel — Identidade Visual (ex-"Cabeçalho e Rodapé") | `painel.html` (`#headers-view`)         |
 | `T-07` | Painel — Cadastro Menu                  | `painel.html` (`#menu-view`)            |
 | `T-08` | Painel — Cadastro de Avisos             | `painel.html` (`#notices-view`)         |
 | `T-09` | Painel — Validações pendentes           | `painel.html` (`#approvals-view`)       |
+| `T-10` | Painel — Perfis e Permissões            | `painel.html` (`#access-profiles-view`) |
+| `T-11` | Painel — Logs de Auditoria              | `painel.html` (`#audit-view`)           |
 
 | Entidade        | Nome                         | Tabela em `localStorage["sspIntranetDb"]` |
 | ---------------- | ----------------------------- | -------------------------------------------- |
 | `E-USUARIO`      | Administrador                | `users`                                      |
 | `E-SOLICITACAO`  | Solicitação de acesso        | `access_requests`                            |
 | `E-PERFIL`       | Perfil visual                 | `header_profiles`                            |
+| `E-PERFILACESSO` | Perfil de acesso (Perfis e Permissões) | `access_profiles`                   |
 | `E-ACESSO`       | Acesso rápido                 | `quick_access`                               |
 | `E-MENU`         | Item de menu                  | `menu_items`                                 |
 | `E-AVISO`        | Aviso                         | `notices`                                    |
 | `E-RODAPE`       | Configurações do rodapé (singleton) | `footer_settings`                      |
 | `E-CONTROLE`     | Controle de alterações (singleton)  | `change_control`                       |
 | `E-PENDENCIA`    | Alteração pendente            | `pending_changes`                            |
+| `E-LOG`          | Registro de auditoria (somente leitura) | `audit_logs`                       |
 
 ## Perfis administrativos
 
-- **RN-PERM-001** `confirmada`: Existem dois perfis de administrador: **Administrador Master**
-  (`role: "master"`) e **Administrador do Site** (`role: "site"`). Não há outros papéis.
-- **RN-PERM-002** `confirmada`: Administrador Master tem acesso completo: cadastra administradores,
-  aprova/recusa solicitações de acesso, gerencia perfis visuais/rodapé/acessos
-  rápidos/menu/avisos diretamente (sem fila) e é o único que aprova a fila de validação.
-- **RN-PERM-003** `confirmada`: Administrador do Site autentica e acessa a Visão Geral, Cabeçalho e
-  Rodapé (exceto a parte de Rodapé em si), Cadastro Menu e Cadastro de Avisos. Não acessa Cadastro
-  de Usuários nem Validações Pendentes (itens ficam ocultos no menu lateral).
-- **RN-PERM-004** `confirmada`: Toda ação administrativa do Administrador do Site sobre perfis
-  visuais, itens de menu, acessos rápidos e avisos passa pelas regras de fila descritas em
-  **T-09**; o Administrador do Site nunca aplica essas mudanças diretamente no site público.
+- **RN-PERM-001** `revogada` (17/11/2026): Existem dois perfis de administrador: **Administrador
+  Master** (`role: "master"`) e **Administrador do Site** (`role: "site"`). Não há outros papéis.
+  **Motivo da revogação**: substituída por `RN-PERM-005`, que introduz perfis de acesso
+  configuráveis — o papel binário (`master`/não-master) continua existindo no código, mas o que um
+  administrador não-Master pode fazer agora depende do perfil de acesso vinculado a ele, não de um
+  papel fixo único.
+- **RN-PERM-002** `confirmada`: Administrador Master tem acesso completo e fixo: cadastra
+  administradores, concede ou retira o papel de Master (`RN-USR-004`), cria/edita/exclui perfis de
+  acesso (**T-10**), aprova/recusa solicitações de acesso e a fila de validação, e gerencia perfis
+  visuais/rodapé/acessos rápidos/menu/avisos diretamente (sem fila).
+- **RN-PERM-003** `confirmada`: O perfil de acesso semeado **"Administrador do Site"** (`is_system:
+  true`, ver `RN-PERM-008`) replica o antigo papel fixo: acesso à Visão Geral, Identidade Visual
+  (ex-"Cabeçalho e Rodapé", exceto a parte de Rodapé em si), Cadastro Menu e Cadastro de Avisos; sem
+  acesso a Cadastro de Usuários, Validações Pendentes, Perfis e Permissões ou Logs de Auditoria.
+  Qualquer usuário vinculado a este perfil (ou a outro perfil de acesso com a mesma matriz) tem
+  exatamente este comportamento; um perfil de acesso diferente pode conceder mais ou menos.
+- **RN-PERM-004** `confirmada`: Toda ação administrativa de um Administrador não-Master sobre
+  perfis visuais, itens de menu, acessos rápidos e avisos passa pelas regras de fila descritas em
+  **T-09**, desde que o perfil de acesso vinculado conceda a permissão necessária (`RN-PERM-009`);
+  um Administrador não-Master nunca aplica essas mudanças diretamente no site público.
+- **RN-PERM-005** `confirmada`: Administradores não-Master têm suas permissões definidas por um
+  **perfil de acesso** vinculado (`E-PERFILACESSO`, ver **T-10**), administrado pelo Master. Cada
+  perfil de acesso define, por área administrativa — Identidade Visual, Cadastro Menu, Cadastro de
+  Avisos, Acessos Rápidos, Cadastro de Usuários, Validações Pendentes, Perfis e Permissões, Logs de
+  Auditoria — quais ações são permitidas: visualizar, incluir, editar, excluir, publicar/aprovar.
+- **RN-PERM-006** `confirmada`: Três áreas continuam de uso **exclusivo do Administrador Master no
+  backend**, independentemente do que a matriz de um perfil de acesso conceder: Cadastro de
+  Usuários, Validações Pendentes e Perfis e Permissões. Isso evita que um perfil de acesso seja
+  configurado para criar/promover outros Masters, aprovar a própria fila ou alterar a própria
+  matriz de permissões (escalonamento de privilégio). As caixas de marcação dessas três áreas
+  aparecem na tela de Perfis e Permissões apenas para registro/consulta, sem efeito de liberação.
+- **RN-PERM-007** `confirmada`: Somente o Administrador Master pode conceder ou retirar o papel de
+  Master de um usuário (`RN-USR-004`), criar, editar ou excluir perfis de acesso (**T-10**), e
+  aprovar ou recusar itens da fila de validação (`RN-BLOQ-005`).
+- **RN-PERM-008** `confirmada`: O perfil de acesso semeado **"Administrador do Site"**
+  (`is_system: true`) não pode ser excluído, mas pode ser editado livremente pelo Master, inclusive
+  sua matriz de permissões (`RN-PERFILACESSO-003`).
+- **RN-PERM-009** `confirmada`: A permissão granular do perfil de acesso é checada **antes** das
+  regras de fila (`RN-BLOQ-003`, `RN-PERFIL-009`): sem a permissão necessária na área, a ação é
+  rejeitada (`403`) e nem chega a entrar na fila de validação do Master.
 
 ## T-01 — Portal Público (`index.html`)
 
@@ -223,15 +256,23 @@ Administrador do Site.
   **no mock daquele navegador** (checado tanto na criação quanto na edição, excluindo o próprio
   registro) — sem equivalente real entre navegadores/visitantes diferentes, já que não há banco
   compartilhado.
-- **RN-USR-004** `confirmada`: Master pode editar nome, CPF, e-mail, perfil de acesso
-  (`site`/`master` — é assim que a promoção para Master acontece, ver `RN-SOLIC-005`), status
-  (ativo/inativo) e senha (campo de senha em branco na edição mantém a senha atual).
+- **RN-USR-004** `confirmada`: Master pode editar nome, CPF, e-mail, tipo de acesso (Administrador
+  Master ou perfil de acesso específico — é assim que a promoção/rebaixamento de Master acontece,
+  ver `RN-SOLIC-005`), status (ativo/inativo) e senha (campo de senha em branco na edição mantém a
+  senha atual). Ao vincular um usuário não-Master, é obrigatório escolher um perfil de acesso
+  válido (`RN-PERM-005`).
 - **RN-USR-005** `confirmada`: Um administrador **não pode excluir a própria conta**
   (`DELETE /api/users/<id>` rejeita com 409 quando `id === session.id`).
-- **RN-USR-005b** `confirmada`: O cadastro "Administrador Master" principal da demonstração (CPF
-  `000.000.000-00`) **não pode ser excluído por ninguém**, nem mesmo por outro Master logado (ex.:
-  a conta "Camila Rodrigues Alves") — checagem por CPF (`MASTER_PRINCIPAL_CPF`), independente do
-  `id` do registro.
+- **RN-USR-005b** `revogada` (17/11/2026): O cadastro "Administrador Master" principal da
+  demonstração (CPF `000.000.000-00`) não pode ser excluído por ninguém, nem mesmo por outro Master
+  logado — checagem por CPF (`MASTER_PRINCIPAL_CPF`), independente do `id` do registro. **Motivo da
+  revogação**: generalizada por `RN-USR-007`, que protege qualquer conta Master (não só a de
+  demonstração) quando for a última ativa, e cobre também desativação e rebaixamento de papel, não
+  só exclusão.
+- **RN-USR-007** `confirmada`: Não é possível **excluir, desativar ou rebaixar** (remover o papel
+  de Master) a **última conta de Administrador Master ativa** do sistema — a ação é rejeitada com
+  `409`, qualquer que seja o Master autenticado executando-a. Uma conta Master inativa, ou quando
+  existe outro Master ativo, não é protegida por esta regra.
 
 ### Aba Solicitações
 
@@ -239,7 +280,7 @@ Administrador do Site.
   recentes primeiro, com contador de pendentes na aba. Ver regras completas em **T-03** →
   "Solicitação de acesso".
 
-## T-06 — Painel: Cabeçalho e Rodapé
+## T-06 — Painel: Identidade Visual (ex-"Cabeçalho e Rodapé")
 
 ### Perfis visuais (`E-PERFIL`)
 
@@ -457,11 +498,55 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
 - **RN-BLOQ-012**: ver `RN-PERFIL-013` (regra central documentada na seção de Perfis Visuais, por
   ser disparada pela ativação de um perfil específico, não pelo bloqueio geral).
 
+## T-10 — Painel: Perfis e Permissões (`E-PERFILACESSO`)
+
+- **RN-PERFILACESSO-001** `confirmada`: Tela exclusiva do Administrador Master — item oculto no
+  menu lateral para qualquer outro usuário (`RN-PERM-006`).
+- **RN-PERFILACESSO-002** `confirmada`: Cada perfil de acesso tem nome (único entre os perfis
+  cadastrados), descrição opcional e uma matriz de permissões por área administrativa × ação
+  (visualizar/incluir/editar/excluir/publicar-aprovar — ver `RN-PERM-005`).
+- **RN-PERFILACESSO-003** `confirmada`: Perfis de acesso podem ser criados, editados e excluídos
+  pelo Master. O perfil semeado "Administrador do Site" (`is_system: true`) é protegido contra
+  exclusão (`RN-PERM-008`), mas sua matriz de permissões pode ser editada livremente.
+- **RN-PERFILACESSO-004** `confirmada`: Um perfil de acesso não pode ser excluído enquanto houver
+  usuários vinculados a ele (`409`); o Master precisa reatribuir esses usuários a outro perfil
+  antes de excluir.
+- **RN-PERFILACESSO-005** `confirmada`: Ao cadastrar ou editar um administrador (**T-05**), o
+  Master escolhe entre "Administrador Master" (acesso total e fixo) ou um perfil de acesso
+  específico; todo usuário não-Master precisa de um perfil de acesso válido vinculado.
+
+## T-11 — Painel: Logs de Auditoria (`E-LOG`)
+
+- **RN-AUDIT-001** `confirmada`: Tela somente leitura — não existe endpoint de edição ou exclusão
+  de registros na API simulada; os registros são imutáveis pela interface administrativa.
+- **RN-AUDIT-002** `confirmada`: Acesso exclusivo do Administrador Master por padrão; pode ser
+  delegado a um perfil de acesso com permissão "visualizar" na área Logs de Auditoria
+  (`RN-PERM-005`) — diferente de Usuários/Validações Pendentes/Perfis e Permissões, que são sempre
+  Master-exclusivo (`RN-PERM-006`).
+- **RN-AUDIT-003** `confirmada`: Cada registro guarda data/hora, usuário (nome e papel), área
+  administrativa, ação, entidade/id afetado, detalhe textual e resultado (`sucesso`/`negado`).
+- **RN-AUDIT-004** `confirmada`: São registrados: login bem-sucedido e malsucedido (identificando o
+  CPF da tentativa quando malsucedido), logout, toda mutação administrativa
+  (criar/editar/excluir/publicar/aprovar) e toda tentativa negada por falta de permissão (`403`).
+  Chamadas de leitura (`GET`) não são registradas, para não inundar o log com o tráfego público do
+  portal (home, avisos, tema) — limitação assumida do protótipo; se for necessária granularidade de
+  navegação/leitura no futuro, é um ajuste a ser pedido explicitamente.
+- **RN-AUDIT-005** `confirmada`: A tela permite filtrar por usuário, área, tipo de ação e período
+  (data inicial/final).
+- **RN-AUDIT-006** `confirmada`: O mock mantém apenas os últimos 2000 registros
+  (`localStorage`, por navegador/aba) — limitação de armazenamento do protótipo, sem equivalente a
+  uma política de retenção real de banco de dados.
+
 ## Matriz de permissões (resumo)
 
-| Entidade / Ação                         | Master                | Administrador do Site                                  |
+A coluna "Perfil de acesso padrão" descreve o comportamento do perfil semeado "Administrador do
+Site" (`RN-PERM-003`). Um Master pode criar outros perfis de acesso (**T-10**) com uma combinação
+diferente de permissões por área × ação; esta tabela não é mais exaustiva para todo Administrador
+não-Master, só para quem estiver vinculado a este perfil específico.
+
+| Entidade / Ação                         | Master                | Perfil de acesso padrão ("Administrador do Site")      |
 | ----------------------------------------- | ---------------------- | ---------------------------------------------------------- |
-| Usuários (`E-USUARIO`)                   | CRUD completo, direto  | Sem acesso                                                  |
+| Usuários (`E-USUARIO`)                   | CRUD completo, direto  | Sem acesso — exclusivo do Master (`RN-PERM-006`)            |
 | Solicitações de acesso (`E-SOLICITACAO`) | Aprova/recusa          | Sem acesso (só cria a própria, antes de ter login)         |
 | Perfis visuais (`E-PERFIL`)               | CRUD + ativar, direto  | CRUD + ativar, **sempre** em fila (`RN-PERFIL-009`)        |
 | Acessos rápidos (`E-ACESSO`)              | CRUD + reordenar, direto | CRUD + reordenar; em fila só com bloqueio ativo          |
@@ -469,7 +554,9 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
 | Avisos (`E-AVISO`)                        | CRUD + reordenar + status em lote, direto | idem; em fila só com bloqueio ativo       |
 | Rodapé (`E-RODAPE`)                       | Edita, direto          | Sem acesso                                                  |
 | Bloqueio/configurações gerais (`E-CONTROLE`) | Único que altera    | Somente visualiza (read-only)                               |
-| Fila de validação (`E-PENDENCIA`)         | Único que aprova/recusa | Só gera itens na fila; não visualiza a lista               |
+| Fila de validação (`E-PENDENCIA`)         | Único que aprova/recusa | Sem acesso — exclusivo do Master (`RN-PERM-006`)            |
+| Perfis de acesso (`E-PERFILACESSO`)       | CRUD completo, direto  | Sem acesso — exclusivo do Master (`RN-PERM-006`)            |
+| Logs de auditoria (`E-LOG`)               | Visualiza (somente leitura) | Sem acesso por padrão; delegável via matriz (`RN-AUDIT-002`) |
 
 ## Estados e enumerações
 
@@ -516,6 +603,33 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
 - Definir destinos reais dos acessos Polícia Civil, Polícia Militar, Polícia Científica e Conseg.
 
 ## Histórico
+
+- 17/11/2026: três funcionalidades novas na área administrativa, a pedido do usuário:
+  1. **Identidade Visual**: renomeação de rótulo — "Cabeçalho e Rodapé" (menu lateral e título da
+     tela, `T-06`) passa a se chamar "Identidade Visual". Nenhuma regra de comportamento mudou; o
+     bloqueio do perfil "Período Eleitoral" (`RN-PERFIL-010`) continua idêntico.
+  2. **Perfis e Permissões** (`T-10`, nova entidade `E-PERFILACESSO`): o antigo papel fixo único
+     "Administrador do Site" (`role: "site"`) foi substituído por perfis de acesso configuráveis
+     pelo Master, com matriz de permissões por área × ação. `RN-PERM-001` (`"não há outros papéis"`)
+     foi **revogada**, substituída por `RN-PERM-005`–`RN-PERM-009`. O perfil semeado "Administrador
+     do Site" replica exatamente o comportamento antigo, para não quebrar usuários já cadastrados
+     (migração automática e não destrutiva em `assets/js/mock-backend.js`, `SEED_VERSION` 21→22).
+     Por decisão de segurança (evitar escalonamento de privilégio), as áreas Usuários, Validações
+     Pendentes e Perfis e Permissões continuam exclusivas do Master no backend, independentemente
+     da matriz (`RN-PERM-006`) — registrado aqui como decisão de implementação, não pedido
+     explícito do usuário sobre esse detalhe específico.
+  3. **Trava de último Master generalizada** (`RN-USR-007`): `RN-USR-005b` (protegia só o CPF fixo
+     de demonstração contra exclusão) foi **revogada** e substituída por uma regra mais ampla, que
+     bloqueia excluir, desativar ou rebaixar qualquer conta Master quando for a última ativa.
+  4. **Logs de Auditoria** (`T-11`, nova entidade `E-LOG`): tela somente leitura registrando login
+     (sucesso/falha), logout, mutações administrativas e tentativas negadas por permissão, com
+     filtros por usuário/área/ação/período. Não registra chamadas `GET` (decisão para não poluir o
+     log com tráfego público do portal — ver `RN-AUDIT-004`).
+
+  Validação: `node -c` em `assets/js/mock-backend.js` e `assets/js/painel.js` (sintaxe OK); harness
+  Node ad hoc (descartado após a execução, mesmo padrão já usado em tarefas anteriores) cobrindo
+  login/perm granular/negação de permissão/log de auditoria/trava de último Master/proteção do
+  perfil semeado contra exclusão — todos os cenários passaram.
 
 - 13/11/2026: nova regra **`RN-PORTAL-015`** — ícones de redes sociais do rodapé público agora
   ficam ocultos enquanto o perfil "Período Eleitoral" está ativo, voltando a ser exibidos ao ativar

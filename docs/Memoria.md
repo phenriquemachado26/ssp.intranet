@@ -264,3 +264,23 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   novo (regra: não repetir a mesma chamada negada); a verificação funcional em navegador ficou como
   pendência para o usuário. Se precisar validar visualmente de novo, considerar pedir para o próprio
   usuário rodar o servidor e descrever o resultado, em vez de tentar automatizar.
+- **17/11/2026 — Harness ad hoc sem navegador para testar `mock-backend.js` isoladamente.** Como o
+  arquivo só depende de `window`/`localStorage`/`crypto.subtle`/`fetch` (sem DOM), dá para validar
+  toda a lógica de API com `new Function('window','localStorage','crypto','location', code)` em
+  Node puro — sem precisar subir servidor nem navegador headless. Stub mínimo:
+  `localStorage` como objeto JS simples, `crypto: require('crypto').webcrypto`,
+  `location: {reload(){},replace(){}}`. Útil para qualquer alteração futura em `mock-backend.js`.
+- **Decisão — áreas "Usuários", "Validações Pendentes" e "Perfis e Permissões" não são
+  gatilháveis pela matriz de permissões**, mesmo com o catálogo de Perfis e Permissões cobrindo
+  todas as 8 áreas administrativas. Motivo: permitir que um perfil de acesso conceda essas três
+  permitiria a um Administrador configurado pelo próprio Master criar/promover outro Master, aprovar
+  sua própria fila de validação, ou editar a própria matriz de permissões — escalonamento de
+  privilégio. Essas três áreas continuam com `requireMaster()` hardcoded no backend; os checkboxes
+  existem na UI só para registro, sem efeito de liberação. Se o usuário pedir explicitamente para
+  delegar alguma dessas três no futuro, é mudança de modelo de segurança — tratar como nova decisão
+  a confirmar, não como extensão trivial da matriz existente.
+- **Migração de schema em `localStorage` é sempre aditiva/não destrutiva** (padrão já usado antes,
+  reaplicado aqui): a cada `SEED_VERSION` nova, `reconcileSeed` só adiciona o que falta (ex.: cria
+  o perfil "Administrador do Site" e faz backfill de `profile_id` em usuários antigos), nunca apaga
+  ou reescreve dado que o visitante já tinha customizado. Qualquer alteração de schema futura em
+  `mock-backend.js` deve seguir o mesmo padrão.
