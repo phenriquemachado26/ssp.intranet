@@ -284,3 +284,22 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   o perfil "Administrador do Site" e faz backfill de `profile_id` em usuários antigos), nunca apaga
   ou reescreve dado que o visitante já tinha customizado. Qualquer alteração de schema futura em
   `mock-backend.js` deve seguir o mesmo padrão.
+- **17/11/2026 — Decisões de segurança que eu tomo por conta própria (não pedidas explicitamente)
+  devem ser sinalizadas claramente e tratadas como reversíveis, não como regra definitiva.** Numa
+  tarefa, decidi hardcodar "Validações Pendentes" como sempre Master-exclusiva (prevenção de
+  autoaprovação) sem o usuário ter pedido esse detalhe. Na tarefa seguinte, no mesmo dia, o usuário
+  pediu explicitamente para poder delegar essa função — o que exigiu reverter a decisão e, em vez
+  disso, resolver o problema real (autoaprovação) com uma trava específica (`requested_by ===
+  session.id`) em vez de uma proibição ampla. Lição: quando eu tomar uma decisão de segurança não
+  pedida, registrar o motivo tanto no código quanto na documentação de regras (já fazia isso), mas
+  também não tratar a decisão como imutável — ela é um palpite meu, o usuário pode legitimamente
+  querer o contrário, e o motivo original (evitar escalonamento de privilégio) quase sempre tem uma
+  solução mais cirúrgica do que "nunca permitir".
+- **Perfis e Permissões como entidade nomeada/reutilizável foi uma escolha minha de arquitetura, não
+  pedida explicitamente** — o pedido original ("criar outros perfis e configurar o que cada perfil
+  pode fazer") era ambíguo o suficiente para admitir tanto um perfil reutilizável quanto permissão
+  direta por usuário. Construí a versão reutilizável (mais "enterprise") sem perguntar primeiro;
+  horas depois, o usuário pediu exatamente o modelo mais simples (permissão direta no usuário, sem
+  nome, sem reuso), exigindo reverter boa parte do trabalho. Quando o pedido do usuário for
+  genuinamente ambíguo entre um modelo mais simples e um mais flexível/reutilizável, perguntar antes
+  de escolher a opção mais complexa, em vez de implementar e descobrir depois que era a errada.

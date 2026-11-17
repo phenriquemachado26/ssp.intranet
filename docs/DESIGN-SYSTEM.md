@@ -52,12 +52,13 @@ Visual institucional, sóbrio e contemporâneo. Azul representa segurança e con
 
 Nos demais perfis visuais (Cabeçalho e Rodapé), a logomarca é enviada por upload (PNG, JPG, SVG, WebP ou AVIF, até 300 KB) em vez de referenciar um arquivo estático; fica salva como imagem embutida no navegador de quem a cadastrou. O campo de upload é uma área de arrastar-e-soltar (ícone + "Clique para enviar" / "ou arraste a imagem aqui"); com uma imagem selecionada, a área exibe a pré-visualização e um link "Remover logomarca" para limpar a seleção. O banner de avisos (Cadastro de Avisos) usa o mesmo componente de dropzone, com limite de 800 KB e formatos PNG/JPG/WebP/GIF/SVG/AVIF.
 
-## Grade de permissões e tabela de auditoria
+## Permissões do administrador e tabela de auditoria
 
-- A grade de permissões (Perfis e Permissões) é uma tabela com uma linha por área administrativa e
-  uma coluna por ação (Visualizar/Incluir/Editar/Excluir/Publicar-Aprovar), células com checkbox;
-  áreas de uso exclusivo do Master ganham uma nota discreta (`<small>`, cor `--muted`) ao lado do
-  nome, em vez de desabilitar a célula.
+- As permissões de um Administrador são uma lista vertical de linhas `.change-toggle-wrap` (mesmo
+  padrão já usado nos controles da Visão Geral), uma por funcionalidade, cada uma com um
+  `.yes-no-switch` (flag deslizante Não/Sim) — não é mais uma grade de checkboxes por ação. Exibida
+  em um pop-up (`#user-permissions-dialog`) aberto a partir do cadastro de usuário, não em uma tela
+  própria.
 - Os filtros de Logs de Auditoria usam uma barra horizontal (`flex-wrap`) de campos curtos
   (selects e dois campos de data) alinhados pela base, com botões "Filtrar"/"Limpar" ao final —
   mesmo padrão de altura (`40px`) e borda (`--line`) dos demais campos do painel.
@@ -71,8 +72,9 @@ Nos demais perfis visuais (Cabeçalho e Rodapé), a logomarca é enviada por upl
 
 O menu administrativo é agrupado em seções rotuladas (`<p>` maiúsculo, mesmo estilo de
 "eyebrow" das demais telas): **GERAL** (Visão Geral), **CONTEÚDO** (Identidade Visual, Cadastro de
-Menu, Cadastro de Avisos) e **ADMINISTRAÇÃO** (Cadastro de Usuários, Perfis e Permissões,
-Validações Pendentes, Logs de Auditoria). Novos itens de menu devem ser adicionados ao grupo
+Menu, Cadastro de Avisos) e **ADMINISTRAÇÃO** (Cadastro de Usuários, Validações Pendentes, Logs de
+Auditoria — "Perfis e Permissões" não é mais um item próprio, vive dentro de Cadastro de Usuários).
+Novos itens de menu devem ser adicionados ao grupo
 correspondente, não ao final da lista.
 
 ## Acessibilidade

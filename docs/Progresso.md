@@ -604,3 +604,71 @@ nenhum outro dado já customizado (`RN-AUDIT-008`).
 - **Security Specialist**: dados de demonstração não incluem senha nem dado sensível real; CPF
   usado na tentativa de login malsucedida é um dos CPFs de demonstração já públicos em
   `docs/Auth.md`. **APPROVED**.
+
+## 17/11/2026 — Perfis e Permissões incorporado a Cadastro de Usuários; abas Ativos/Inativos
+
+A pedido do usuário, confirmado via perguntas de esclarecimento antes de implementar (mudança de
+arquitetura — revertia parte do trabalho da tarefa anterior no mesmo dia):
+
+1. **Perfis e Permissões deixou de ser tela/entidade separada.** Removidos: `access_profiles`
+   (entidade), `users.profile_id`, endpoints `/api/access-profiles*`, menu lateral e tela próprios.
+   Cada Administrador agora tem seu próprio `users.permissions` (booleano por funcionalidade — 6
+   áreas, sem granularidade de ação: Identidade Visual, Cadastro Menu, Cadastro de Avisos, Acessos
+   Rápidos, Validações Pendentes, Logs de Auditoria). Ao cadastrar/editar um administrador e marcar
+   "Tipo de acesso" = Administrador, um pop-up com flags deslizantes (uma por funcionalidade) é
+   aberto automaticamente; Master não precisa configurar nada (acesso total fixo).
+2. **Validações Pendentes passou a ser delegável** — reverte uma decisão de segurança que eu havia
+   tomado por conta própria na tarefa anterior (mantê-la sempre Master-exclusiva); o usuário pediu
+   explicitamente para incluí-la entre as funcionalidades configuráveis. Adicionada trava de
+   autoaprovação (`row.requested_by === session.id` rejeitada com `409`) para que delegar isso não
+   permita a ninguém aprovar a própria solicitação.
+3. **Lista de administradores dividida em abas Ativos/Inativos** (mais Solicitações, inalterada).
+   Botão "Excluir" removido da lista; cada linha ganhou uma flag deslizante que ativa/inativa
+   diretamente (`PUT /api/users/<id>` só com `{active}`, novo endpoint leve, mesmo padrão de
+   menu/avisos). O formulário completo de edição não mexe mais em `active`. O endpoint
+   `DELETE /api/users/<id>` continua existindo na API (não foi removido), só não é mais chamado
+   pela UI.
+4. **Dados mockados**: 4 administradores extras semeados (Eduardo, Beatriz — ativos; Patrícia,
+   Thiago — inativos), com combinações variadas de permissões, para as abas e a coluna "Acesso" não
+   ficarem vazias/repetitivas no protótipo.
+
+Arquivos alterados: `assets/js/mock-backend.js`, `painel.html`, `assets/js/painel.js`,
+`assets/css/styles.css`, `docs/REGRAS-DE-NEGOCIO.md`, `docs/ARQUITETURA.md`, `docs/API.md`,
+`docs/Auth.md`, `docs/DESIGN-SYSTEM.md`.
+
+- **Tester** (eu mesmo): `node -c` nos dois JS (sintaxe OK); harness Node ad hoc (descartado após a
+  execução) cobrindo: contagem de usuários/ativos/inativos após seed, ausência de `profile_id` em
+  qualquer usuário, `/api/access-profiles` retorna `404` (removido), toggle leve de ativação não
+  exige reenviar nome/cpf/email, edição completa não altera `active`, delegação de `approvals` a um
+  Administrador (lista pending-changes, aprova), autoaprovação bloqueada com `409`, login
+  delegado reflete `effective_permissions` corretamente. Todos os cenários passaram. Validação
+  visual em navegador não foi feita (sessão não interativa).
+- **Validator**: autovalidação — diff revisado função a função; checados todos os call sites de
+  `requirePermission`/`requireMaster` remanescentes para confirmar que nenhum endpoint sensível
+  ficou sem gate; balanceamento de `<section>`/`<dialog>`/`<form>` em `painel.html` conferido.
+- **Security Specialist**: revisão focada no novo vetor de delegação de "Validações Pendentes" —
+  confirmado que a trava de autoaprovação cobre o caso óbvio (Administrador aprovando a própria
+  solicitação); Cadastro de Usuários continua `requireMaster()` hardcoded, não há caminho para um
+  Administrador criar/promover outro Master nem alterar permissões de ninguém (inclusive as
+  próprias) por nenhum endpoint. **APPROVED**.
+
+## 17/11/2026 — Paginação na tela de Logs de Auditoria
+
+A pedido do usuário: tabela de Logs de Auditoria ganhou paginação client-side sobre o resultado já
+filtrado — seletor de 10/20/50/100 registros por página (padrão 10) e navegação primeira/anterior/
+próxima/última (`«`/`‹`/`›`/`»`), com indicador "Página X de Y". Botões de borda ficam desabilitados
+quando não há para onde navegar. Trocar filtro ou tamanho de página volta para a página 1. Nova
+regra `RN-AUDIT-009`. Sem mudança de API — a paginação opera sobre os registros já retornados por
+`GET /api/audit-logs` (que já respeita os filtros aplicados).
+
+Arquivos alterados: `painel.html`, `assets/js/painel.js`, `assets/css/styles.css`,
+`docs/REGRAS-DE-NEGOCIO.md`.
+
+- **Tester** (eu mesmo): `node -c` em `painel.js` (sintaxe OK); conferência manual de que todos os
+  ids referenciados pelo JS (`#audit-page-size`, `#audit-page-first/prev/next/last`,
+  `#audit-page-info`) existem no HTML; balanceamento de `<div>`/`<section>` conferido. Validação
+  visual em navegador não foi feita (sessão não interativa).
+- **Validator**: autovalidação — mudança isolada à tela de auditoria, sem tocar em backend nem em
+  outras telas.
+- **Security Specialist**: n/a — paginação é só apresentação de dados já carregados e já
+  autorizados pela checagem de permissão existente; nenhum dado novo é exposto.

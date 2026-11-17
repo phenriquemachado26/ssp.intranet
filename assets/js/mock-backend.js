@@ -20,61 +20,48 @@
   const BANNER_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
   const PROFILE_FONTS = new Set(['Padrão institucional', 'Arial', 'Georgia', 'Verdana', 'Trebuchet MS', 'Times New Roman', 'Courier New', 'Tahoma']);
 
-  // Catálogo de Perfis e Permissões: áreas administrativas × ações possíveis. Usuários com
-  // role:'master' sempre têm acesso total e fixo (não passam por esta matriz). Usuários não-Master
-  // ("Administrador") têm suas permissões resolvidas a partir do perfil de acesso vinculado
-  // (`access_profiles`, campo `profile_id`). Algumas áreas (`users`, `approvals`,
-  // `access_profiles`) continuam exigindo Master de forma fixa no backend mock, independente do
-  // que a matriz do perfil disser — ver `requireMaster()` nos respectivos endpoints; os campos
-  // correspondentes na matriz existem para consulta/exibição na UI, não têm efeito de liberação.
-  const PERMISSION_AREAS = ['identity', 'menu', 'notices', 'quick_access', 'users', 'approvals', 'access_profiles', 'audit_logs'];
-  const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete', 'publish'];
+  // Perfis e Permissões: não é mais uma entidade nomeada/reutilizável — cada Administrador
+  // (role !== 'master') tem seu próprio conjunto de permissões (`users.permissions`), um toggle
+  // por funcionalidade (sem granularidade de ação). Master sempre tem acesso total e fixo, não
+  // configurável. "Cadastro de Usuários" não é uma área configurável (sempre `requireMaster()`
+  // hardcoded, é a própria tela onde as permissões são definidas).
+  const PERMISSION_AREAS = ['identity', 'menu', 'notices', 'quick_access', 'approvals', 'audit_logs'];
 
   // Rótulos em PT usados só para compor o texto legível do Log de Auditoria (`detail`). Espelha
   // AREA_LABELS/AUDIT_ACTION_LABELS de `assets/js/painel.js` — mantenha os dois em sincronia.
   const AUDIT_AREA_LABELS = {
     identity: 'Identidade Visual', menu: 'Cadastro de Menu', notices: 'Cadastro de Avisos',
     quick_access: 'Acessos Rápidos', users: 'Cadastro de Usuários', approvals: 'Validações Pendentes',
-    access_profiles: 'Perfis e Permissões', audit_logs: 'Logs de Auditoria', overview: 'Visão Geral',
+    audit_logs: 'Logs de Auditoria', overview: 'Visão Geral',
   };
   const AUDIT_ACTION_VERBS = { create: 'Criou', edit: 'Editou', delete: 'Excluiu', publish: 'Publicou/ativou' };
 
-  function emptyPermissionMatrix() {
-    const matrix = {};
-    PERMISSION_AREAS.forEach((area) => { matrix[area] = { view: false, create: false, edit: false, delete: false, publish: false }; });
-    return matrix;
+  function emptyPermissions() {
+    const perms = {};
+    PERMISSION_AREAS.forEach((area) => { perms[area] = false; });
+    return perms;
   }
 
-  function fullPermissionMatrix() {
-    const matrix = {};
-    PERMISSION_AREAS.forEach((area) => { matrix[area] = { view: true, create: true, edit: true, delete: true, publish: true }; });
-    return matrix;
+  function fullPermissions() {
+    const perms = {};
+    PERMISSION_AREAS.forEach((area) => { perms[area] = true; });
+    return perms;
   }
 
-  // Perfil de acesso semeado "Administrador do Site": replica exatamente as capacidades do antigo
-  // papel fixo `role:'site'` (RN-PERM-003/004) — visualizar/incluir/editar/excluir/publicar em
-  // Identidade Visual, Cadastro Menu, Cadastro de Avisos e Acessos Rápidos; nada em Usuários,
-  // Validações Pendentes, Perfis e Permissões ou Logs de Auditoria.
-  function siteAdminPermissions() {
-    const matrix = emptyPermissionMatrix();
-    ['identity', 'menu', 'notices', 'quick_access'].forEach((area) => {
-      matrix[area] = { view: true, create: true, edit: true, delete: true, publish: true };
-    });
-    return matrix;
+  // Permissões padrão do antigo papel fixo "Administrador do Site" (RN-PERM-003/004): acesso a
+  // Identidade Visual, Cadastro Menu, Cadastro de Avisos e Acessos Rápidos; nada em Validações
+  // Pendentes nem Logs de Auditoria. Usada só como valor inicial ao semear/migrar dados antigos.
+  function defaultAdminPermissions() {
+    return { ...emptyPermissions(), identity: true, menu: true, notices: true, quick_access: true };
   }
 
-  // Sanitiza uma matriz de permissões recebida do cliente: só aceita áreas/ações conhecidas,
-  // qualquer valor não-booleano é tratado como `false`.
-  function sanitizePermissionMatrix(input) {
+  // Sanitiza o objeto de permissões recebido do cliente: só aceita as áreas conhecidas, qualquer
+  // valor não-booleano é tratado como `false`.
+  function sanitizePermissions(input) {
     const source = input && typeof input === 'object' ? input : {};
-    const matrix = emptyPermissionMatrix();
-    PERMISSION_AREAS.forEach((area) => {
-      const row = source[area];
-      PERMISSION_ACTIONS.forEach((action) => {
-        matrix[area][action] = !!(row && row[action]);
-      });
-    });
-    return matrix;
+    const perms = emptyPermissions();
+    PERMISSION_AREAS.forEach((area) => { perms[area] = !!source[area]; });
+    return perms;
   }
 
   // Contas de demonstração semeadas no primeiro acesso. A senha em texto puro só existe aqui
@@ -83,11 +70,21 @@
   const DEMO_ACCOUNTS = [
     { name: 'Administrador Master', cpf: '00000000000', email: 'master@ssp.gov.br', role: 'master', password: 'Master@123' },
     { name: 'Camila Rodrigues Alves', cpf: '11111111111', email: 'camila.alves@ssp.gov.br', role: 'master', password: 'Master2@123' },
-    { name: 'Rafael Souza Lima', cpf: '22222222222', email: 'rafael.lima@ssp.gov.br', role: 'site', password: 'Site1@123' },
-    { name: 'Juliana Pereira Santos', cpf: '33333333333', email: 'juliana.santos@ssp.gov.br', role: 'site', password: 'Site2@123' },
+    { name: 'Rafael Souza Lima', cpf: '22222222222', email: 'rafael.lima@ssp.gov.br', role: 'site', password: 'Site1@123', permissions: { identity: true, menu: true, notices: true, quick_access: true, approvals: false, audit_logs: false } },
+    { name: 'Juliana Pereira Santos', cpf: '33333333333', email: 'juliana.santos@ssp.gov.br', role: 'site', password: 'Site2@123', permissions: { identity: false, menu: false, notices: true, quick_access: false, approvals: false, audit_logs: true } },
   ];
 
   window.sspDemoAccounts = () => DEMO_ACCOUNTS.map(({ name, cpf, role, password }) => ({ name, cpf, role, password }));
+
+  // Administradores extras de demonstração — não aparecem no seletor de CPF do login (não são o
+  // foco de teste de autenticação), só para a lista de Cadastro de Usuários não ficar com apenas
+  // 2 administradores e as abas "Ativos"/"Inativos" terem exemplo de sobra em ambas.
+  const DEMO_EXTRA_ADMINS = [
+    { name: 'Eduardo Pereira Lima', cpf: '66666666666', email: 'eduardo.lima@ssp.gov.br', password: 'Admin3@123', active: true, permissions: { identity: false, menu: true, notices: true, quick_access: false, approvals: true, audit_logs: false } },
+    { name: 'Beatriz Nogueira Costa', cpf: '44444444444', email: 'beatriz.costa@ssp.gov.br', password: 'Admin4@123', active: true, permissions: { identity: true, menu: true, notices: true, quick_access: true, approvals: false, audit_logs: false } },
+    { name: 'Patrícia Almeida Souza', cpf: '77777777777', email: 'patricia.souza@ssp.gov.br', password: 'Admin5@123', active: false, permissions: { identity: true, menu: false, notices: false, quick_access: false, approvals: false, audit_logs: true } },
+    { name: 'Thiago Martins Rocha', cpf: '88888888888', email: 'thiago.rocha@ssp.gov.br', password: 'Admin6@123', active: false, permissions: { identity: false, menu: false, notices: false, quick_access: false, approvals: false, audit_logs: false } },
+  ];
 
   // Exemplo de solicitação de acesso pendente, para a aba "Solicitações" de Cadastro de Usuários.
   const DEMO_ACCESS_REQUESTS = [
@@ -484,25 +481,30 @@
         if (!db.footer_settings[key] && FOOTER_DEFAULTS[key]) db.footer_settings[key] = FOOTER_DEFAULTS[key];
       });
     }
-    // Upgrade: Perfis e Permissões. Navegadores com banco anterior à v22 não têm `access_profiles`
-    // nem `audit_logs` — cria o perfil de acesso semeado "Administrador do Site" (equivalente ao
-    // antigo papel fixo `role:'site'`) e vincula a ele qualquer usuário não-Master ainda sem
-    // `profile_id`, sem apagar nem alterar nada que o Master já tenha customizado.
-    if (!db.access_profiles) db.access_profiles = [];
-    if (!db.seq.access_profiles) db.seq.access_profiles = db.access_profiles.reduce((max, p) => Math.max(max, p.id), 0);
-    let siteAdminProfile = db.access_profiles.find((p) => p.is_system);
-    if (!siteAdminProfile) {
-      siteAdminProfile = {
-        id: nextId(db, 'access_profiles'), name: 'Administrador do Site',
-        description: 'Perfil padrão equivalente ao antigo papel fixo "Administrador do Site".',
-        permissions: siteAdminPermissions(), is_system: true, created_at: nowStamp(), updated_at: nowStamp(),
-      };
-      db.access_profiles.push(siteAdminProfile);
-    }
+    // Upgrade: Perfis e Permissões deixou de ser uma entidade reutilizável (`access_profiles`) —
+    // cada Administrador agora tem seu próprio objeto `permissions` (um toggle por
+    // funcionalidade). Usuário não-Master sem `permissions` ainda recebe as permissões do antigo
+    // perfil vinculado (colapsando qualquer ação `true` da área para `true`), ou o padrão do
+    // antigo "Administrador do Site" quando não havia perfil nenhum; a entidade antiga é removida.
     db.users.forEach((u) => {
-      if (u.role === 'master') { u.profile_id = null; }
-      else if (!u.profile_id || !db.access_profiles.some((p) => p.id === u.profile_id)) { u.profile_id = siteAdminProfile.id; }
+      if (u.role === 'master') { u.permissions = null; delete u.profile_id; return; }
+      if (!u.permissions) {
+        const oldProfile = Array.isArray(db.access_profiles) ? db.access_profiles.find((p) => p.id === u.profile_id) : null;
+        if (oldProfile?.permissions) {
+          const perms = emptyPermissions();
+          PERMISSION_AREAS.forEach((area) => {
+            const row = oldProfile.permissions[area];
+            perms[area] = !!(row && Object.values(row).some(Boolean));
+          });
+          u.permissions = perms;
+        } else {
+          u.permissions = defaultAdminPermissions();
+        }
+      }
+      delete u.profile_id;
     });
+    delete db.access_profiles;
+    delete db.seq.access_profiles;
     if (!db.audit_logs) db.audit_logs = [];
     // Upgrade: Log de Auditoria sem nenhum registro ainda (banco que só tinha a entidade vazia,
     // de uma versão anterior) ganha os registros de demonstração, para a tela não aparecer vazia.
@@ -527,7 +529,7 @@
       { user_id: null, user_name: 'CPF 33333333333 (tentativa)', role: null, area: 'login', action: 'login_failed', entity: 'login', entity_id: null, detail: 'Tentativa de login malsucedida (CPF 33333333333).', result: 'denied', method: 'POST', path: '/api/login', status: 401, message: 'CPF ou senha inválidos.', timestamp: ago(2 * DAY + 4 * HOUR) },
       { user_id: 4, user_name: 'Juliana Pereira Santos', role: 'site', area: 'users', action: 'delete', entity: 'users', entity_id: 3, detail: 'Tentativa negada em Cadastro de Usuários: Ação exclusiva do Administrador Master.', result: 'denied', method: 'DELETE', path: '/api/users/3', status: 403, message: 'Ação exclusiva do Administrador Master.', timestamp: ago(DAY + 7 * HOUR) },
       { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'approvals', action: 'approve', entity: 'pending-changes', entity_id: 5, detail: 'Aprovou a alteração pendente #5.', result: 'success', method: 'PUT', path: '/api/pending-changes/5', status: 200, message: null, timestamp: ago(DAY + 6 * HOUR) },
-      { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'access_profiles', action: 'create', entity: 'access-profiles', entity_id: 2, detail: 'Criou Perfis e Permissões "Atendimento ao Público".', result: 'success', method: 'POST', path: '/api/access-profiles', status: 201, message: null, timestamp: ago(DAY + 2 * HOUR) },
+      { user_id: 1, user_name: 'Administrador Master', role: 'master', area: 'users', action: 'edit', entity: 'users', entity_id: 6, detail: 'Editou Cadastro de Usuários "Beatriz Nogueira Costa".', result: 'success', method: 'PUT', path: '/api/users/6', status: 200, message: null, timestamp: ago(DAY + 2 * HOUR) },
       { user_id: 3, user_name: 'Rafael Souza Lima', role: 'site', area: 'menu', action: 'publish', entity: 'menu', entity_id: 4, detail: 'Publicou/ativou Cadastro de Menu #4.', result: 'success', method: 'PUT', path: '/api/menu/4', status: 200, message: null, timestamp: ago(18 * HOUR) },
       { user_id: 2, user_name: 'Camila Rodrigues Alves', role: 'master', area: 'logout', action: 'logout', entity: 'logout', entity_id: null, detail: 'Sessão encerrada.', result: 'success', method: 'POST', path: '/api/logout', status: 200, message: null, timestamp: ago(10 * HOUR) },
       { user_id: 4, user_name: 'Juliana Pereira Santos', role: 'site', area: 'login', action: 'login', entity: 'login', entity_id: null, detail: 'Login realizado com sucesso.', result: 'success', method: 'POST', path: '/api/login', status: 200, message: null, timestamp: ago(2 * HOUR) },
@@ -537,19 +539,19 @@
   async function seedDb() {
     const db = {
       seedVersion: SEED_VERSION,
-      seq: { users: DEMO_ACCOUNTS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: DEMO_NOTICES.length, pending_changes: 0, access_profiles: 1, audit_logs: 10 },
-      users: await Promise.all(DEMO_ACCOUNTS.map(async (account, index) => ({
-        id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
-        profile_id: account.role === 'master' ? null : 1,
-        password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
-      }))),
-      access_profiles: [
-        {
-          id: 1, name: 'Administrador do Site',
-          description: 'Perfil padrão equivalente ao antigo papel fixo "Administrador do Site".',
-          permissions: siteAdminPermissions(), is_system: true, created_at: nowStamp(), updated_at: nowStamp(),
-        },
-      ],
+      seq: { users: DEMO_ACCOUNTS.length + DEMO_EXTRA_ADMINS.length, access_requests: DEMO_ACCESS_REQUESTS.length, header_profiles: 1 + DEMO_EXTRA_PROFILES.length, menu_items: DEFAULT_MENU_ITEMS.length, quick_access: DEFAULT_QUICK_ACCESS.length, notices: DEMO_NOTICES.length, pending_changes: 0, audit_logs: 10 },
+      users: await Promise.all([
+        ...DEMO_ACCOUNTS.map(async (account, index) => ({
+          id: index + 1, name: account.name, cpf: account.cpf, email: account.email, role: account.role,
+          permissions: account.role === 'master' ? null : account.permissions,
+          password_hash: await passwordHash(account.password), active: true, created_at: nowStamp(),
+        })),
+        ...DEMO_EXTRA_ADMINS.map(async (account, index) => ({
+          id: DEMO_ACCOUNTS.length + index + 1, name: account.name, cpf: account.cpf, email: account.email, role: 'custom',
+          permissions: account.permissions,
+          password_hash: await passwordHash(account.password), active: account.active, created_at: nowStamp(),
+        })),
+      ]),
       audit_logs: buildDemoAuditLogs(),
       access_requests: DEMO_ACCESS_REQUESTS.map((request, index) => ({
         id: index + 1, name: request.name, cpf: request.cpf, email: request.email,
@@ -636,30 +638,20 @@
     });
   }
 
-  // Resolve o perfil de acesso (Perfis e Permissões) de um usuário não-Master. Usuários com
-  // `role:'site'` salvos antes da v22 (sem `profile_id`) caem no perfil semeado "Administrador do
-  // Site", para não perder acesso que já tinham.
-  function resolveAccessProfile(db, user) {
-    if (!user || user.role === 'master') return null;
-    return db.access_profiles.find((p) => p.id === user.profile_id)
-      || db.access_profiles.find((p) => p.is_system)
-      || null;
-  }
-
-  function effectivePermissions(db, user) {
-    if (!user || user.role === 'master') return fullPermissionMatrix();
-    const profile = resolveAccessProfile(db, user);
-    return profile ? profile.permissions : emptyPermissionMatrix();
+  // Permissões efetivas de um usuário: Master sempre tem tudo; Administrador usa seu próprio
+  // objeto `permissions` (sem perfil intermediário — ver nota em `PERMISSION_AREAS`).
+  function effectivePermissions(user) {
+    if (!user || user.role === 'master') return fullPermissions();
+    return sanitizePermissions(user.permissions);
   }
 
   function userPublic(db, u) {
     const isMaster = u.role === 'master';
     return {
       id: u.id, name: u.name, cpf: u.cpf, email: u.email, role: u.role,
-      profile_id: isMaster ? null : (u.profile_id ?? null),
-      profile_name: isMaster ? null : (resolveAccessProfile(db, u)?.name ?? null),
+      permissions: isMaster ? null : effectivePermissions(u),
       active: !!u.active, created_at: u.created_at,
-      effective_permissions: effectivePermissions(db, u),
+      effective_permissions: effectivePermissions(u),
     };
   }
 
@@ -694,12 +686,11 @@
   // Usuários não-Master são checados contra a matriz do perfil de acesso vinculado. Não usar para
   // Usuários, Validações Pendentes, Perfis e Permissões, Rodapé: essas áreas continuam exigindo
   // `requireMaster()` de forma fixa, por decisão do plano (evita escalonamento de privilégio).
-  function requirePermission(db, area, action) {
+  function requirePermission(db, area) {
     const session = requireAuth();
     if (session.role === 'master') return session;
     const user = db.users.find((u) => u.id === session.id);
-    const profile = resolveAccessProfile(db, user);
-    if (!profile || !profile.permissions?.[area]?.[action]) {
+    if (!effectivePermissions(user)[area]) {
       throw new ApiError(403, 'Ação não permitida para o seu perfil de acesso.');
     }
     return session;
@@ -760,7 +751,7 @@
   const AUDIT_AREA_BY_RESOURCE = {
     profiles: 'identity', 'footer-settings': 'identity', menu: 'menu', notices: 'notices',
     'quick-access': 'quick_access', users: 'users', requests: 'users', 'access-requests': 'users',
-    'pending-changes': 'approvals', 'change-control': 'approvals', 'access-profiles': 'access_profiles',
+    'pending-changes': 'approvals', 'change-control': 'approvals',
     'audit-logs': 'audit_logs', 'site-settings': 'overview',
   };
 
@@ -922,7 +913,7 @@
     }
 
     if (method === 'GET' && path === '/api/profiles') {
-      requirePermission(db, 'identity', 'view');
+      requirePermission(db, 'identity');
       const profiles = db.header_profiles.slice().sort((a, b) => a.id - b.id);
       return [200, { profiles }];
     }
@@ -934,20 +925,13 @@
     }
 
     if (method === 'GET' && path === '/api/pending-changes') {
-      requireMaster();
+      requirePermission(db, 'approvals');
       const changes = db.pending_changes.filter((c) => c.status === 'pending').slice().sort((a, b) => b.id - a.id);
       return [200, { changes }];
     }
 
-    if (method === 'GET' && path === '/api/access-profiles') {
-      requireMaster();
-      const profiles = db.access_profiles.slice().sort((a, b) => a.id - b.id)
-        .map((p) => ({ ...p, user_count: db.users.filter((u) => u.profile_id === p.id).length }));
-      return [200, { profiles }];
-    }
-
     if (method === 'GET' && path === '/api/audit-logs') {
-      requirePermission(db, 'audit_logs', 'view');
+      requirePermission(db, 'audit_logs');
       let logs = db.audit_logs.slice().sort((a, b) => b.id - a.id);
       const userId = query.get('user_id'); if (userId) logs = logs.filter((l) => String(l.user_id) === userId);
       const area = query.get('area'); if (area) logs = logs.filter((l) => l.area === area);
@@ -988,36 +972,16 @@
       const cpf = cleanCpf(data.cpf), email = String(data.email || '').trim();
       if (db.users.some((u) => u.cpf === cpf || u.email === email)) return [409, { error: 'CPF ou e-mail já cadastrado.' }];
       const role = data.role === 'master' ? 'master' : 'custom';
-      let profileId = null;
-      if (role === 'custom') {
-        profileId = Number(data.profile_id) || null;
-        if (!profileId || !db.access_profiles.some((p) => p.id === profileId)) {
-          return [400, { error: 'Selecione um perfil de acesso válido.' }];
-        }
-      }
+      const permissions = role === 'master' ? null : sanitizePermissions(data.permissions);
       db.users.push({
         id: nextId(db, 'users'), name: String(data.name || '').trim(), cpf, email,
-        role, profile_id: profileId, password_hash: await passwordHash(data.password), active: true, created_at: nowStamp(),
+        role, permissions, password_hash: await passwordHash(data.password), active: true, created_at: nowStamp(),
       });
       return [201, { message: 'Administrador cadastrado.' }];
     }
 
-    if (method === 'POST' && path === '/api/access-profiles') {
-      requireMaster();
-      const name = String(data.name || '').trim();
-      const description = String(data.description || '').trim();
-      if (!name) return [400, { error: 'Informe um nome para o perfil de acesso.' }];
-      if (db.access_profiles.some((p) => p.name === name)) return [409, { error: 'Já existe um perfil de acesso com este nome.' }];
-      const permissions = sanitizePermissionMatrix(data.permissions);
-      db.access_profiles.push({
-        id: nextId(db, 'access_profiles'), name, description, permissions,
-        is_system: false, created_at: nowStamp(), updated_at: nowStamp(),
-      });
-      return [201, { message: 'Perfil de acesso criado.' }];
-    }
-
     if (method === 'POST' && path === '/api/profiles') {
-      const session = requirePermission(db, 'identity', 'create');
+      const session = requirePermission(db, 'identity');
       if (db.header_profiles.length >= 5) return [409, { error: 'O limite de 5 perfis foi atingido.' }];
       const values = profileValues(data);
       if (db.header_profiles.some((p) => p.name === values.name)) return [409, { error: 'Nome inválido ou já utilizado.' }];
@@ -1027,7 +991,7 @@
     }
 
     if (method === 'POST' && path === '/api/menu') {
-      const session = requirePermission(db, 'menu', 'create');
+      const session = requirePermission(db, 'menu');
       if (!safeUrl(data.url)) return [400, { error: 'Use uma URL iniciada por https://, http://, / ou #.' }];
       if (queueIfRequired(db, session, 'create', 'menu_item', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       const order = Number(data.display_order ?? 1);
@@ -1040,7 +1004,7 @@
     }
 
     if (method === 'POST' && path === '/api/quick-access') {
-      const session = requirePermission(db, 'quick_access', 'create');
+      const session = requirePermission(db, 'quick_access');
       if (!safeUrl(data.url)) return [400, { error: 'Use uma URL iniciada por https://, http://, / ou #.' }];
       if (queueIfRequired(db, session, 'create', 'quick_access', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       if (db.quick_access.length >= 5) return [409, { error: 'O limite de 5 acessos rápidos foi atingido.' }];
@@ -1054,7 +1018,7 @@
     }
 
     if (method === 'POST' && path === '/api/notices') {
-      const session = requirePermission(db, 'notices', 'create');
+      const session = requirePermission(db, 'notices');
       const title = String(data.title || '').trim(), description = String(data.description || '').trim();
       const buttonName = String(data.button_name || '').trim(), buttonUrl = String(data.button_url || '').trim();
       if (!title || !description) return [400, { error: 'Título e descrição são obrigatórios.' }];
@@ -1066,6 +1030,18 @@
     }
 
     // ---- PUT ----
+    // Toggle de ativar/inativar administrador (flag deslizante na lista) — mesmo padrão já usado
+    // em menu/acessos rápidos (`'active' in data` sem os demais campos do cadastro completo).
+    if (method === 'PUT' && path.startsWith('/api/users/') && 'active' in data && !('name' in data)) {
+      requireMaster();
+      const id = parseId(path);
+      const user = db.users.find((u) => u.id === id);
+      if (!user) return [404, { error: 'Administrador não encontrado.' }];
+      if (!data.active) assertNotLastActiveMaster(db, id);
+      user.active = !!data.active;
+      return [200, { message: data.active ? 'Administrador ativado.' : 'Administrador desativado.' }];
+    }
+
     if (method === 'PUT' && path.startsWith('/api/users/')) {
       requireMaster();
       const id = parseId(path);
@@ -1074,44 +1050,20 @@
       const cpf = cleanCpf(data.cpf), email = String(data.email || '').trim();
       if (db.users.some((u) => u.id !== id && (u.cpf === cpf || u.email === email))) return [409, { error: 'CPF ou e-mail já cadastrado.' }];
       const role = data.role === 'master' ? 'master' : 'custom';
-      let profileId = user.profile_id ?? null;
-      if (role === 'custom') {
-        profileId = data.profile_id !== undefined ? Number(data.profile_id) : profileId;
-        if (!profileId || !db.access_profiles.some((p) => p.id === profileId)) {
-          return [400, { error: 'Selecione um perfil de acesso válido.' }];
-        }
-      } else {
-        profileId = null;
-      }
-      const willDeactivate = data.active !== undefined && !data.active;
-      const willDemote = user.role === 'master' && role !== 'master';
-      if (user.role === 'master' && user.active && (willDeactivate || willDemote)) {
+      const permissions = role === 'master' ? null : sanitizePermissions(data.permissions);
+      if (user.role === 'master' && user.active && role !== 'master') {
         assertNotLastActiveMaster(db, id);
       }
       if (data.password) {
         if (String(data.password).length < 8) return [400, { error: 'A senha deve possuir ao menos 8 caracteres.' }];
         user.password_hash = await passwordHash(data.password);
       }
-      Object.assign(user, { name: String(data.name || '').trim(), cpf, email, role, profile_id: profileId, active: data.active !== undefined ? !!data.active : true });
+      Object.assign(user, { name: String(data.name || '').trim(), cpf, email, role, permissions });
       return [200, { message: 'Administrador atualizado.' }];
     }
 
-    if (method === 'PUT' && path.startsWith('/api/access-profiles/')) {
-      requireMaster();
-      const id = parseId(path);
-      const profile = db.access_profiles.find((p) => p.id === id);
-      if (!profile) return [404, { error: 'Perfil de acesso não encontrado.' }];
-      const name = String(data.name || '').trim();
-      const description = String(data.description || '').trim();
-      if (!name) return [400, { error: 'Informe um nome para o perfil de acesso.' }];
-      if (db.access_profiles.some((p) => p.id !== id && p.name === name)) return [409, { error: 'Já existe um perfil de acesso com este nome.' }];
-      const permissions = sanitizePermissionMatrix(data.permissions);
-      Object.assign(profile, { name, description, permissions, updated_at: nowStamp() });
-      return [200, { message: 'Perfil de acesso atualizado.' }];
-    }
-
     if (method === 'PUT' && path.startsWith('/api/profiles/')) {
-      const session = requirePermission(db, 'identity', data.activate ? 'publish' : 'edit');
+      const session = requirePermission(db, 'identity');
       const id = parseId(path);
       if (!data.activate && db.header_profiles.find((p) => p.id === id)?.locked) {
         return [409, { error: 'Este perfil é protegido e não pode ser editado.' }];
@@ -1137,14 +1089,14 @@
     }
 
     if (method === 'PUT' && path === '/api/menu/reorder') {
-      const session = requirePermission(db, 'menu', 'edit');
+      const session = requirePermission(db, 'menu');
       if (queueIfRequired(db, session, 'reorder', 'menu_item', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       reorder(db.menu_items, data.ids || []);
       return [200, { message: 'Ordem do menu atualizada.' }];
     }
 
     if (method === 'PUT' && path.startsWith('/api/menu/') && 'active' in data && !('title' in data)) {
-      const session = requirePermission(db, 'menu', 'publish');
+      const session = requirePermission(db, 'menu');
       const id = parseId(path);
       const payload = { active: !!data.active };
       if (queueIfRequired(db, session, 'status', 'menu_item', id, payload)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
@@ -1154,7 +1106,7 @@
     }
 
     if (method === 'PUT' && path.startsWith('/api/menu/')) {
-      const session = requirePermission(db, 'menu', 'edit');
+      const session = requirePermission(db, 'menu');
       if (!safeUrl(data.url)) return [400, { error: 'Use uma URL iniciada por https://, http://, / ou #.' }];
       const id = parseId(path);
       if (queueIfRequired(db, session, 'update', 'menu_item', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
@@ -1166,14 +1118,14 @@
     }
 
     if (method === 'PUT' && path === '/api/quick-access/reorder') {
-      const session = requirePermission(db, 'quick_access', 'edit');
+      const session = requirePermission(db, 'quick_access');
       if (queueIfRequired(db, session, 'reorder', 'quick_access', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       reorder(db.quick_access, data.ids || []);
       return [200, { message: 'Ordem dos acessos rápidos atualizada.' }];
     }
 
     if (method === 'PUT' && path.startsWith('/api/quick-access/') && 'active' in data && !('title' in data)) {
-      const session = requirePermission(db, 'quick_access', 'publish');
+      const session = requirePermission(db, 'quick_access');
       const id = parseId(path);
       const payload = { active: !!data.active };
       if (queueIfRequired(db, session, 'status', 'quick_access', id, payload)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
@@ -1183,7 +1135,7 @@
     }
 
     if (method === 'PUT' && path.startsWith('/api/quick-access/')) {
-      const session = requirePermission(db, 'quick_access', 'edit');
+      const session = requirePermission(db, 'quick_access');
       if (!safeUrl(data.url)) return [400, { error: 'Use uma URL iniciada por https://, http://, / ou #.' }];
       const id = parseId(path);
       if (queueIfRequired(db, session, 'update', 'quick_access', id, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
@@ -1195,7 +1147,7 @@
     }
 
     if (method === 'PUT' && path === '/api/notices/bulk-status') {
-      const session = requirePermission(db, 'notices', 'publish');
+      const session = requirePermission(db, 'notices');
       const ids = (data.ids || []).map(Number);
       if (!ids.length) return [400, { error: 'Selecione ao menos um aviso.' }];
       const payload = { ids, active: !!data.active };
@@ -1205,7 +1157,7 @@
     }
 
     if (method === 'PUT' && path === '/api/notices/bulk-carousel') {
-      const session = requirePermission(db, 'notices', 'publish');
+      const session = requirePermission(db, 'notices');
       const ids = (data.ids || []).map(Number);
       if (!ids.length) return [400, { error: 'Selecione ao menos um aviso.' }];
       const payload = { ids, active_carousel: !!data.active_carousel };
@@ -1215,14 +1167,14 @@
     }
 
     if (method === 'PUT' && path === '/api/notices/reorder') {
-      const session = requirePermission(db, 'notices', 'edit');
+      const session = requirePermission(db, 'notices');
       if (queueIfRequired(db, session, 'reorder', 'notice', null, data)) return [202, { message: 'Alteração enviada para validação do Administrador Master.', pending: true }];
       reorder(db.notices, data.ids || []);
       return [200, { message: 'Ordem dos avisos atualizada.' }];
     }
 
     if (method === 'PUT' && path.startsWith('/api/notices/')) {
-      const session = requirePermission(db, 'notices', 'edit');
+      const session = requirePermission(db, 'notices');
       const id = parseId(path);
       const title = String(data.title || '').trim(), description = String(data.description || '').trim();
       const buttonName = String(data.button_name || '').trim(), buttonUrl = String(data.button_url || '').trim();
@@ -1265,12 +1217,13 @@
     }
 
     if (method === 'PUT' && path.startsWith('/api/pending-changes/')) {
-      const session = requireMaster();
+      const session = requirePermission(db, 'approvals');
       const changeId = parseId(path);
       const decision = data.decision;
       if (!['approved', 'rejected'].includes(decision)) return [400, { error: 'Decisão inválida.' }];
       const row = db.pending_changes.find((c) => c.id === changeId && c.status === 'pending');
       if (!row) return [404, { error: 'Alteração pendente não encontrada.' }];
+      if (row.requested_by === session.id) return [409, { error: 'Você não pode revisar uma alteração solicitada por você mesmo.' }];
       if (decision === 'approved') {
         try {
           applyPendingChange(db, row);
@@ -1292,8 +1245,7 @@
       row.status = status;
       if (status === 'approved' && !db.users.some((u) => u.cpf === row.cpf)) {
         const temp = bytesToHex(crypto.getRandomValues(new Uint8Array(9)));
-        const siteAdminId = db.access_profiles.find((p) => p.is_system)?.id ?? null;
-        db.users.push({ id: nextId(db, 'users'), name: row.name, cpf: row.cpf, email: row.email, role: 'custom', profile_id: siteAdminId, password_hash: await passwordHash(temp), active: true, created_at: nowStamp() });
+        db.users.push({ id: nextId(db, 'users'), name: row.name, cpf: row.cpf, email: row.email, role: 'custom', permissions: defaultAdminPermissions(), password_hash: await passwordHash(temp), active: true, created_at: nowStamp() });
         return [200, { message: 'Acesso aprovado.', temporary_password: temp }];
       }
       return [200, { message: 'Solicitação atualizada.' }];
@@ -1304,19 +1256,10 @@
       const session = requireAuth();
       const id = parseId(path);
       if (path.startsWith('/api/users/') && session.role !== 'master') return [403, { error: 'Ação exclusiva do Administrador Master.' }];
-      if (path.startsWith('/api/profiles/')) requirePermission(db, 'identity', 'delete');
-      if (path.startsWith('/api/menu/')) requirePermission(db, 'menu', 'delete');
-      if (path.startsWith('/api/quick-access/')) requirePermission(db, 'quick_access', 'delete');
-      if (path.startsWith('/api/notices/')) requirePermission(db, 'notices', 'delete');
-      if (path.startsWith('/api/access-profiles/')) {
-        requireMaster();
-        const profile = db.access_profiles.find((p) => p.id === id);
-        if (!profile) return [404, { error: 'Perfil de acesso não encontrado.' }];
-        if (profile.is_system) return [409, { error: 'Este perfil de acesso é padrão do sistema e não pode ser excluído.' }];
-        if (db.users.some((u) => u.profile_id === id)) return [409, { error: 'Existem administradores vinculados a este perfil; reatribua-os antes de excluir.' }];
-        db.access_profiles = db.access_profiles.filter((p) => p.id !== id);
-        return [200, { message: 'Perfil de acesso excluído.' }];
-      }
+      if (path.startsWith('/api/profiles/')) requirePermission(db, 'identity');
+      if (path.startsWith('/api/menu/')) requirePermission(db, 'menu');
+      if (path.startsWith('/api/quick-access/')) requirePermission(db, 'quick_access');
+      if (path.startsWith('/api/notices/')) requirePermission(db, 'notices');
       if (path.startsWith('/api/profiles/') && db.header_profiles.find((p) => p.id === id)?.locked) {
         return [409, { error: 'Este perfil é protegido e não pode ser excluído.' }];
       }

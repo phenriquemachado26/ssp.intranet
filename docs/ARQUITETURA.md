@@ -47,15 +47,16 @@ para o modelo de sessão e suas limitações de segurança.
 - Resolução de banner (`resolveBanner`) usa um manifesto estático de nomes de arquivo
   (`BANNER_FILES` em `mock-backend.js`), já que não existe mais servidor para listar o diretório
   `images_banner/` dinamicamente — precisa ser atualizado manualmente a cada novo arquivo.
-- `access_profiles`: perfis de acesso configuráveis pelo Master (Perfis e Permissões, ver
-  `docs/REGRAS-DE-NEGOCIO.md` → T-10). Cada registro guarda uma matriz de permissões por área ×
-  ação (`view`/`create`/`edit`/`delete`/`publish`). `users.profile_id` referencia o perfil vinculado
-  a um administrador não-Master; `role:'master'` não usa perfil (acesso total fixo, resolvido em
-  `fullPermissionMatrix()`). `effectivePermissions(db, user)` resolve a matriz efetiva de um
-  usuário; `requirePermission(db, area, action)` é o portão central usado nos endpoints que hoje
-  dependem de permissão granular — substitui a antiga checagem binária `role !== 'site'`. As áreas
-  `users`, `approvals` e `access_profiles` continuam exigindo `requireMaster()` de forma fixa nos
-  respectivos endpoints, por decisão de segurança (evita escalonamento de privilégio via matriz).
+- Perfis e Permissões (ver `docs/REGRAS-DE-NEGOCIO.md` → T-05/`RN-PERM-005`): **não é uma entidade
+  própria** — cada administrador não-Master tem seu campo `users.permissions`, um booleano por
+  funcionalidade (`identity`/`menu`/`notices`/`quick_access`/`approvals`/`audit_logs`, sem
+  granularidade de ação). `role:'master'` não usa `permissions` (acesso total fixo, resolvido em
+  `fullPermissions()`). `effectivePermissions(user)` resolve as permissões efetivas de um usuário;
+  `requirePermission(db, area)` é o portão central usado nos endpoints que dependem de permissão —
+  substitui a antiga checagem binária `role !== 'site'`. Só `Cadastro de Usuários` continua
+  exigindo `requireMaster()` de forma fixa (não é configurável via toggle), por decisão de
+  segurança (evita escalonamento de privilégio); `approvals` (Validações Pendentes) **pode** ser
+  delegado, com trava de autoaprovação (`row.requested_by === session.id` rejeitada com `409`).
 - `audit_logs`: registro imutável de auditoria (login/logout, mutações administrativas, negações de
   permissão), alimentado por um wrapper central em `handleApi()` — não há `db.audit_logs.push`
   espalhado pelos handlers de rota. Sem endpoint de escrita exposto pela API simulada; mantém só as
@@ -92,6 +93,15 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
 ## Histórico
 
+- 17/11/2026: removida a entidade `access_profiles` e o campo `users.profile_id`; permissões
+  passaram a viver em `users.permissions` (booleano por funcionalidade, 6 áreas, sem `access_profiles`
+  nem `users` entre elas). Endpoints `/api/access-profiles*` removidos. Novo endpoint leve
+  `PUT /api/users/<id>` com `{active}` (mesmo padrão de status de menu/avisos) para o toggle
+  ativar/inativar da lista, separado do formulário completo de edição. `assertNotLastActiveMaster`
+  também é chamado ao rebaixar/desativar via este novo endpoint. `PUT /api/pending-changes/<id>`
+  trocou `requireMaster()` por `requirePermission(db,'approvals')` + trava de autoaprovação. Menu
+  lateral e tela "Perfis e Permissões" removidos; a UI de permissões agora vive dentro do cadastro
+  de usuário (`#user-permissions-dialog`, `painel.html`/`painel.js`).
 - 17/11/2026: `buildDemoAuditLogs()` semeia 10 registros de demonstração em `audit_logs`
   (`SEED_VERSION` 22→23, com migração automática para quem já tinha a entidade vazia), para a tela
   de Logs de Auditoria não aparecer vazia na primeira visita.

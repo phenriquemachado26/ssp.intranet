@@ -31,15 +31,15 @@ leitura integral do código-fonte atual (`assets/js/mock-backend.js`, `main.js`,
 | `T-07` | Painel — Cadastro Menu                  | `painel.html` (`#menu-view`)            |
 | `T-08` | Painel — Cadastro de Avisos             | `painel.html` (`#notices-view`)         |
 | `T-09` | Painel — Validações pendentes           | `painel.html` (`#approvals-view`)       |
-| `T-10` | Painel — Perfis e Permissões            | `painel.html` (`#access-profiles-view`) |
+| `T-10` | ~~Painel — Perfis e Permissões~~ (revogada, mesclada em T-05) | — |
 | `T-11` | Painel — Logs de Auditoria              | `painel.html` (`#audit-view`)           |
 
 | Entidade        | Nome                         | Tabela em `localStorage["sspIntranetDb"]` |
 | ---------------- | ----------------------------- | -------------------------------------------- |
-| `E-USUARIO`      | Administrador                | `users`                                      |
+| `E-USUARIO`      | Administrador (inclui permissões próprias, campo `permissions`) | `users`      |
 | `E-SOLICITACAO`  | Solicitação de acesso        | `access_requests`                            |
 | `E-PERFIL`       | Perfil visual                 | `header_profiles`                            |
-| `E-PERFILACESSO` | Perfil de acesso (Perfis e Permissões) | `access_profiles`                   |
+| ~~`E-PERFILACESSO`~~ | revogada (17/11/2026) — era perfil de acesso nomeado/reutilizável; ver `RN-PERM-005` | — |
 | `E-ACESSO`       | Acesso rápido                 | `quick_access`                               |
 | `E-MENU`         | Item de menu                  | `menu_items`                                 |
 | `E-AVISO`        | Aviso                         | `notices`                                    |
@@ -52,43 +52,40 @@ leitura integral do código-fonte atual (`assets/js/mock-backend.js`, `main.js`,
 
 - **RN-PERM-001** `revogada` (17/11/2026): Existem dois perfis de administrador: **Administrador
   Master** (`role: "master"`) e **Administrador do Site** (`role: "site"`). Não há outros papéis.
-  **Motivo da revogação**: substituída por `RN-PERM-005`, que introduz perfis de acesso
-  configuráveis — o papel binário (`master`/não-master) continua existindo no código, mas o que um
-  administrador não-Master pode fazer agora depende do perfil de acesso vinculado a ele, não de um
-  papel fixo único.
+  **Motivo da revogação**: substituída por `RN-PERM-005`.
 - **RN-PERM-002** `confirmada`: Administrador Master tem acesso completo e fixo: cadastra
-  administradores, concede ou retira o papel de Master (`RN-USR-004`), cria/edita/exclui perfis de
-  acesso (**T-10**), aprova/recusa solicitações de acesso e a fila de validação, e gerencia perfis
-  visuais/rodapé/acessos rápidos/menu/avisos diretamente (sem fila).
-- **RN-PERM-003** `confirmada`: O perfil de acesso semeado **"Administrador do Site"** (`is_system:
-  true`, ver `RN-PERM-008`) replica o antigo papel fixo: acesso à Visão Geral, Identidade Visual
-  (ex-"Cabeçalho e Rodapé", exceto a parte de Rodapé em si), Cadastro Menu e Cadastro de Avisos; sem
-  acesso a Cadastro de Usuários, Validações Pendentes, Perfis e Permissões ou Logs de Auditoria.
-  Qualquer usuário vinculado a este perfil (ou a outro perfil de acesso com a mesma matriz) tem
-  exatamente este comportamento; um perfil de acesso diferente pode conceder mais ou menos.
+  administradores e define suas permissões, concede ou retira o papel de Master (`RN-USR-004`),
+  gerencia Cadastro de Usuários, e gerencia perfis visuais/rodapé/acessos rápidos/menu/avisos
+  diretamente (sem fila).
+- **RN-PERM-003** `revogada` (17/11/2026): O perfil de acesso semeado "Administrador do Site"
+  replica o antigo papel fixo... **Motivo da revogação**: Perfis e Permissões deixou de ser uma
+  entidade nomeada/reutilizável (ver `RN-PERM-005`); os dois administradores de demonstração
+  (Rafael, Juliana) continuam semeados com as mesmas permissões de antes, só que gravadas
+  diretamente no próprio usuário, sem um perfil nomeado intermediário.
 - **RN-PERM-004** `confirmada`: Toda ação administrativa de um Administrador não-Master sobre
   perfis visuais, itens de menu, acessos rápidos e avisos passa pelas regras de fila descritas em
-  **T-09**, desde que o perfil de acesso vinculado conceda a permissão necessária (`RN-PERM-009`);
-  um Administrador não-Master nunca aplica essas mudanças diretamente no site público.
-- **RN-PERM-005** `confirmada`: Administradores não-Master têm suas permissões definidas por um
-  **perfil de acesso** vinculado (`E-PERFILACESSO`, ver **T-10**), administrado pelo Master. Cada
-  perfil de acesso define, por área administrativa — Identidade Visual, Cadastro Menu, Cadastro de
-  Avisos, Acessos Rápidos, Cadastro de Usuários, Validações Pendentes, Perfis e Permissões, Logs de
-  Auditoria — quais ações são permitidas: visualizar, incluir, editar, excluir, publicar/aprovar.
-- **RN-PERM-006** `confirmada`: Três áreas continuam de uso **exclusivo do Administrador Master no
-  backend**, independentemente do que a matriz de um perfil de acesso conceder: Cadastro de
-  Usuários, Validações Pendentes e Perfis e Permissões. Isso evita que um perfil de acesso seja
-  configurado para criar/promover outros Masters, aprovar a própria fila ou alterar a própria
-  matriz de permissões (escalonamento de privilégio). As caixas de marcação dessas três áreas
-  aparecem na tela de Perfis e Permissões apenas para registro/consulta, sem efeito de liberação.
+  **T-09**, desde que suas permissões concedam a funcionalidade necessária (`RN-PERM-009`); um
+  Administrador não-Master nunca aplica essas mudanças diretamente no site público.
+- **RN-PERM-005** `confirmada`: Cada Administrador não-Master tem suas próprias permissões,
+  configuradas individualmente no cadastro (**T-05**, não mais um perfil nomeado e reutilizável).
+  São 6 funcionalidades, cada uma com um único toggle (liberado ou não, sem granularidade de ação):
+  Identidade Visual, Cadastro Menu, Cadastro de Avisos, Acessos Rápidos, Validações Pendentes e
+  Logs de Auditoria.
+- **RN-PERM-006** `confirmada`: **Cadastro de Usuários** continua de uso **exclusivo do
+  Administrador Master no backend**, de forma fixa — não é uma funcionalidade configurável via
+  toggle (é a própria tela onde as permissões são definidas). Isso evita que um Administrador
+  ganhe o poder de criar/promover outros Masters ou alterar as permissões de qualquer um,
+  incluindo as próprias (escalonamento de privilégio).
 - **RN-PERM-007** `confirmada`: Somente o Administrador Master pode conceder ou retirar o papel de
-  Master de um usuário (`RN-USR-004`), criar, editar ou excluir perfis de acesso (**T-10**), e
-  aprovar ou recusar itens da fila de validação (`RN-BLOQ-005`).
-- **RN-PERM-008** `confirmada`: O perfil de acesso semeado **"Administrador do Site"**
-  (`is_system: true`) não pode ser excluído, mas pode ser editado livremente pelo Master, inclusive
-  sua matriz de permissões (`RN-PERFILACESSO-003`).
-- **RN-PERM-009** `confirmada`: A permissão granular do perfil de acesso é checada **antes** das
-  regras de fila (`RN-BLOQ-003`, `RN-PERFIL-009`): sem a permissão necessária na área, a ação é
+  Master de um usuário (`RN-USR-004`) e cadastrar/editar/ativar/inativar administradores (**T-05**).
+  **Validações Pendentes** pode ser delegada a um Administrador através do toggle correspondente
+  (diferente da decisão anterior deste projeto, que mantinha essa área sempre fixa no Master —
+  revisto nesta tarefa a pedido do usuário); um Administrador delegado não pode, porém, aprovar ou
+  recusar uma alteração que ele mesmo solicitou (`RN-BLOQ-013`).
+- **RN-PERM-008** `revogada` (17/11/2026): O perfil de acesso semeado "Administrador do Site" não
+  pode ser excluído... **Motivo da revogação**: não existe mais perfil de acesso como entidade.
+- **RN-PERM-009** `confirmada`: A permissão de funcionalidade do Administrador é checada **antes**
+  das regras de fila (`RN-BLOQ-003`, `RN-PERFIL-009`): sem a funcionalidade liberada, a ação é
   rejeitada (`403`) e nem chega a entrar na fila de validação do Master.
 
 ## T-01 — Portal Público (`index.html`)
@@ -250,19 +247,20 @@ Administrador do Site.
 
 - **RN-USR-001** `confirmada`: Somente Master pode usar "Novo administrador" (`POST /api/users`,
   `requireMaster()`).
-- **RN-USR-002** `confirmada`: Nome, CPF, e-mail institucional, perfil de acesso e senha temporária
+- **RN-USR-002** `confirmada`: Nome, CPF, e-mail institucional, tipo de acesso e senha temporária
   são obrigatórios na criação; a senha deve ter ao menos 8 caracteres.
 - **RN-USR-003** `confirmada`: CPF e e-mail devem ser únicos entre os administradores cadastrados
   **no mock daquele navegador** (checado tanto na criação quanto na edição, excluindo o próprio
   registro) — sem equivalente real entre navegadores/visitantes diferentes, já que não há banco
   compartilhado.
 - **RN-USR-004** `confirmada`: Master pode editar nome, CPF, e-mail, tipo de acesso (Administrador
-  Master ou perfil de acesso específico — é assim que a promoção/rebaixamento de Master acontece,
-  ver `RN-SOLIC-005`), status (ativo/inativo) e senha (campo de senha em branco na edição mantém a
-  senha atual). Ao vincular um usuário não-Master, é obrigatório escolher um perfil de acesso
-  válido (`RN-PERM-005`).
+  Master ou Administrador — é assim que a promoção/rebaixamento de Master acontece, ver
+  `RN-SOLIC-005`) e senha (campo de senha em branco na edição mantém a senha atual). O status
+  ativo/inativo **não** faz parte deste formulário — é alterado pela flag deslizante da lista
+  (`RN-USR-009`), não pelo cadastro completo.
 - **RN-USR-005** `confirmada`: Um administrador **não pode excluir a própria conta**
-  (`DELETE /api/users/<id>` rejeita com 409 quando `id === session.id`).
+  (`DELETE /api/users/<id>` rejeita com 409 quando `id === session.id`) — endpoint mantido na API
+  para uso avançado, mas não é mais chamado pela interface (ver `RN-USR-009`).
 - **RN-USR-005b** `revogada` (17/11/2026): O cadastro "Administrador Master" principal da
   demonstração (CPF `000.000.000-00`) não pode ser excluído por ninguém, nem mesmo por outro Master
   logado — checagem por CPF (`MASTER_PRINCIPAL_CPF`), independente do `id` do registro. **Motivo da
@@ -273,6 +271,21 @@ Administrador do Site.
   de Master) a **última conta de Administrador Master ativa** do sistema — a ação é rejeitada com
   `409`, qualquer que seja o Master autenticado executando-a. Uma conta Master inativa, ou quando
   existe outro Master ativo, não é protegida por esta regra.
+- **RN-USR-008** `confirmada`: Ao escolher "Tipo de acesso" = **Administrador** no cadastro, um
+  pop-up é exibido com um toggle (flag deslizante) por funcionalidade — Identidade Visual, Cadastro
+  Menu, Cadastro de Avisos, Acessos Rápidos, Validações Pendentes, Logs de Auditoria (`RN-PERM-005`).
+  Ao escolher **Administrador Master**, nada precisa ser configurado — acesso total e fixo
+  (`RN-PERM-002`). O pop-up pode ser reaberto a qualquer momento pelo botão "Configurar permissões",
+  inclusive ao editar um administrador já cadastrado.
+- **RN-USR-009** `confirmada`: A lista de administradores é dividida em duas abas, **Ativos** e
+  **Inativos** (mais a aba "Solicitações", inalterada). Cada linha tem uma flag deslizante que
+  ativa/inativa o administrador diretamente (`PUT /api/users/<id>` só com `{active}`), sem precisar
+  abrir o formulário de edição — substitui o antigo botão "Excluir" nesta tela. Um administrador não
+  pode inativar a própria conta (flag desabilitada na própria linha); a trava de último Master ativo
+  (`RN-USR-007`) se aplica independentemente de quem estiver executando a ação.
+- **RN-USR-010** `confirmada`: A coluna "Acesso" da lista mostra "Administrador Master" ou a
+  contagem de funcionalidades liberadas (ex.: "3 de 6 funcionalidades liberadas") para um
+  Administrador — não há mais nome de perfil, já que permissões não são mais um perfil nomeado.
 
 ### Aba Solicitações
 
@@ -468,11 +481,15 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
   descrita em `RN-PERFIL-009`, independente deste bloqueio.
 - **RN-BLOQ-004** `confirmada`: Alterações feitas diretamente por um Master continuam sendo
   aplicadas imediatamente, bloqueio ativo ou não.
-- **RN-BLOQ-005** `confirmada`: Um Master pode aprovar (aplicando a alteração) ou recusar cada
-  solicitação pendente (`PUT /api/pending-changes/<id>`).
-- **RN-BLOQ-006** `confirmada`: O item "Validações pendentes" do menu do Master exibe um indicador
+- **RN-BLOQ-005** `confirmada`: Um Master, ou um Administrador com a funcionalidade "Validações
+  Pendentes" liberada (`RN-PERM-005`, `RN-PERM-007`), pode aprovar (aplicando a alteração) ou
+  recusar cada solicitação pendente (`PUT /api/pending-changes/<id>`).
+- **RN-BLOQ-006** `confirmada`: O item "Validações Pendentes" do menu lateral exibe um indicador
   numérico (badge vermelho) com a quantidade de solicitações pendentes; fica oculto quando não há
-  nenhuma pendente.
+  nenhuma pendente. Visível ao Master e a qualquer Administrador com a funcionalidade liberada.
+- **RN-BLOQ-013** `confirmada`: Um usuário (Master ou Administrador delegado) **não pode aprovar
+  nem recusar** uma alteração pendente que ele mesmo solicitou (`409`) — evita que um Administrador
+  delegado em "Validações Pendentes" aprove a própria solicitação, esvaziando o propósito da fila.
 - **RN-BLOQ-007** `confirmada`: O bloqueio **não pode ser desativado** enquanto existir qualquer
   alteração pendente; o sistema informa isso em pop-up com a contagem de pendências.
 - **RN-BLOQ-008** `E-AVISO` `confirmada`: Ao **ativar** o bloqueio, o carrossel global muda
@@ -498,31 +515,25 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
 - **RN-BLOQ-012**: ver `RN-PERFIL-013` (regra central documentada na seção de Perfis Visuais, por
   ser disparada pela ativação de um perfil específico, não pelo bloqueio geral).
 
-## T-10 — Painel: Perfis e Permissões (`E-PERFILACESSO`)
+## T-10 — Painel: Perfis e Permissões (revogada — mesclada em T-05, 17/11/2026)
 
-- **RN-PERFILACESSO-001** `confirmada`: Tela exclusiva do Administrador Master — item oculto no
-  menu lateral para qualquer outro usuário (`RN-PERM-006`).
-- **RN-PERFILACESSO-002** `confirmada`: Cada perfil de acesso tem nome (único entre os perfis
-  cadastrados), descrição opcional e uma matriz de permissões por área administrativa × ação
-  (visualizar/incluir/editar/excluir/publicar-aprovar — ver `RN-PERM-005`).
-- **RN-PERFILACESSO-003** `confirmada`: Perfis de acesso podem ser criados, editados e excluídos
-  pelo Master. O perfil semeado "Administrador do Site" (`is_system: true`) é protegido contra
-  exclusão (`RN-PERM-008`), mas sua matriz de permissões pode ser editada livremente.
-- **RN-PERFILACESSO-004** `confirmada`: Um perfil de acesso não pode ser excluído enquanto houver
-  usuários vinculados a ele (`409`); o Master precisa reatribuir esses usuários a outro perfil
-  antes de excluir.
-- **RN-PERFILACESSO-005** `confirmada`: Ao cadastrar ou editar um administrador (**T-05**), o
-  Master escolhe entre "Administrador Master" (acesso total e fixo) ou um perfil de acesso
-  específico; todo usuário não-Master precisa de um perfil de acesso válido vinculado.
+Esta tela deixou de existir separadamente. As permissões não são mais um perfil nomeado e
+reutilizável (`E-PERFILACESSO`) — cada Administrador configura as próprias permissões diretamente
+no cadastro de usuário (ver **T-05** → `RN-USR-008`, `RN-PERM-005`). Motivo: pedido explícito do
+usuário, para reduzir um nível de indireção na gestão de administradores.
+
+- **RN-PERFILACESSO-001** a **005** `revogada` (17/11/2026): descreviam a tela e a entidade
+  `access_profiles` (perfil de acesso nomeado, reutilizável entre usuários, com matriz de ações por
+  área). **Motivo da revogação**: substituídas por `RN-USR-008`/`RN-USR-010` e `RN-PERM-005`
+  (permissões diretas no usuário, um toggle por funcionalidade, sem nome nem reuso).
 
 ## T-11 — Painel: Logs de Auditoria (`E-LOG`)
 
 - **RN-AUDIT-001** `confirmada`: Tela somente leitura — não existe endpoint de edição ou exclusão
   de registros na API simulada; os registros são imutáveis pela interface administrativa.
 - **RN-AUDIT-002** `confirmada`: Acesso exclusivo do Administrador Master por padrão; pode ser
-  delegado a um perfil de acesso com permissão "visualizar" na área Logs de Auditoria
-  (`RN-PERM-005`) — diferente de Usuários/Validações Pendentes/Perfis e Permissões, que são sempre
-  Master-exclusivo (`RN-PERM-006`).
+  delegado a um Administrador com a funcionalidade "Logs de Auditoria" liberada (`RN-PERM-005`) —
+  diferente de Cadastro de Usuários, que é sempre Master-exclusivo (`RN-PERM-006`).
 - **RN-AUDIT-003** `confirmada`: Cada registro guarda data/hora, usuário (nome e papel), área
   administrativa, ação, entidade/id afetado, um **detalhe textual breve e legível** (frase em PT
   descrevendo o que foi feito, ex.: `Criou Cadastro de Menu "Item Teste".`) e resultado
@@ -543,24 +554,28 @@ Item e view ocultos para Administrador do Site — exclusivo do Master.
   navegação/leitura no futuro, é um ajuste a ser pedido explicitamente.
 - **RN-AUDIT-005** `confirmada`: A tela permite filtrar por usuário, área, tipo de ação e período
   (data inicial/final).
+- **RN-AUDIT-009** `confirmada`: A tabela é paginada no cliente (sobre o resultado já filtrado):
+  10, 20, 50 ou 100 registros por página (seletor, padrão 10), com navegação primeira/anterior/
+  próxima/última página (`«`/`‹`/`›`/`»`) e indicador "Página X de Y". Trocar o tamanho de página ou
+  aplicar/limpar um filtro volta para a primeira página.
 - **RN-AUDIT-006** `confirmada`: O mock mantém apenas os últimos 2000 registros
   (`localStorage`, por navegador/aba) — limitação de armazenamento do protótipo, sem equivalente a
   uma política de retenção real de banco de dados.
 - **RN-AUDIT-008** `confirmada`: São semeados 10 registros de demonstração (login/logout, criação e
   edição de conteúdo, uma tentativa de login malsucedida, uma tentativa negada por ação exclusiva
-  do Master, uma aprovação de fila e a criação de um perfil de acesso), para a tela não aparecer
+  do Master, uma aprovação de fila e uma edição de cadastro de usuário), para a tela não aparecer
   vazia na primeira visita. Navegadores com banco de uma versão anterior a esta regra (que já
   tinham a entidade `audit_logs` criada, porém vazia) recebem os mesmos 10 registros numa migração
   automática única.
 
 ## Matriz de permissões (resumo)
 
-A coluna "Perfil de acesso padrão" descreve o comportamento do perfil semeado "Administrador do
-Site" (`RN-PERM-003`). Um Master pode criar outros perfis de acesso (**T-10**) com uma combinação
-diferente de permissões por área × ação; esta tabela não é mais exaustiva para todo Administrador
-não-Master, só para quem estiver vinculado a este perfil específico.
+A coluna "Administrador (padrão semeado)" descreve as permissões dos dois administradores de
+demonstração (Rafael, Juliana — ver `docs/Auth.md`). Cada Administrador tem seu próprio conjunto de
+permissões (um toggle por funcionalidade, `RN-PERM-005`); esta tabela não é mais exaustiva para
+todo Administrador não-Master, só ilustra o padrão semeado.
 
-| Entidade / Ação                         | Master                | Perfil de acesso padrão ("Administrador do Site")      |
+| Entidade / Funcionalidade                | Master                | Administrador (padrão semeado)                              |
 | ----------------------------------------- | ---------------------- | ---------------------------------------------------------- |
 | Usuários (`E-USUARIO`)                   | CRUD completo, direto  | Sem acesso — exclusivo do Master (`RN-PERM-006`)            |
 | Solicitações de acesso (`E-SOLICITACAO`) | Aprova/recusa          | Sem acesso (só cria a própria, antes de ter login)         |
@@ -570,9 +585,8 @@ não-Master, só para quem estiver vinculado a este perfil específico.
 | Avisos (`E-AVISO`)                        | CRUD + reordenar + status em lote, direto | idem; em fila só com bloqueio ativo       |
 | Rodapé (`E-RODAPE`)                       | Edita, direto          | Sem acesso                                                  |
 | Bloqueio/configurações gerais (`E-CONTROLE`) | Único que altera    | Somente visualiza (read-only)                               |
-| Fila de validação (`E-PENDENCIA`)         | Único que aprova/recusa | Sem acesso — exclusivo do Master (`RN-PERM-006`)            |
-| Perfis de acesso (`E-PERFILACESSO`)       | CRUD completo, direto  | Sem acesso — exclusivo do Master (`RN-PERM-006`)            |
-| Logs de auditoria (`E-LOG`)               | Visualiza (somente leitura) | Sem acesso por padrão; delegável via matriz (`RN-AUDIT-002`) |
+| Fila de validação (`E-PENDENCIA`)         | Aprova/recusa          | Delegável via toggle "Validações Pendentes" (`RN-PERM-007`); nunca a própria solicitação (`RN-BLOQ-013`) |
+| Logs de auditoria (`E-LOG`)               | Visualiza (somente leitura) | Sem acesso no padrão semeado; delegável via toggle (`RN-AUDIT-002`) |
 
 ## Estados e enumerações
 
@@ -620,6 +634,23 @@ não-Master, só para quem estiver vinculado a este perfil específico.
 
 ## Histórico
 
+- 17/11/2026: nova regra **`RN-AUDIT-009`** — tabela de Logs de Auditoria paginada no cliente
+  (10/20/50/100 por página, navegação primeira/anterior/próxima/última), a pedido do usuário.
+  `painel.html`, `assets/js/painel.js`, `assets/css/styles.css`.
+- 17/11/2026: a pedido do usuário, "Perfis e Permissões" deixou de ser uma tela/entidade separada
+  (`T-10`, `E-PERFILACESSO`, ambas revogadas) e passou a viver dentro de **T-05** (Cadastro de
+  Usuários): cada Administrador configura suas próprias permissões (um toggle por funcionalidade,
+  sem perfil nomeado nem reutilizável) direto no cadastro, via pop-up quando "Administrador" é
+  escolhido em "Tipo de acesso". Revogadas: `RN-PERM-001`, `RN-PERM-003`, `RN-PERM-008`,
+  `RN-PERFILACESSO-001..005`. Novas: `RN-USR-008`, `RN-USR-009`, `RN-USR-010`, `RN-BLOQ-013`
+  (trava de autoaprovação). `RN-PERM-005`-`007`/`009` reescritas para o novo modelo — inclusive
+  `RN-PERM-007`, que agora permite delegar "Validações Pendentes" a um Administrador (antes
+  Master-exclusivo por decisão interna; revisto a pedido do usuário). Também: lista de
+  administradores dividida em abas Ativos/Inativos, com flag deslizante por linha substituindo o
+  antigo botão "Excluir" (endpoint `DELETE` mantido na API, só não é mais chamado pela UI); 4
+  administradores de demonstração extras semeados (2 ativos, 2 inativos) para popular as novas
+  abas. Implementado em `assets/js/mock-backend.js`, `painel.html`, `assets/js/painel.js`,
+  `assets/css/styles.css`.
 - 17/11/2026: nova regra **`RN-AUDIT-008`** — Log de Auditoria passou a vir com 10 registros de
   demonstração semeados (`buildDemoAuditLogs()`), cobrindo login/logout, criação/edição de
   conteúdo, login malsucedido, ação negada e aprovação de fila; navegadores que já tinham

@@ -20,22 +20,23 @@ no navegador do próprio visitante:
   nada real neste protótipo, listá-la explicitamente para quem for testar é mais útil do que
   escondê-la atrás de uma falsa sensação de sigilo.
 
-## Autorização: Master × perfil de acesso
+## Autorização: Master × Administrador
 
 - Dois valores de `role`: `"master"` (acesso total e fixo, não configurável) e qualquer outro valor
-  (tratado como administrador comum). Um usuário não-Master tem suas permissões definidas por um
-  **perfil de acesso** vinculado (`users.profile_id` → `access_profiles`), administrado pelo Master
-  em Perfis e Permissões — ver `docs/REGRAS-DE-NEGOCIO.md` → T-10.
-- Cada perfil de acesso é uma matriz `{área: {view,create,edit,delete,publish}}`. A sessão
-  (`GET /api/session`, `POST /api/login`) devolve essa matriz já resolvida em
-  `user.effective_permissions`, para o frontend decidir o que exibir sem reimplementar a lógica de
-  resolução.
-- `requirePermission(db, area, action)` é o portão central de autorização para as áreas
-  configuráveis (Identidade Visual, Cadastro Menu, Cadastro de Avisos, Acessos Rápidos). Três áreas
-  continuam **sempre** exigindo Master no backend, independentemente da matriz de qualquer perfil
-  de acesso: Cadastro de Usuários, Validações Pendentes e Perfis e Permissões — decisão de
-  segurança para impedir que um perfil de acesso seja configurado para criar/promover outros
-  Masters, aprovar a própria fila de validação ou alterar a própria matriz de permissões.
+  (tratado como Administrador comum). Um usuário não-Master tem suas **próprias** permissões
+  (`users.permissions`) — não é mais um perfil nomeado/reutilizável, é configurado individualmente
+  no cadastro de cada administrador (ver `docs/REGRAS-DE-NEGOCIO.md` → T-05, `RN-PERM-005`).
+- `permissions` é um objeto com um booleano por funcionalidade — sem granularidade de ação:
+  `{identity, menu, notices, quick_access, approvals, audit_logs}`. A sessão
+  (`GET /api/session`, `POST /api/login`) devolve isso já resolvido em `user.effective_permissions`,
+  para o frontend decidir o que exibir sem reimplementar a lógica de resolução.
+- `requirePermission(db, area)` é o portão central de autorização para as funcionalidades
+  configuráveis. Só **Cadastro de Usuários** continua sempre exigindo Master no backend,
+  independentemente de qualquer toggle — decisão de segurança para impedir que um Administrador
+  ganhe o poder de criar/promover outros Masters ou alterar permissões (inclusive as próprias).
+  **Validações Pendentes** pode ser delegada (diferente de uma decisão interna anterior deste
+  projeto, revista a pedido do usuário), com uma trava específica: ninguém pode aprovar/recusar uma
+  alteração que ele mesmo solicitou.
 - Somente o Master pode conceder ou retirar o papel de Master de um usuário.
 - Último Master ativo: o sistema rejeita (`409`) qualquer tentativa de excluir, desativar ou
   rebaixar a última conta de Administrador Master ativa, mesmo quando executada por outro Master.
