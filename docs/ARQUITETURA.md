@@ -93,6 +93,20 @@ demonstração" em `admin.html` limpa tudo e reaplica a semente inicial.
 
 ## Histórico
 
+- 17/11/2026: duas correções de bug: (1) os 4 administradores extras de demonstração
+  (`DEMO_EXTRA_ADMINS`) só eram inseridos em `seedDb()` (banco novo), nunca em `reconcileSeed()`
+  (banco já existente) — navegadores que já tinham migrado para a v23 nunca ganhavam os novos
+  administradores mockados, inclusive os inativos. `SEED_VERSION` 23→24, com inserção idempotente
+  (por CPF) também em `reconcileSeed`. (2) `.action-icon-btn` usava `color:var(--blue-2)`, variável
+  sobrescrita dinamicamente pelo perfil visual ativo (`theme.js`); o perfil "Governo Tarcísio" —
+  ativo por padrão (`RN-PERFIL-011`) — tem `color_secondary:'#FFFFFF'`, tornando o ícone branco
+  sobre fundo branco (invisível). Trocado para `var(--secondary-on-light)`, variável já existente
+  no projeto especificamente para garantir contraste mínimo contra fundo claro
+  (`themeVisibleOn(color_secondary, '#FFFFFF')` em `theme.js`); estado de hover deixou de usar
+  `color:white` sobre fundo colorido (mesmo risco de invisibilidade) e passou a usar um realce
+  neutro fixo. **Pendência identificada, não corrigida nesta tarefa**: `.action-btn` (botões
+  "Editar"/"Excluir" em todo o painel) usa o mesmo `var(--blue-2)` bruto e está sujeito ao mesmo
+  problema sob o perfil padrão — ver `docs/Memoria.md`.
 - 17/11/2026: removida a entidade `access_profiles` e o campo `users.profile_id`; permissões
   passaram a viver em `users.permissions` (booleano por funcionalidade, 6 áreas, sem `access_profiles`
   nem `users` entre elas). Endpoints `/api/access-profiles*` removidos. Novo endpoint leve

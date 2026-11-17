@@ -672,3 +672,34 @@ Arquivos alterados: `painel.html`, `assets/js/painel.js`, `assets/css/styles.css
   outras telas.
 - **Security Specialist**: n/a — paginação é só apresentação de dados já carregados e já
   autorizados pela checagem de permissão existente; nenhum dado novo é exposto.
+
+## 17/11/2026 — Correção: administradores mockados ausentes e ícones invisíveis
+
+Usuário reportou dois problemas, investigados juntos:
+
+1. **Administradores mockados extras não apareciam** (pedido: "cadastrar um administrador mokado,
+   como inativo"). Causa: `DEMO_EXTRA_ADMINS` só era inserido em `seedDb()` (banco novo);
+   `reconcileSeed()` (banco já existente no navegador do usuário) nunca os adicionava. Corrigido:
+   inserção idempotente (por CPF) também em `reconcileSeed`, com `SEED_VERSION` 23→24 para disparar
+   a migração no navegador de quem já tinha testado a tarefa anterior.
+2. **Ícone de detalhes do log e setas de paginação invisíveis.** Causa: `.action-icon-btn` usava
+   `color:var(--blue-2)`, variável sobrescrita pelo perfil visual ativo; o perfil padrão "Governo
+   Tarcísio" tem `color_secondary:'#FFFFFF'`, deixando o ícone branco sobre fundo branco. Corrigido
+   com `var(--secondary-on-light)` (variável já existente no projeto, computada para garantir
+   contraste contra fundo claro) e um estado de hover que não depende de texto branco sobre fundo
+   colorido. **Mesmo problema identificado, mas não corrigido, em `.action-btn`** ("Editar"/
+   "Excluir" em todas as tabelas do painel) — fora do escopo literal do pedido; fica registrado em
+   `docs/Memoria.md` como pendência a confirmar com o usuário antes de expandir o fix.
+
+Arquivos alterados: `assets/js/mock-backend.js`, `assets/css/styles.css`, `docs/ARQUITETURA.md`,
+`docs/Memoria.md`.
+
+- **Tester** (eu mesmo): harness Node ad hoc (descartado após a execução) simulando um banco na
+  v23 sem os administradores extras — confirmou que a migração para v24 insere os 4 (2 ativos, 2
+  inativos), não duplica em execuções repetidas (idempotência) e não altera usuários já existentes.
+  Correção de CSS verificada por leitura/raciocínio sobre as variáveis de tema (`theme.js`), sem
+  navegador disponível nesta sessão para captura visual — recomendo ao usuário conferir
+  visualmente após o deploy.
+- **Validator**: autovalidação — mudança de migração é aditiva e idempotente; mudança de CSS troca
+  uma variável por outra já usada no projeto com o propósito exato de evitar este problema.
+- **Security Specialist**: n/a — nenhuma mudança de autorização ou dado sensível.

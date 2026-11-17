@@ -303,3 +303,17 @@ Decisões técnicas, convenções e armadilhas não óbvias.
   nome, sem reuso), exigindo reverter boa parte do trabalho. Quando o pedido do usuário for
   genuinamente ambíguo entre um modelo mais simples e um mais flexível/reutilizável, perguntar antes
   de escolher a opção mais complexa, em vez de implementar e descobrir depois que era a errada.
+- **17/11/2026 — `var(--blue-2)` (e demais tokens "crus" de tema: `--blue`, `--navy`, `--gold`) não
+  são seguros para usar como `color` de texto em componentes do painel administrativo.** Essas
+  variáveis são sobrescritas em tempo real por `theme.js` (`applySspTheme`) com as cores do perfil
+  visual PÚBLICO ativo — e o perfil padrão semeado ("Governo Tarcísio") tem `color_secondary:
+  '#FFFFFF'`. Qualquer elemento com `color:var(--blue-2)` fica branco sobre fundo branco (invisível)
+  sob esse perfil. Para texto/ícone sobre fundo claro no painel, usar sempre as variantes "on-light"
+  já existentes para isso: `--secondary-on-light`, `--primary-on-light`, `--detail-on-light`
+  (computadas em `theme.js` via `themeVisibleOn(cor, '#FFFFFF')`, que garante contraste mínimo e cai
+  para uma cor escura fixa quando a cor do tema não serve). **Pendência conhecida, não corrigida**:
+  `.action-btn` (botões "Editar"/"Excluir" usados em quase todas as tabelas do painel) ainda usa
+  `color:var(--blue-2)` bruto — mesmo risco de ficar invisível sob o perfil padrão. Só não foi
+  corrigido porque o usuário pediu especificamente sobre os ícones novos (`.action-icon-btn`), não
+  sobre esse padrão mais amplo; perguntar antes de expandir o fix para `.action-btn` no painel
+  inteiro, já que afeta muito mais elementos.

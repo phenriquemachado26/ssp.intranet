@@ -191,7 +191,7 @@
   // novos, para que navegadores que já tinham dados salvos (localStorage antigo) recebam os itens
   // novos automaticamente, sem apagar usuários/avisos/menus/perfis que o visitante já tiver criado
   // ou alterado.
-  const SEED_VERSION = 23;
+  const SEED_VERSION = 24;
 
   const nowStamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
   const bytesToHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -505,6 +505,18 @@
     });
     delete db.access_profiles;
     delete db.seq.access_profiles;
+    // Upgrade: administradores extras de demonstração (Eduardo, Beatriz, Patrícia, Thiago — 2
+    // ativos e 2 inativos), adicionados para a lista de Cadastro de Usuários não ficar só com os
+    // 2 administradores originais e as abas Ativos/Inativos terem exemplo nos dois estados.
+    // Inserido apenas se o CPF ainda não existir (não duplica em banco que já os tinha).
+    for (const account of DEMO_EXTRA_ADMINS) {
+      if (db.users.some((u) => u.cpf === account.cpf)) continue;
+      db.users.push({
+        id: nextId(db, 'users'), name: account.name, cpf: account.cpf, email: account.email, role: 'custom',
+        permissions: account.permissions, password_hash: await passwordHash(account.password),
+        active: account.active, created_at: nowStamp(),
+      });
+    }
     if (!db.audit_logs) db.audit_logs = [];
     // Upgrade: Log de Auditoria sem nenhum registro ainda (banco que só tinha a entidade vazia,
     // de uma versão anterior) ganha os registros de demonstração, para a tela não aparecer vazia.
